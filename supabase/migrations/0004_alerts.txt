@@ -1,0 +1,57 @@
+-- ============================================================================
+-- Alertas por cercanía: funciones de apoyo para Web Push
+-- ============================================================================
+-- Crea una zona de alerta para el usuario actual (arma la geografía en servidor).
+create or replace function public.add_alert(
+  p_lat       double precision,
+  p_lng       double precision,
+  p_radius_m  integer,
+  p_animal    animal_type default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare v_uid uuid := auth.uid();
+begin
+  if v_uid is null then
+    raise exception 'Inicia sesión para crear alertas.' using errcode = '42501';
+  end if;
+  if p_radius_m not in (1000, 3000, 5000) then
+    raise exception 'Radio inválido.' using errcode = '22023';
+  end if;
+  insert into public.alert_subscriptions (user_id, center, radius_m, animal_type)
+  values (
+    v_uid,
+    extensions.ST_SetSRID(extensions.ST_MakePoint(p_lng, p_lat), 4326)::extensions.geography,
+    p_radius_m,
+    p_animal
+  );
+end;
+$$;
+grant execute on function public.add_alert to authenticated;
+-- ----------------------------------------------------------------------------
+-- Devuelve las suscripciones push que deben recibir aviso de un reporte nuevo:
+-- zonas activas cuyo centro está dentro del radio, del mismo animal (o "todos"),
+-- excluyendo al propio autor del reporte.
+-- La llama la Edge Function `send-push` (con la service_role key).
+-- ----------------------------------------------------------------------------
+create or replace function public.subscribers_for_report(p_report_id uuid)
+returns table (endpoint text, p256dh text, auth text)
+language sql
+security definer
+set search_path = public, extensions
+stable
+as $$
+  select ps.endpoint, ps.p256dh, ps.auth
+  from public.reports r
+  join public.alert_subscriptions a
+    on a.active
+   and a.user_id <> r.user_id
+   and (a.animal_type is null or a.animal_type = r.animal_type)
+   and extensions.ST_DWithin(a.center, r.location, a.radius_m::double precision)
+  join public.push_subscriptions ps on ps.user_id = a.user_id
+  where r.id = p_report_id;
+$$;
+grant execute on function public.subscribers_for_report to service_role;

@@ -1,0 +1,17 @@
+{
+  "name": "Patitas La Serena",
+  "short_name": "Patitas",
+  "description": "Mapa colaborativo de mascotas perdidas, encontradas y avistadas en La Serena.",
+  "lang": "es-CL",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF9F5",
+  "theme_color": "#FF6F61",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon-maskable.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

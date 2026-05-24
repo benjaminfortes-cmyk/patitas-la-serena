@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Patitas La Serena">
+  <!-- Versión maskable: el contenido vive dentro de la "zona segura" central
+       para que no se corte cuando el sistema le aplica una máscara redonda. -->
+  <rect width="512" height="512" fill="#FF6F61"/>
+  <g fill="#ffffff" transform="translate(86 86) scale(0.66)">
+    <circle cx="168" cy="206" r="42"/>
+    <circle cx="232" cy="168" r="46"/>
+    <circle cx="300" cy="168" r="46"/>
+    <circle cx="356" cy="214" r="42"/>
+    <path d="M262 250c-72 0-118 52-118 112 0 48 38 74 118 74s118-26 118-74c0-60-46-112-118-112z"/>
+  </g>
+</svg>

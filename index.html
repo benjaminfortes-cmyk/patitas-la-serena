@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="theme-color" content="#FF6F61" />
+  <title>Patitas La Serena · Mascotas perdidas y encontradas</title>
+  <meta name="description" content="Mapa colaborativo de mascotas perdidas, encontradas y avistadas en La Serena, Chile." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icon.svg" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+
+  <!-- Tipografía -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Íconos Phosphor -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+  <!-- Leaflet + clustering -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__paw" aria-hidden="true">🐾</span>
+      <span class="brand__name">Patitas<strong>La Serena</strong></span>
+    </div>
+    <div class="topbar__actions">
+      <button id="btn-historias" class="btn btn--ghost btn--sm" aria-label="Historias felices">
+        <i class="ph ph-heart" aria-hidden="true"></i>
+        <span class="hide-mobile">Historias</span>
+      </button>
+      <button id="btn-login" class="btn btn--ghost btn--sm">
+        <i class="ph ph-sign-in" aria-hidden="true"></i>
+        <span>Ingresar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- BARRA DE FILTROS -->
+  <section class="filters" aria-label="Filtros">
+    <div class="search">
+      <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+      <input id="search" type="search" placeholder="Buscar por nombre, raza o color…"
+             aria-label="Buscar reportes" />
+    </div>
+
+    <div class="chips" role="group" aria-label="Estado del reporte">
+      <button class="chip chip--perdido"    data-filter="kind" data-value="perdido"    aria-pressed="false">🔴 Perdido</button>
+      <button class="chip chip--encontrado" data-filter="kind" data-value="encontrado" aria-pressed="false">🟢 Encontrado</button>
+      <button class="chip chip--avistado"   data-filter="kind" data-value="avistado"   aria-pressed="false">🔵 Avistado</button>
+      <span class="chips__sep" aria-hidden="true"></span>
+      <button class="chip" data-filter="animal" data-value="perro" aria-pressed="false">🐶 Perro</button>
+      <button class="chip" data-filter="animal" data-value="gato"  aria-pressed="false">🐱 Gato</button>
+      <button class="chip" data-filter="animal" data-value="otro"  aria-pressed="false">🐾 Otro</button>
+      <span class="chips__sep" aria-hidden="true"></span>
+      <button class="chip chip--active" data-filter="age" data-value="all"   aria-pressed="true">Todo</button>
+      <button class="chip" data-filter="age" data-value="24h"   aria-pressed="false">Últimas 24h</button>
+      <button class="chip" data-filter="age" data-value="week"  aria-pressed="false">Semana</button>
+      <button class="chip" data-filter="age" data-value="month" aria-pressed="false">Mes</button>
+    </div>
+  </section>
+
+  <!-- MAPA -->
+  <main class="map-wrap">
+    <div id="map" role="application" aria-label="Mapa de reportes de mascotas"></div>
+  </main>
+
+  <!-- BOTÓN FLOTANTE REPORTAR -->
+  <button id="btn-report" class="fab" aria-label="Publicar un reporte">
+    <i class="ph ph-plus" aria-hidden="true"></i>
+    <span>Reportar</span>
+  </button>
+
+  <!-- FICHA DEL REPORTE (bottom-sheet) -->
+  <div id="backdrop" class="backdrop"></div>
+  <aside id="detail" class="sheet" role="dialog" aria-modal="true" aria-label="Detalle del reporte"></aside>
+
+  <!-- MODAL: PUBLICAR REPORTE -->
+  <div id="form-backdrop" class="backdrop"></div>
+  <div id="report-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal__head">
+      <h2 id="modal-title">Publicar un reporte</h2>
+      <button class="sheet__close" type="button" data-close-form aria-label="Cerrar">&times;</button>
+    </div>
+
+    <form id="report-form" class="form" novalidate>
+
+      <!-- Tipo de reporte -->
+      <fieldset class="form__group">
+        <legend>¿Qué pasó? <span class="req">*</span></legend>
+        <div class="seg seg--cards" role="group" aria-label="Tipo de reporte">
+          <button type="button" class="seg__btn seg__btn--perdido"    data-seg="kind" data-value="perdido"    aria-pressed="false">
+            <i class="ph ph-magnifying-glass" aria-hidden="true"></i> Perdí a mi mascota
+          </button>
+          <button type="button" class="seg__btn seg__btn--encontrado" data-seg="kind" data-value="encontrado" aria-pressed="false">
+            <i class="ph ph-house-line" aria-hidden="true"></i> Encontré y resguardé
+          </button>
+          <button type="button" class="seg__btn seg__btn--avistado"   data-seg="kind" data-value="avistado"   aria-pressed="false">
+            <i class="ph ph-eye" aria-hidden="true"></i> Vi una suelta
+          </button>
+        </div>
+      </fieldset>
+
+      <!-- Tipo de animal -->
+      <fieldset class="form__group">
+        <legend>¿Qué animal? <span class="req">*</span></legend>
+        <div class="seg" role="group" aria-label="Tipo de animal">
+          <button type="button" class="seg__btn" data-seg="animal" data-value="perro" aria-pressed="false">🐶 Perro</button>
+          <button type="button" class="seg__btn" data-seg="animal" data-value="gato"  aria-pressed="false">🐱 Gato</button>
+          <button type="button" class="seg__btn" data-seg="animal" data-value="otro"  aria-pressed="false">🐾 Otro</button>
+        </div>
+        <input type="text" id="animal-other" class="input" placeholder="¿Qué animal? (ej: conejo)" hidden />
+      </fieldset>
+
+      <!-- Foto -->
+      <fieldset class="form__group">
+        <legend>Foto <span class="req">*</span></legend>
+        <label class="photo-drop" for="photo">
+          <div id="photo-placeholder" class="photo-drop__placeholder">
+            <i class="ph ph-camera" aria-hidden="true"></i>
+            <span>Toca para agregar una foto</span>
+            <small>Máx 5 MB · se comprime automáticamente</small>
+          </div>
+          <img id="photo-preview" class="photo-drop__preview" alt="Vista previa de la foto" hidden />
+        </label>
+        <input type="file" id="photo" accept="image/*" capture="environment" hidden />
+      </fieldset>
+
+      <!-- Nombre (solo perdido) -->
+      <div class="form__group" id="field-name" hidden>
+        <label for="pet-name">Nombre de la mascota</label>
+        <input type="text" id="pet-name" class="input" placeholder="Ej: Rocco" maxlength="60" />
+      </div>
+
+      <!-- Raza / tamaño -->
+      <div class="form__row">
+        <div class="form__group">
+          <label for="breed">Raza aproximada</label>
+          <input type="text" id="breed" class="input" placeholder="Ej: Quiltro, Labrador…" maxlength="60" />
+        </div>
+        <div class="form__group">
+          <label>Tamaño</label>
+          <div class="seg seg--sm" role="group" aria-label="Tamaño">
+            <button type="button" class="seg__btn" data-seg="size" data-value="chico"   aria-pressed="false">Chico</button>
+            <button type="button" class="seg__btn" data-seg="size" data-value="mediano" aria-pressed="false">Mediano</button>
+            <button type="button" class="seg__btn" data-seg="size" data-value="grande"  aria-pressed="false">Grande</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form__group">
+        <label for="color">Color / señas particulares</label>
+        <input type="text" id="color" class="input" placeholder="Ej: café con pecho blanco, cojea de una pata…" maxlength="120" />
+      </div>
+
+      <!-- Fecha del evento -->
+      <div class="form__group">
+        <label for="event-at">¿Cuándo fue?</label>
+        <input type="datetime-local" id="event-at" class="input" />
+      </div>
+
+      <!-- Ubicación -->
+      <fieldset class="form__group" id="field-location">
+        <legend>¿Dónde? <span class="req">*</span></legend>
+        <p class="form__hint">Marca el punto en el mapa o usa tu ubicación. Por privacidad lo guardamos con un leve desplazamiento.</p>
+        <div id="form-map" class="form-map"></div>
+        <button type="button" id="btn-geoloc" class="btn btn--ghost btn--sm">
+          <i class="ph ph-crosshair" aria-hidden="true"></i> Usar mi ubicación actual
+        </button>
+      </fieldset>
+
+      <!-- WhatsApp -->
+      <div class="form__group">
+        <label for="whatsapp">WhatsApp de contacto <span class="req">*</span></label>
+        <input type="tel" id="whatsapp" class="input" placeholder="+56 9 1234 5678" inputmode="tel" />
+      </div>
+
+      <!-- Descripción -->
+      <div class="form__group">
+        <label for="description">Descripción (opcional)</label>
+        <textarea id="description" class="input" rows="3" maxlength="500"
+                  placeholder="Cuenta detalles que ayuden a identificarla…"></textarea>
+        <small class="counter"><span id="desc-count">0</span>/500</small>
+      </div>
+
+      <button type="submit" class="btn btn--primary form__submit" id="form-submit">
+        <i class="ph ph-paper-plane-tilt" aria-hidden="true"></i> Publicar reporte
+      </button>
+    </form>
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
