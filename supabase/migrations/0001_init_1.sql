@@ -184,9 +184,8 @@ create trigger on_auth_user_created
 -- 7. Función central: create_report()
 --    - Verifica que el usuario no esté bloqueado.
 --    - Aplica el LÍMITE de 3 reportes por usuario por día.
---    - Aplica el OFFSET de privacidad (~150m) sobre la ubicación recibida.
+--    - Guarda la ubicación EXACTA recibida (sin offset de privacidad).
 --    - Valida formato de WhatsApp chileno y largo de la descripción.
---    Recibe lat/lng crudos; jamás guarda la ubicación exacta.
 -- ----------------------------------------------------------------------------
 create or replace function public.create_report(
   p_kind              report_kind,
@@ -244,13 +243,11 @@ begin
     raise exception 'La descripción no puede superar 500 caracteres.' using errcode = '22023';
   end if;
 
-  -- OFFSET DE PRIVACIDAD: desplaza el punto entre 80 y 180 metros en una
-  -- dirección aleatoria. ST_Project proyecta sobre la esfera (azimut en radianes).
-  v_location := extensions.ST_Project(
-    extensions.ST_SetSRID(extensions.ST_MakePoint(p_lng, p_lat), 4326)::extensions.geography,
-    80 + random() * 100,        -- distancia: 80–180 m
-    random() * 2 * pi()         -- dirección: 0–360°
-  );
+  -- Ubicación EXACTA: se guarda el punto tal cual lo marca la persona.
+  -- (El offset de privacidad fue retirado a petición del autor del proyecto.)
+  v_location := extensions.ST_SetSRID(
+    extensions.ST_MakePoint(p_lng, p_lat), 4326
+  )::extensions.geography;
 
   insert into public.reports (
     user_id, kind, animal_type, animal_type_other, pet_name, breed, color,
