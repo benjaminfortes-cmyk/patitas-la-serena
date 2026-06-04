@@ -15,7 +15,7 @@ export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Clave pública VAPID para notificaciones push (Etapa 6).
 // Genérala con:  npx web-push generate-vapid-keys
 // Es PÚBLICA; la privada va solo en los secretos de la Edge Function.
-export const VAPID_PUBLIC_KEY = 'TU_VAPID_PUBLIC_KEY';
+export const VAPID_PUBLIC_KEY = 'BBR5KPyHoCu_s_9NjDUGZmQgLnxWLl3rHE10S5ihEqOelrvSwFp5BiDUKHx71Q8Do1kzCCmgp9TYrX9-jOmyJko';
 
 // La Serena, Chile
 export const MAP_CENTER = [-29.9027, -71.2519];
