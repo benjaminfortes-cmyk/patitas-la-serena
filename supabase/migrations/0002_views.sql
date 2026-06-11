@@ -22,8 +22,8 @@ select
   color,
   size,
   event_at,
-  ST_Y(location::geometry) as lat,   -- latitud  (con offset de privacidad ya aplicado)
-  ST_X(location::geometry) as lng,   -- longitud (con offset de privacidad ya aplicado)
+  ST_Y(location::geometry) as lat,   -- latitud  (ubicación exacta marcada al publicar)
+  ST_X(location::geometry) as lng,   -- longitud (ubicación exacta marcada al publicar)
   photo_url,
   description,
   contact_whatsapp,

@@ -11,6 +11,10 @@ desktop.ini
 .env.local
 .vscode/
 .idea/
+.claude/
+
+# Documentación local (no se sube)
+ARCHIVOS.txt
 
 # Logs
 *.log

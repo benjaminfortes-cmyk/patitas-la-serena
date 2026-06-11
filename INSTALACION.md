@@ -161,15 +161,17 @@ supabase functions deploy send-push
 
 ### 9c. Cargar los secretos de la función
 ```powershell
-supabase secrets set VAPID_PUBLIC_KEY="tu-clave-publica" VAPID_PRIVATE_KEY="tu-clave-privada" VAPID_SUBJECT="mailto:tu-correo@ejemplo.cl"
+supabase secrets set VAPID_PUBLIC_KEY="tu-clave-publica" VAPID_PRIVATE_KEY="tu-clave-privada" VAPID_SUBJECT="mailto:tu-correo@ejemplo.cl" WEBHOOK_SECRET="un-texto-largo-aleatorio"
 ```
 > `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` los inyecta Supabase automáticamente; no hay que cargarlos.
+> `WEBHOOK_SECRET` es un texto inventado por ti (largo y aleatorio); evita que extraños disparen la función y manden notificaciones falsas.
 
 ### 9d. Conectar el webhook (que se dispare al publicar)
 1. En Supabase: **Database → Webhooks → Create a new hook**.
 2. **Name:** `notificar-reporte` · **Table:** `reports` · **Events:** marca solo **Insert**.
 3. **Type:** *Supabase Edge Functions* → selecciona **send-push**.
-4. **Create**.
+4. En **HTTP Headers** agrega: nombre `x-webhook-secret`, valor el mismo `WEBHOOK_SECRET` del paso 9c.
+5. **Create**.
 
 Desde ahora, cada reporte nuevo dispara la función, que avisa por push a quienes tengan una zona de alerta dentro del radio. 🎉
 

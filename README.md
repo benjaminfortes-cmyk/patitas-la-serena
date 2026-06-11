@@ -18,13 +18,15 @@ Plataforma centralizada para **reportar y encontrar mascotas perdidas, encontrad
 9. 🔔 **Alertas por cercanía** vía Web Push (define zona + radio).
 10. 📲 **PWA** instalable y con funcionamiento offline.
 
-Además: **privacidad** (ubicación con offset ~150 m), **antifraude** (3 reportes/día máx, cola de moderación), **accesibilidad** (teclado, `alt`, contraste) y español de Chile.
+Además: **antifraude** (3 reportes/día máx, cola de moderación), **accesibilidad** (teclado, `alt`, contraste) y español de Chile.
+
+> ⚠️ La ubicación que marcas se publica **tal cual** en el mapa. Marca el punto donde se perdió o vio la mascota, no tu casa.
 
 ---
 
 ## ¿Qué resuelve?
 
-Cuando se te arranca el perro, publicas un reporte **"Perdido"** en el mapa. Quien lo encuentre publica **"Encontrado"** o **"Avistado"**. La plataforma cruza ambos automáticamente por cercanía y tipo de animal, y te avisa de posibles coincidencias. Sin recompensas (atraen estafadores) y con la ubicación siempre difuminada para proteger tu dirección.
+Cuando se te arranca el perro, publicas un reporte **"Perdido"** en el mapa. Quien lo encuentre publica **"Encontrado"** o **"Avistado"**. La plataforma cruza ambos automáticamente por cercanía y tipo de animal, y te avisa de posibles coincidencias. Sin recompensas (atraen estafadores).
 
 ## Stack técnico
 
@@ -70,14 +72,14 @@ patitas-la-serena/         # la raíz ES el sitio (estático)
 ## Modelo de datos (resumen)
 
 - **profiles** — usuarios (extiende `auth.users`); rol, bloqueo, denuncias acumuladas.
-- **reports** — reportes; tipo (perdido/encontrado/avistado), animal, ubicación *con offset*, foto, WhatsApp, ciclo de vida (activo/resuelto/archivado).
+- **reports** — reportes; tipo (perdido/encontrado/avistado), animal, ubicación exacta marcada por el usuario, foto, WhatsApp, ciclo de vida (activo/resuelto/archivado).
 - **flags** — denuncias de info incorrecta/duplicada (cola de moderación).
 - **alert_subscriptions** — zonas de alerta por cercanía de cada usuario.
 - **push_subscriptions** — endpoints Web Push por dispositivo.
 
 Toda la lógica sensible vive en la base de datos:
 
-- `create_report(...)` aplica el **offset de privacidad (~150m)**, el **límite de 3 reportes/día** y valida el WhatsApp chileno.
+- `create_report(...)` aplica el **límite de 3 reportes/día** y valida el WhatsApp chileno.
 - `find_matches(...)` cruza reportes opuestos en 3 km / 30 días.
 - `mark_resolved`, `reactivate_report`, `flag_report` con control de propiedad vía RLS.
 - `pg_cron` archiva resueltos (>7 días) e inactivos (>45 días).

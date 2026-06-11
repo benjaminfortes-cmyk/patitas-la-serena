@@ -8,6 +8,8 @@
 // Variables de entorno (Supabase → Edge Functions → Secrets):
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
 //   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (mailto:tu@correo.cl)
+//   WEBHOOK_SECRET — valor secreto que el webhook debe mandar en el header
+//   "x-webhook-secret"; impide que terceros disparen la función a mano.
 // ============================================================================
 import webpush from 'npm:web-push@3.6.7';
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -19,6 +21,13 @@ const KIND: Record<string, string> = {
 
 Deno.serve(async (req) => {
   try {
+    // Solo acepta llamadas del webhook de la base de datos (no de clientes):
+    // si WEBHOOK_SECRET está configurado, el header debe coincidir.
+    const secreto = Deno.env.get('WEBHOOK_SECRET');
+    if (secreto && req.headers.get('x-webhook-secret') !== secreto) {
+      return new Response('no autorizado', { status: 401 });
+    }
+
     const { record } = await req.json();          // fila insertada (payload del webhook)
     if (!record?.id) return new Response('sin record', { status: 400 });
 

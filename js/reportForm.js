@@ -2,7 +2,7 @@
 // Formulario "Publicar reporte": selección visual, mini-mapa, geolocalización,
 // compresión de foto, validación y envío vía la función create_report().
 //
-// El offset de privacidad y el límite de 3/día viven en la base de datos;
+// El límite de 3/día y las validaciones viven en la base de datos;
 // aquí solo enviamos lat/lng crudos y la base se encarga del resto.
 // ============================================================================
 import { supabase, isConfigured } from './supabase.js';
@@ -108,7 +108,7 @@ function configurarModo(report) {
   document.getElementById('form-submit').innerHTML = editando
     ? '<i class="ph ph-check"></i> Guardar cambios'
     : '<i class="ph ph-paper-plane-tilt"></i> Publicar reporte';
-  // En edición la ubicación no se cambia (conserva su offset de privacidad original).
+  // En edición la ubicación no se cambia (conserva la ubicación original).
   document.getElementById('field-location').hidden = editando;
 }
 

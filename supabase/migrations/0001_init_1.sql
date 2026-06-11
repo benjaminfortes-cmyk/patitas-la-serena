@@ -6,7 +6,7 @@
 -- políticas de seguridad (RLS), funciones de servidor (RPC) y tareas
 -- programadas (pg_cron). Está pensado para correrse de una sola vez.
 --
--- Convención: la lógica sensible (offset de privacidad, límite diario,
+-- Convención: la lógica sensible (límite diario, validaciones,
 -- permisos) vive en la base de datos, NO en el cliente. El frontend nunca
 -- inserta directo en `reports`: siempre pasa por la función create_report().
 -- ============================================================================
@@ -62,8 +62,7 @@ create table public.reports (
 
   event_at           timestamptz not null default now(),  -- cuándo ocurrió
 
-  -- Ubicación YA con el offset de privacidad (~150m) aplicado.
-  -- La ubicación exacta nunca se guarda. SRID 4326 = lat/lng estándar.
+  -- Ubicación exacta marcada por quien publica. SRID 4326 = lat/lng estándar.
   location           extensions.geography(Point, 4326) not null,
 
   photo_url          text not null,                -- URL pública en Storage
@@ -450,7 +449,7 @@ create policy reports_select_public on public.reports
     lifecycle <> 'archivado' or user_id = auth.uid() or public.is_admin()
   );
 -- NO hay política de INSERT: los reportes solo se crean vía create_report()
--- (SECURITY DEFINER), así nadie inserta saltándose el offset ni el límite.
+-- (SECURITY DEFINER), así nadie inserta saltándose las validaciones ni el límite.
 -- UPDATE directo solo para dueño/admin (las funciones igual lo cubren).
 create policy reports_update_owner on public.reports
   for update using (user_id = auth.uid() or public.is_admin());
