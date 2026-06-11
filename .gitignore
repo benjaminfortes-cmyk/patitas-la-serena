@@ -23,6 +23,7 @@ npm-debug.log*
 # Archivos temporales
 *.tmp
 *.bak
+supabase/.temp/
 
 # Credenciales JSON descargadas de Google (no subir!)
 client_secret*.json
