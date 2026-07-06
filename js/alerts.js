@@ -30,7 +30,7 @@ function abrir() {
   overlay.innerHTML = `
     <div class="matches" role="dialog" aria-modal="true" aria-label="Alertas por zona">
       <div class="matches__head">
-        <h3>Avísame de reportes en mi zona 🔔</h3>
+        <h3>Avísame de reportes en mi zona</h3>
         <button class="sheet__close" data-close aria-label="Cerrar">&times;</button>
       </div>
       <p class="matches__sub">Marca tu punto (ej: tu casa) y elige el radio. Te avisaremos de reportes nuevos ahí.</p>
@@ -89,11 +89,11 @@ async function activar(cerrar) {
   // ---- MODO DEMO: muestra una notificación de ejemplo ----
   if (!isConfigured) {
     const reg = await navigator.serviceWorker.ready;
-    reg.showNotification('Patitas La Serena 🐾', {
+    reg.showNotification('Patitas La Serena', {
       body: 'Así se verán tus alertas cuando haya un reporte en tu zona.',
       icon: 'assets/icon.svg',
     });
-    toast('Alertas activadas (demo) ✅', 'exito');
+    toast('Alertas activadas (demo).', 'exito');
     return cerrar();
   }
 
@@ -121,7 +121,7 @@ async function activar(cerrar) {
     });
     if (error) throw new Error(error.message);
 
-    toast('¡Listo! Te avisaremos de reportes en tu zona 🔔', 'exito');
+    toast('¡Listo! Te avisaremos de reportes en tu zona.', 'exito');
     cerrar();
   } catch (err) {
     toast(err.message || 'No se pudo activar. ¿Configuraste las claves VAPID?', 'error');

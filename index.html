@@ -16,7 +16,7 @@
   <!-- Tipografía -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Íconos Phosphor -->
   <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -35,7 +35,7 @@
   <!-- ENCABEZADO -->
   <header class="topbar">
     <div class="brand">
-      <span class="brand__paw" aria-hidden="true">🐾</span>
+      <span class="brand__logo" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
       <span class="brand__name">Patitas<strong>La Serena</strong></span>
     </div>
     <p class="topbar__tagline hide-mobile">Mapa comunitario y gratuito para reportar y encontrar mascotas perdidas en La Serena, Chile</p>
@@ -43,6 +43,10 @@
       <button id="btn-historias" class="btn btn--ghost btn--sm" aria-label="Historias felices">
         <i class="ph ph-heart" aria-hidden="true"></i>
         <span class="hide-mobile">Historias</span>
+      </button>
+      <button id="btn-soporte" class="btn btn--ghost btn--sm" aria-label="Contactar al soporte">
+        <i class="ph ph-envelope-simple" aria-hidden="true"></i>
+        <span class="hide-mobile">Soporte</span>
       </button>
       <button id="btn-login" class="btn btn--ghost btn--sm">
         <i class="ph ph-sign-in" aria-hidden="true"></i>
@@ -60,13 +64,13 @@
     </div>
 
     <div class="chips" role="group" aria-label="Estado del reporte">
-      <button class="chip chip--perdido"    data-filter="kind" data-value="perdido"    aria-pressed="false">🔴 Perdido</button>
-      <button class="chip chip--encontrado" data-filter="kind" data-value="encontrado" aria-pressed="false">🟢 Encontrado</button>
-      <button class="chip chip--avistado"   data-filter="kind" data-value="avistado"   aria-pressed="false">🔵 Avistado</button>
+      <button class="chip chip--perdido"    data-filter="kind" data-value="perdido"    aria-pressed="false"><span class="chip__dot chip__dot--perdido" aria-hidden="true"></span>Perdido</button>
+      <button class="chip chip--encontrado" data-filter="kind" data-value="encontrado" aria-pressed="false"><span class="chip__dot chip__dot--encontrado" aria-hidden="true"></span>Encontrado</button>
+      <button class="chip chip--avistado"   data-filter="kind" data-value="avistado"   aria-pressed="false"><span class="chip__dot chip__dot--avistado" aria-hidden="true"></span>Avistado</button>
       <span class="chips__sep" aria-hidden="true"></span>
-      <button class="chip" data-filter="animal" data-value="perro" aria-pressed="false">🐶 Perro</button>
-      <button class="chip" data-filter="animal" data-value="gato"  aria-pressed="false">🐱 Gato</button>
-      <button class="chip" data-filter="animal" data-value="otro"  aria-pressed="false">🐾 Otro</button>
+      <button class="chip" data-filter="animal" data-value="perro" aria-pressed="false"><i class="ph ph-dog" aria-hidden="true"></i>Perro</button>
+      <button class="chip" data-filter="animal" data-value="gato"  aria-pressed="false"><i class="ph ph-cat" aria-hidden="true"></i>Gato</button>
+      <button class="chip" data-filter="animal" data-value="otro"  aria-pressed="false"><i class="ph ph-paw-print" aria-hidden="true"></i>Otro</button>
       <span class="chips__sep" aria-hidden="true"></span>
       <button class="chip chip--active" data-filter="age" data-value="all"   aria-pressed="true">Todo</button>
       <button class="chip" data-filter="age" data-value="24h"   aria-pressed="false">Últimas 24h</button>
@@ -120,9 +124,9 @@
       <fieldset class="form__group">
         <legend>¿Qué animal? <span class="req">*</span></legend>
         <div class="seg" role="group" aria-label="Tipo de animal">
-          <button type="button" class="seg__btn" data-seg="animal" data-value="perro" aria-pressed="false">🐶 Perro</button>
-          <button type="button" class="seg__btn" data-seg="animal" data-value="gato"  aria-pressed="false">🐱 Gato</button>
-          <button type="button" class="seg__btn" data-seg="animal" data-value="otro"  aria-pressed="false">🐾 Otro</button>
+          <button type="button" class="seg__btn" data-seg="animal" data-value="perro" aria-pressed="false"><i class="ph ph-dog" aria-hidden="true"></i> Perro</button>
+          <button type="button" class="seg__btn" data-seg="animal" data-value="gato"  aria-pressed="false"><i class="ph ph-cat" aria-hidden="true"></i> Gato</button>
+          <button type="button" class="seg__btn" data-seg="animal" data-value="otro"  aria-pressed="false"><i class="ph ph-paw-print" aria-hidden="true"></i> Otro</button>
         </div>
         <input type="text" id="animal-other" class="input" placeholder="¿Qué animal? (ej: conejo)" hidden />
       </fieldset>
@@ -133,12 +137,12 @@
         <label class="photo-drop" for="photo">
           <div id="photo-placeholder" class="photo-drop__placeholder">
             <i class="ph ph-camera" aria-hidden="true"></i>
-            <span>Toca para agregar una foto</span>
+            <span>Toca para tomar una foto o elegirla de tu galería</span>
             <small>Máx 5 MB · se comprime automáticamente</small>
           </div>
           <img id="photo-preview" class="photo-drop__preview" alt="Vista previa de la foto" hidden />
         </label>
-        <input type="file" id="photo" accept="image/*" capture="environment" hidden />
+        <input type="file" id="photo" accept="image/*" hidden />
       </fieldset>
 
       <!-- Nombre (solo perdido) -->

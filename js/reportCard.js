@@ -7,7 +7,7 @@
 // ============================================================================
 import { KIND_META, nombreAnimal, tiempoRelativo, tituloReporte } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
-import { getUser, signIn } from './auth.js';
+import { getUser, signIn, isAdminUser } from './auth.js';
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 
@@ -26,12 +26,16 @@ export function openReportCard(report) {
   const resuelto = report.lifecycle === 'resuelto';
   const user = getUser();
   const esDueno = user && report.user_id && report.user_id === user.id;
+  // El administrador puede gestionar cualquier reporte (la base de datos
+  // también lo permite vía RLS; aquí solo mostramos los botones).
+  const puedeGestionar = esDueno || (user && isAdminUser());
 
   const fila = (label, val) =>
     val ? `<div class="detail__row"><dt>${label}</dt><dd>${escapeHtml(val)}</dd></div>` : '';
 
-  // Botones de dueño (resolver / editar / sigue activo) solo si es su reporte y no está resuelto.
-  const accionesDueno = (esDueno && !resuelto) ? `
+  // Botones de gestión (resolver / editar / sigue activo): dueño o admin, si no está resuelto.
+  const accionesDueno = (puedeGestionar && !resuelto) ? `
+    ${!esDueno ? '<p class="detail__adminnote"><i class="ph ph-shield-check"></i> Estás editando como administrador</p>' : ''}
     <div class="detail__owner">
       <button class="btn btn--soft" data-action="resolver"><i class="ph ph-heart"></i> Marcar como resuelto</button>
       <button class="btn btn--outline" data-action="editar"><i class="ph ph-pencil-simple"></i> Editar</button>
@@ -45,8 +49,8 @@ export function openReportCard(report) {
     <div class="detail__photo">
       <img src="${escapeHtml(report.photo_url)}"
            alt="Foto de ${escapeHtml(tituloReporte(report))}" loading="lazy" />
-      <span class="badge" style="--badge:${k.color}">${k.emoji} ${k.label}</span>
-      ${resuelto ? '<span class="badge badge--reunidos">❤️ ¡Reunidos!</span>' : ''}
+      <span class="badge" style="--badge:${k.color}">${k.label}</span>
+      ${resuelto ? '<span class="badge badge--reunidos"><i class="ph-fill ph-heart"></i> Reunidos</span>' : ''}
     </div>
 
     <div class="detail__body">
@@ -103,14 +107,14 @@ async function compartir(report) {
   if (navigator.share) {
     try { await navigator.share(datos); } catch { /* el usuario canceló */ }
   } else {
-    try { await navigator.clipboard.writeText(url); toast('Enlace copiado 📋', 'exito'); }
+    try { await navigator.clipboard.writeText(url); toast('Enlace copiado.', 'exito'); }
     catch { toast(url, 'info'); }
   }
 }
 
 // ---- Marcar como resuelto -------------------------------------------------
 async function resolver(report) {
-  if (!confirm('¿Marcar como resuelto? Quedará 7 días con el corazón ❤️ y luego se archiva.')) return;
+  if (!confirm('¿Marcar como resuelto? Quedará visible 7 días como "Reunidos" y luego se archiva.')) return;
 
   if (isConfigured) {
     const { error } = await supabase.rpc('mark_resolved', { p_report_id: report.id });
@@ -119,7 +123,7 @@ async function resolver(report) {
     const r = DEMO_REPORTS.find((x) => x.id === report.id);
     if (r) { r.lifecycle = 'resuelto'; r.resolved_at = new Date().toISOString(); }
   }
-  toast('¡Reunidos! Gracias por avisar 🎉', 'exito');
+  toast('¡Reunidos! Gracias por avisar.', 'exito');
   closeReportCard();
   window.recargarMapa?.();
 }
@@ -133,7 +137,7 @@ async function reactivar(report) {
     const r = DEMO_REPORTS.find((x) => x.id === report.id);
     if (r) r.last_active_at = new Date().toISOString();
   }
-  toast('Listo, tu reporte sigue activo 👍', 'exito');
+  toast('Listo, el reporte sigue activo.', 'exito');
 }
 
 // ---- Denuncia (info incorrecta / duplicada) -------------------------------

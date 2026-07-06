@@ -75,7 +75,7 @@ function renderPanel(matches, kindOrigen) {
   overlay.innerHTML = `
     <div class="matches" role="dialog" aria-modal="true" aria-label="Posibles coincidencias">
       <div class="matches__head">
-        <h3>${escapeHtml(titulo)} 🐾</h3>
+        <h3>${escapeHtml(titulo)}</h3>
         <button class="sheet__close" data-close aria-label="Cerrar">&times;</button>
       </div>
       <p class="matches__sub">Mismo tipo de animal, a menos de 3 km. Toca una para revisarla.</p>

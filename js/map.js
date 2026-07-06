@@ -8,15 +8,15 @@ import { KIND_META, ANIMAL_META } from './constants.js';
 let map;
 let clusterGroup;
 
-// Crea el ícono de un marcador: pin con el color del estado y el emoji del animal.
+// Crea el ícono de un marcador: pin con el color del estado y el ícono del animal.
 function crearIcono(report) {
   const color = KIND_META[report.kind]?.color ?? '#888';
-  const emoji = ANIMAL_META[report.animal_type]?.emoji ?? '🐾';
+  const icono = ANIMAL_META[report.animal_type]?.icon ?? 'ph-paw-print';
   const resuelto = report.lifecycle === 'resuelto';
 
   const html = `
     <div class="pin ${resuelto ? 'pin--resuelto' : ''}" style="--pin: ${color}">
-      <span class="pin__emoji">${resuelto ? '❤️' : emoji}</span>
+      <span class="pin__icon"><i class="ph-fill ${resuelto ? 'ph-heart' : icono}"></i></span>
     </div>`;
 
   return L.divIcon({

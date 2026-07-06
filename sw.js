@@ -8,7 +8,7 @@
 //   - CDNs, fuentes y tiles del mapa: cache-first (se guardan al usarse).
 // ============================================================================
 
-const VERSION = 'patitas-v1';
+const VERSION = 'patitas-v2';
 
 // Archivos propios que se precachean al instalar.
 const SHELL = [
@@ -18,6 +18,7 @@ const SHELL = [
   './js/constants.js', './js/map.js', './js/filters.js', './js/reportCard.js', './js/ui.js',
   './js/auth.js', './js/imageCompress.js', './js/storage.js', './js/validation.js',
   './js/reportForm.js', './js/matching.js', './js/historias.js', './js/pwa.js', './js/alerts.js',
+  './js/support.js',
   './assets/icon.svg',
 ];
 
@@ -88,7 +89,7 @@ async function cacheFirst(req) {
 // ---- Notificaciones push --------------------------------------------------
 self.addEventListener('push', (e) => {
   const d = (() => { try { return e.data?.json() ?? {}; } catch { return {}; } })();
-  const title = d.title || 'Patitas La Serena 🐾';
+  const title = d.title || 'Patitas La Serena';
   const opciones = {
     body: d.body || 'Hay un nuevo reporte cerca de tu zona.',
     icon: 'assets/icon.svg',

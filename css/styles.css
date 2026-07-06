@@ -34,7 +34,7 @@
 html, body { height: 100%; }
 
 body {
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   color: var(--ink);
   background: var(--warm-bg);
   -webkit-font-smoothing: antialiased;
@@ -48,8 +48,11 @@ body {
   padding: 0 14px; background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 800; }
-.brand__paw { font-size: 1.4rem; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.brand__logo {
+  display: grid; place-items: center; width: 34px; height: 34px;
+  background: var(--coral); color: #fff; border-radius: 10px; font-size: 1.15rem;
+}
 .brand__name { font-size: 1.15rem; line-height: 1; color: var(--coral-dark); }
 .brand__name strong { display: block; font-size: .72rem; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
 
@@ -90,11 +93,21 @@ body {
 .chips__sep { flex: 0 0 1px; background: var(--line); margin: 4px 2px; align-self: stretch; }
 
 .chip {
-  flex: 0 0 auto; font: inherit; font-weight: 700; font-size: .88rem;
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-weight: 600; font-size: .88rem;
   white-space: nowrap; cursor: pointer; border: 1.5px solid var(--line);
   background: var(--surface); color: var(--ink);
   border-radius: 999px; padding: 7px 14px; transition: all .15s;
 }
+.chip i { font-size: 1.05rem; color: var(--muted); }
+.chip--active i { color: #fff; }
+
+/* Punto de estado: el color reemplaza a los emojis 🔴🟢🔵 */
+.chip__dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.chip__dot--perdido    { background: var(--perdido); }
+.chip__dot--encontrado { background: var(--encontrado); }
+.chip__dot--avistado   { background: var(--avistado); }
+.chip--active .chip__dot { background: #fff; }
 .chip:hover { border-color: var(--coral); }
 .chip--active { background: var(--ink); color: #fff; border-color: var(--ink); }
 .chip--perdido.chip--active    { background: var(--perdido);    border-color: var(--perdido); }
@@ -115,9 +128,9 @@ body {
   border: 3px solid #fff;
   animation: pin-pop .35s cubic-bezier(.18,.89,.32,1.28);
 }
-.pin__emoji {
+.pin__icon {
   position: absolute; inset: 0; display: grid; place-items: center;
-  transform: rotate(45deg); font-size: 1.05rem;
+  transform: rotate(45deg); font-size: 1.1rem; color: #fff;
 }
 .pin--resuelto { background: var(--reunidos); }
 @keyframes pin-pop { from { transform: rotate(-45deg) scale(0); } to { transform: rotate(-45deg) scale(1); } }
@@ -127,7 +140,7 @@ body {
   background: rgba(255,111,97,.25); border-radius: 50%;
 }
 .marker-cluster div {
-  background: var(--coral); color: #fff; font-family: 'Nunito'; font-weight: 800;
+  background: var(--coral); color: #fff; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 700;
   box-shadow: var(--shadow-sm);
 }
 
@@ -138,31 +151,24 @@ body {
   background: var(--coral); color: #fff; font: inherit; font-weight: 800; font-size: 1.05rem;
   border: none; border-radius: 999px; padding: 18px 28px; cursor: pointer;
   box-shadow: var(--shadow-lg); transition: transform .15s, background .2s;
-  animation: fab-in .6s cubic-bezier(.22,.61,.36,1), fab-pulse 2.4s ease-in-out 1.2s infinite;
+  animation: fab-in .45s cubic-bezier(.22,.61,.36,1);
 }
-.fab:hover { background: var(--coral-dark); transform: scale(1.05); }
-.fab:active { transform: scale(.95); }
+.fab:hover { background: var(--coral-dark); transform: scale(1.03); }
+.fab:active { transform: scale(.97); }
 .fab i { font-size: 1.6rem; }
 
-/* Rebote al cargar la página */
+/* Entrada sutil al cargar la página */
 @keyframes fab-in {
-  0%   { transform: scale(0) translateY(40px); opacity: 0; }
-  60%  { transform: scale(1.12) translateY(0); opacity: 1; }
-  100% { transform: scale(1); }
-}
-/* Pulso suave y constante para llamar la atención */
-@keyframes fab-pulse {
-  0%, 100% { box-shadow: var(--shadow-lg), 0 0 0 0 rgba(255,111,97,.5); }
-  50%      { box-shadow: var(--shadow-lg), 0 0 0 16px rgba(255,111,97,0); }
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
 }
 /* Respeta a quien prefiere menos movimiento */
 @media (prefers-reduced-motion: reduce) {
   .fab { animation: none; }
 }
 
-/* ---------- Patita decorativa (reutilizada en Historias) ---------- */
-.empty__art { font-size: 4rem; filter: grayscale(.2); animation: float 3s ease-in-out infinite; }
-@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+/* ---------- Ilustración de estado vacío (Historias) ---------- */
+.empty__art { font-size: 3rem; color: var(--coral); opacity: .5; }
 
 /* ---------- Ficha (bottom-sheet) ---------- */
 .backdrop {
@@ -196,7 +202,7 @@ body {
 .badge--reunidos { left: auto; right: 12px; background: var(--reunidos); }
 
 .detail__body { padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
-.detail__title { font-size: 1.5rem; font-weight: 900; }
+.detail__title { font-size: 1.5rem; font-weight: 800; }
 .detail__meta { color: var(--muted); margin-bottom: 14px; font-weight: 700; }
 .detail__list { display: grid; gap: 10px; margin-bottom: 18px; }
 .detail__row { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: baseline; }
@@ -262,7 +268,7 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 18px 12px; border-bottom: 1px solid var(--line);
 }
-.modal__head h2 { font-size: 1.25rem; font-weight: 900; }
+.modal__head h2 { font-size: 1.25rem; font-weight: 800; }
 .modal .sheet__close { position: static; box-shadow: none; background: var(--warm-bg); }
 
 /* ---------- Formulario ---------- */
@@ -357,7 +363,7 @@ textarea.input { resize: vertical; }
 }
 @keyframes sheet-up { from { transform: translateY(40px); } to { transform: translateY(0); } }
 .matches__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.matches__head h3 { font-size: 1.15rem; font-weight: 900; }
+.matches__head h3 { font-size: 1.15rem; font-weight: 800; }
 .matches__head .sheet__close { position: static; box-shadow: none; background: var(--warm-bg); }
 .matches__sub { color: var(--muted); font-size: .9rem; font-weight: 600; margin: 6px 0 14px; }
 
@@ -391,6 +397,11 @@ textarea.input { resize: vertical; }
 @media (max-width: 420px) { .hide-mobile { display: none; } }
 
 .detail__keepalive { width: 100%; margin-top: 10px; font-size: .9rem; }
+.detail__adminnote {
+  display: flex; align-items: center; gap: 6px; margin-top: 12px;
+  color: var(--muted); font-size: .85rem; font-weight: 600;
+}
+.badge i { vertical-align: -2px; }
 
 /* ---------- Historias felices ---------- */
 .historias__grid {

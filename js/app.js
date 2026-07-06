@@ -13,6 +13,7 @@ import { initMatching } from './matching.js';
 import { initHistorias } from './historias.js';
 import { initPWA } from './pwa.js';
 import { initAlertas } from './alerts.js';
+import { initSoporte } from './support.js';
 
 // Recarga reportes según los filtros actuales y los pinta en el mapa.
 async function recargar() {
@@ -34,6 +35,7 @@ function init() {
   initMatching();
   initHistorias();
   initAlertas();
+  initSoporte();
   initPWA();
 
   // Si se abrió con ?reporte=ID (enlace compartido), abre esa ficha.

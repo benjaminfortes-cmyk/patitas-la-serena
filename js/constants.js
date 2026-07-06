@@ -4,15 +4,16 @@
 // ============================================================================
 
 export const KIND_META = {
-  perdido:    { label: 'Perdido',    color: '#EF4444', emoji: '🔴', verbo: 'busca a' },
-  encontrado: { label: 'Encontrado', color: '#16A34A', emoji: '🟢', verbo: 'resguardó a' },
-  avistado:   { label: 'Avistado',   color: '#2563EB', emoji: '🔵', verbo: 'vio a' },
+  perdido:    { label: 'Perdido',    color: '#EF4444', verbo: 'busca a' },
+  encontrado: { label: 'Encontrado', color: '#16A34A', verbo: 'resguardó a' },
+  avistado:   { label: 'Avistado',   color: '#2563EB', verbo: 'vio a' },
 };
 
+// `icon` es el nombre del ícono Phosphor que representa al animal.
 export const ANIMAL_META = {
-  perro: { label: 'Perro', emoji: '🐶' },
-  gato:  { label: 'Gato',  emoji: '🐱' },
-  otro:  { label: 'Otro',  emoji: '🐾' },
+  perro: { label: 'Perro', icon: 'ph-dog' },
+  gato:  { label: 'Gato',  icon: 'ph-cat' },
+  otro:  { label: 'Otro',  icon: 'ph-paw-print' },
 };
 
 export const AGE_OPTIONS = [

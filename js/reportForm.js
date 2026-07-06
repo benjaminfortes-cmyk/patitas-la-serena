@@ -84,7 +84,7 @@ function segmented(group, onSet) {
 async function abrir(report) {
   // Puerta de autenticación: ver el mapa es libre, publicar requiere sesión.
   if (isConfigured && !getUser()) {
-    toast('Inicia sesión con Google para publicar 🐾', 'info');
+    toast('Inicia sesión con Google para publicar.', 'info');
     return signIn();
   }
 
@@ -292,13 +292,13 @@ async function onSubmit(e) {
       // ---- Edición ----
       await guardarEdicion(datos);
       cerrar();
-      toast('Cambios guardados ✏️', 'exito');
+      toast('Cambios guardados.', 'exito');
       onPublished?.();
     } else {
       // ---- Nuevo reporte ----
       const nuevo = !isConfigured ? await publicarDemo(datos) : await publicarReal(datos);
       cerrar();
-      toast('¡Reporte publicado! Gracias por ayudar 🧡', 'exito');
+      toast('¡Reporte publicado! Gracias por ayudar.', 'exito');
       flyTo(datos.lat, datos.lng, 16);
       onPublished?.();
       // Matching inteligente: busca coincidencias cercanas del tipo opuesto.

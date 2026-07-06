@@ -8,9 +8,19 @@ import { supabase, isConfigured } from './supabase.js';
 import { escapeHtml } from './ui.js';
 
 let currentUser = null;
+let esAdmin = false;
 const listeners = new Set();
 
 export function getUser() { return currentUser; }
+export function isAdminUser() { return esAdmin; }
+
+// Consulta al backend si el usuario actual tiene rol de administrador.
+// La función is_admin() vive en la base de datos y usa la tabla profiles.
+async function refreshAdmin() {
+  if (!isConfigured || !currentUser) { esAdmin = false; return; }
+  const { data, error } = await supabase.rpc('is_admin');
+  esAdmin = !error && data === true;
+}
 
 // Suscribe un callback a cambios de sesión (se llama de inmediato con el estado actual).
 export function onAuthChange(cb) { listeners.add(cb); cb(currentUser); }
@@ -21,10 +31,12 @@ export async function initAuth() {
 
   const { data } = await supabase.auth.getSession();
   currentUser = data.session?.user ?? null;
+  await refreshAdmin();
   emit();
 
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange(async (_event, session) => {
     currentUser = session?.user ?? null;
+    await refreshAdmin();
     emit();
   });
 }
@@ -44,16 +56,21 @@ export async function signIn() {
 }
 
 export async function signOut() {
-  if (!isConfigured) { currentUser = null; emit(); return; }
+  if (!isConfigured) { currentUser = null; esAdmin = false; emit(); return; }
   await supabase.auth.signOut();
 }
 
-// Primer nombre para mostrar en la barra.
+// Primer nombre para mostrar en la barra, con formato prolijo:
+// - Si hay nombre de Google, usa el primero (capitalizado).
+// - Si solo hay correo, usa lo que va antes del @ (sin puntos ni números raros).
 export function displayName() {
   const u = currentUser;
   if (!u) return null;
-  const n = u.user_metadata?.full_name || u.user_metadata?.name || u.email || 'Tú';
-  return n.split(' ')[0];
+  let n = u.user_metadata?.full_name || u.user_metadata?.name || '';
+  if (!n && u.email) n = u.email.split('@')[0].replace(/[._\-+0-9]+/g, ' ');
+  const primero = n.trim().split(/\s+/)[0];
+  if (!primero) return 'Mi cuenta';
+  return primero.charAt(0).toUpperCase() + primero.slice(1).toLowerCase();
 }
 
 // ---- Interfaz del botón de sesión ----------------------------------------

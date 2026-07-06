@@ -23,21 +23,21 @@ async function abrir() {
           <button class="historia" data-id="${escapeHtml(r.id)}">
             <div class="historia__img">
               <img src="${escapeHtml(r.photo_url)}" alt="Foto de ${escapeHtml(tituloReporte(r))}" loading="lazy" />
-              <span class="badge badge--reunidos">❤️ ¡Reunidos!</span>
+              <span class="badge badge--reunidos"><i class="ph-fill ph-heart"></i> Reunidos</span>
             </div>
             <span class="historia__title">${escapeHtml(r.pet_name || nombreAnimal(r))}</span>
             <small class="historia__when">${r.resolved_at ? 'Reunidos ' + tiempoRelativo(r.resolved_at) : ''}</small>
           </button>`).join('')}
        </div>`
     : `<div class="historias__empty">
-        <div class="empty__art">🐾</div>
+        <div class="empty__art"><i class="ph ph-paw-print"></i></div>
         <p>Aún no hay reencuentros registrados.<br>¡Ojalá el primero sea pronto!</p>
        </div>`;
 
   overlay.innerHTML = `
     <div class="matches" role="dialog" aria-modal="true" aria-label="Historias felices">
       <div class="matches__head">
-        <h3>Historias felices 🧡</h3>
+        <h3>Historias felices</h3>
         <button class="sheet__close" data-close aria-label="Cerrar">&times;</button>
       </div>
       <p class="matches__sub">Mascotas que volvieron a casa gracias a la comunidad.</p>
