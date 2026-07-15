@@ -67,8 +67,17 @@ body {
   .topbar__unis { gap: 7px; margin-left: 8px; padding-left: 8px; }
   .uni-logo { height: 24px; }
 }
-@media (max-width: 400px) {
-  .topbar__unis { display: none; }  /* en pantallas muy chicas no caben junto al resto */
+@media (max-width: 600px) {
+  .topbar__unis { display: none; }  /* en móvil los logos pasan a la franja "Nosotros:" */
+}
+
+/* Logos "Nosotros:" dentro de la franja informativa (solo visibles en móvil) */
+.infobar__unis { display: none; align-items: center; gap: 8px; }
+.infobar__unislabel { font-weight: 800; color: var(--ink); font-size: .82rem; }
+.infobar__unis .uni-logo { height: 22px; }
+@media (max-width: 600px) {
+  .infobar { flex-wrap: wrap; }
+  .infobar__unis { display: inline-flex; flex: 1 1 100%; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
 }
 
 /* ---------- Botones ---------- */
