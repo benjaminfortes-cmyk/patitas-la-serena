@@ -1,7 +1,7 @@
 {
   "name": "Busca Huellitas",
   "short_name": "Huellitas",
-  "description": "Mapa colaborativo de mascotas perdidas, encontradas y avistadas en La Serena.",
+  "description": "Mapa colaborativo de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo.",
   "lang": "es-CL",
   "start_url": "./",
   "scope": "./",

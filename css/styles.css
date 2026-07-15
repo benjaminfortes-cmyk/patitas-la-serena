@@ -27,6 +27,7 @@
 
   --topbar-h: 56px;
   --filters-h: 104px;
+  --infobar-h: 42px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,6 +56,23 @@ body {
 }
 .brand__name { font-size: 1.1rem; line-height: 1; color: var(--coral-dark); white-space: nowrap; }
 .brand__name strong { display: block; font-size: .72rem; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+
+/* ---------- Logos de universidades ---------- */
+.topbar__unis {
+  display: flex; align-items: center; gap: 10px;
+  margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--line);
+}
+.uni-logo { display: block; width: auto; }
+.uni-logo--uls { height: 30px; }
+.uni-logo--ucn { height: 26px; }   /* un poco más pequeño, como se pidió */
+@media (max-width: 560px) {
+  .topbar__unis { gap: 7px; margin-left: 8px; padding-left: 8px; }
+  .uni-logo--uls { height: 24px; }
+  .uni-logo--ucn { height: 21px; }
+}
+@media (max-width: 400px) {
+  .topbar__unis { display: none; }  /* en pantallas muy chicas no caben junto al resto */
+}
 
 /* ---------- Botones ---------- */
 .btn {
@@ -114,8 +132,31 @@ body {
 .chip--encontrado.chip--active { background: var(--encontrado); border-color: var(--encontrado); }
 .chip--avistado.chip--active   { background: var(--avistado);   border-color: var(--avistado); }
 
+/* ---------- Franja informativa ---------- */
+.infobar {
+  position: fixed; left: 0; right: 0; z-index: 850;
+  top: calc(var(--topbar-h) + var(--filters-h));
+  display: flex; align-items: center; gap: 14px;
+  padding: 9px 16px; background: var(--surface);
+  border-bottom: 1px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.infobar__text {
+  flex: 1; min-width: 0;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px;
+  font-size: .86rem; color: var(--muted); line-height: 1.35;
+}
+.infobar__text strong { color: var(--ink); font-weight: 800; }
+.infobar__steps { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; font-weight: 600; }
+.infobar__steps i { font-size: .82rem; color: var(--coral); }
+.infobar__close {
+  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: var(--warm-bg); color: var(--muted);
+  font-size: 1.15rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s;
+}
+.infobar__close:hover { background: var(--coral-soft); color: var(--coral-dark); }
+
 /* ---------- Mapa ---------- */
-.map-wrap { position: absolute; inset: calc(var(--topbar-h) + var(--filters-h)) 0 0 0; }
+.map-wrap { position: absolute; inset: calc(var(--topbar-h) + var(--filters-h) + var(--infobar-h)) 0 0 0; }
 #map { width: 100%; height: 100%; background: #e8edf0; z-index: 1; }
 .leaflet-control-zoom { box-shadow: var(--shadow-sm) !important; border: none !important; }
 

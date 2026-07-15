@@ -37,6 +37,7 @@ function init() {
   initAlertas();
   initSoporte();
   initPWA();
+  initInfobar();
 
   // Si se abrió con ?reporte=ID (enlace compartido), abre esa ficha.
   abrirDesdeEnlace();
@@ -59,6 +60,33 @@ function init() {
 
   // Ajusta el mapa cuando la pantalla cambia de tamaño (orientación móvil).
   window.addEventListener('resize', () => getMap()?.invalidateSize());
+}
+
+// Franja informativa: mide su alto real para no tapar el mapa y permite ocultarla.
+// Se muestra por defecto (así siempre queda visible al entrar); si el usuario la
+// cierra, se recuerda en este dispositivo.
+function initInfobar() {
+  const bar = document.getElementById('infobar');
+  if (!bar) return;
+
+  const setAlto = (px) => document.documentElement.style.setProperty('--infobar-h', px + 'px');
+
+  if (localStorage.getItem('infobar-cerrada') === '1') {
+    bar.remove();
+    setAlto(0);
+    return;
+  }
+
+  const ajustar = () => { setAlto(bar.offsetHeight); getMap()?.invalidateSize(); };
+  ajustar();
+  window.addEventListener('resize', ajustar);
+
+  document.getElementById('infobar-close')?.addEventListener('click', () => {
+    bar.remove();
+    setAlto(0);
+    localStorage.setItem('infobar-cerrada', '1');
+    getMap()?.invalidateSize();
+  });
 }
 
 // Abre una ficha directamente si la URL trae ?reporte=ID (enlace compartido).
