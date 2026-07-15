@@ -68,16 +68,7 @@ body {
   .uni-logo { height: 24px; }
 }
 @media (max-width: 600px) {
-  .topbar__unis { display: none; }  /* en móvil los logos pasan a la franja "Nosotros:" */
-}
-
-/* Logos "Nosotros:" dentro de la franja informativa (solo visibles en móvil) */
-.infobar__unis { display: none; align-items: center; gap: 8px; }
-.infobar__unislabel { font-weight: 800; color: var(--ink); font-size: .82rem; }
-.infobar__unis .uni-logo { height: 22px; }
-@media (max-width: 600px) {
-  .infobar { flex-wrap: wrap; }
-  .infobar__unis { display: inline-flex; flex: 1 1 100%; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+  .topbar__unis { display: none; }  /* en móvil los logos quedan solo en la barra superior */
 }
 
 /* ---------- Botones ---------- */
@@ -138,28 +129,26 @@ body {
 .chip--encontrado.chip--active { background: var(--encontrado); border-color: var(--encontrado); }
 .chip--avistado.chip--active   { background: var(--avistado);   border-color: var(--avistado); }
 
-/* ---------- Franja informativa ---------- */
+/* ---------- Franja institucional (fija) ---------- */
 .infobar {
   position: fixed; left: 0; right: 0; z-index: 850;
   top: calc(var(--topbar-h) + var(--filters-h));
-  display: flex; align-items: center; gap: 14px;
-  padding: 9px 16px; background: var(--surface);
-  border-bottom: 1px solid var(--line); box-shadow: var(--shadow-sm);
+  padding: 9px 20px; text-align: center;
+  background: linear-gradient(135deg, #1f95b8 0%, #12667f 100%);
+  color: #fff;
 }
-.infobar__text {
-  flex: 1; min-width: 0;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px;
-  font-size: .86rem; color: var(--muted); line-height: 1.35;
+.infobar__lead {
+  font-weight: 800; font-size: .9rem; line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0,0,0,.12);
 }
-.infobar__text strong { color: var(--ink); font-weight: 800; }
-.infobar__steps { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; font-weight: 600; }
-.infobar__steps i { font-size: .82rem; color: var(--coral); }
-.infobar__close {
-  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
-  border: none; background: var(--warm-bg); color: var(--muted);
-  font-size: 1.15rem; line-height: 1; cursor: pointer; transition: background .15s, color .15s;
+.infobar__desc {
+  font-weight: 600; font-size: .82rem; line-height: 1.35;
+  color: rgba(255,255,255,.95); margin-top: 3px;
 }
-.infobar__close:hover { background: var(--coral-soft); color: var(--coral-dark); }
+@media (min-width: 768px) {
+  .infobar__lead { font-size: .95rem; }
+  .infobar__desc { font-size: .86rem; }
+}
 
 /* ---------- Mapa ---------- */
 .map-wrap { position: absolute; inset: calc(var(--topbar-h) + var(--filters-h) + var(--infobar-h)) 0 0 0; }
