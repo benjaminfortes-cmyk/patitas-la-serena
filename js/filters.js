@@ -27,15 +27,42 @@ function toggle(arr, value) {
 }
 
 export function initFilters() {
-  // Especie (perro/gato/otro): botones de selección múltiple
-  document.querySelectorAll('[data-filter="animal"]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      toggle(filterState.animals, btn.dataset.value);
-      btn.classList.toggle('chip--active');
-      btn.setAttribute('aria-pressed', btn.classList.contains('chip--active'));
-      onChange();
+  // Animal (desplegable con íconos, una opción; vacío = todos)
+  const ddAnimal = document.getElementById('dd-animal');
+  if (ddAnimal) {
+    const trigger = ddAnimal.querySelector('.dropdown__trigger');
+    const panel = ddAnimal.querySelector('.dropdown__panel');
+    const label = ddAnimal.querySelector('.dropdown__label');
+    const triggerIcon = trigger.querySelector('i');
+
+    const abrir = (v) => {
+      panel.hidden = !v;
+      trigger.setAttribute('aria-expanded', String(v));
+      if (v) {
+        const r = trigger.getBoundingClientRect();
+        panel.style.top = `${r.bottom + 6}px`;
+        panel.style.left = `${Math.max(8, r.left)}px`;
+      }
+    };
+
+    trigger.addEventListener('click', (e) => { e.stopPropagation(); abrir(panel.hidden); });
+    panel.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', () => abrir(false));
+
+    ddAnimal.querySelectorAll('.dropdown__opt').forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const val = opt.dataset.animal;
+        filterState.animals = val ? [val] : [];
+        ddAnimal.querySelectorAll('.dropdown__opt').forEach((o) =>
+          o.classList.toggle('dropdown__opt--active', o === opt));
+        // el trigger refleja lo elegido (ícono + nombre)
+        label.textContent = val ? opt.textContent.trim() : 'Animal';
+        triggerIcon.className = val ? (opt.querySelector('i').className) : 'ph ph-paw-print';
+        abrir(false);
+        onChange();
+      });
     });
-  });
+  }
 
   // Estado (desplegable: una opción; vacío = todos)
   const estado = document.getElementById('filter-estado');

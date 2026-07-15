@@ -63,7 +63,13 @@
     </div>
     <p class="infobar__lead">Somos Busca Huellitas, un equipo de estudiantes universitarios de la Universidad de La Serena y la Universidad Católica del Norte.</p>
     <p class="infobar__desc">Un mapa comunitario y gratuito de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo.</p>
-    <p class="infobar__how">Cómo funciona: primero regístrate con Google. Después publica tu reporte con foto y ubicación, o busca en el mapa y contacta directo por WhatsApp.</p>
+    <p class="infobar__cita">«Cada mascota merece volver a casa. Y cada familia, el alivio de reencontrarla o el amor de una nueva.»</p>
+    <p class="infobar__howtitle">¿Cómo funciona?</p>
+    <ol class="infobar__pasos">
+      <li><b>Regístrate</b> con tu cuenta de Google.</li>
+      <li>¿Perdiste a tu mascota? <b>Búscala en el mapa</b>. ¿La encontraste o quieres avisar? <b>Publica un reporte</b> con foto y ubicación llenando el formulario.</li>
+      <li><b>Espera el contacto:</b> quien la vea te escribirá directo por WhatsApp.</li>
+    </ol>
     <button class="infobar__cta" id="btn-ir-mapa" type="button"><i class="ph ph-map-trifold" aria-hidden="true"></i> Ir al mapa</button>
   </div>
 
@@ -76,9 +82,19 @@
     </div>
 
     <div class="chips" role="group" aria-label="Filtros">
-      <button class="chip" data-filter="animal" data-value="perro" aria-pressed="false"><i class="ph ph-dog" aria-hidden="true"></i>Perro</button>
-      <button class="chip" data-filter="animal" data-value="gato"  aria-pressed="false"><i class="ph ph-cat" aria-hidden="true"></i>Gato</button>
-      <button class="chip" data-filter="animal" data-value="otro"  aria-pressed="false"><i class="ph ph-paw-print" aria-hidden="true"></i>Otro</button>
+      <div class="dropdown" id="dd-animal">
+        <button class="dropdown__trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+          <i class="ph ph-paw-print" aria-hidden="true"></i>
+          <span class="dropdown__label">Animal</span>
+          <i class="ph ph-caret-down dropdown__caret" aria-hidden="true"></i>
+        </button>
+        <div class="dropdown__panel" role="listbox" hidden>
+          <button class="dropdown__opt dropdown__opt--active" type="button" data-animal="" role="option"><i class="ph ph-list-dashes" aria-hidden="true"></i> Todos</button>
+          <button class="dropdown__opt" type="button" data-animal="perro" role="option"><i class="ph ph-dog" aria-hidden="true"></i> Perro</button>
+          <button class="dropdown__opt" type="button" data-animal="gato"  role="option"><i class="ph ph-cat" aria-hidden="true"></i> Gato</button>
+          <button class="dropdown__opt" type="button" data-animal="otro"  role="option"><i class="ph ph-paw-print" aria-hidden="true"></i> Otro</button>
+        </div>
+      </div>
       <span class="select">
         <select id="filter-estado" aria-label="Estado del reporte">
           <option value="">Estado: todos</option>
@@ -111,21 +127,22 @@
 
   <!-- BARRA DE NAVEGACIÓN INFERIOR (móvil) -->
   <nav class="tabbar" aria-label="Navegación principal">
-    <button class="tabbar__item" type="button" data-tab="mapa">
-      <i class="ph ph-map-trifold" aria-hidden="true"></i><span>Mapa</span>
-    </button>
-    <button class="tabbar__item" type="button" data-tab="historias">
-      <i class="ph ph-heart" aria-hidden="true"></i><span>Historias</span>
-    </button>
+    <div class="tabbar__side">
+      <button class="tabbar__item" type="button" data-tab="mapa">
+        <i class="ph ph-map-trifold" aria-hidden="true"></i><span>Mapa</span>
+      </button>
+      <button class="tabbar__item" type="button" data-tab="historias">
+        <i class="ph ph-heart" aria-hidden="true"></i><span>Historias</span>
+      </button>
+    </div>
     <button class="tabbar__report" type="button" data-tab="reportar" aria-label="Publicar reporte">
       <i class="ph ph-plus" aria-hidden="true"></i>
     </button>
-    <button class="tabbar__item" type="button" data-tab="soporte">
-      <i class="ph ph-lifebuoy" aria-hidden="true"></i><span>Soporte</span>
-    </button>
-    <button class="tabbar__item" type="button" data-tab="cuenta">
-      <i class="ph ph-user" aria-hidden="true"></i><span>Cuenta</span>
-    </button>
+    <div class="tabbar__side">
+      <button class="tabbar__item" type="button" data-tab="soporte">
+        <i class="ph ph-lifebuoy" aria-hidden="true"></i><span>Soporte</span>
+      </button>
+    </div>
   </nav>
 
   <!-- FICHA DEL REPORTE  -->

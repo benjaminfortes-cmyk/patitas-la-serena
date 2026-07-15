@@ -130,6 +130,36 @@ body {
   pointer-events: none; color: var(--muted); font-size: .85rem;
 }
 
+/* Desplegable con íconos (filtro Animal) */
+.dropdown { position: relative; display: inline-flex; flex: 0 0 auto; }
+.dropdown__trigger {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-weight: 600; font-size: .88rem; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: 999px; padding: 7px 12px; cursor: pointer; white-space: nowrap;
+  transition: border-color .15s;
+}
+.dropdown__trigger:hover { border-color: var(--coral); }
+.dropdown__trigger > i:first-child { color: var(--muted); font-size: 1.05rem; }
+.dropdown__caret { font-size: .8rem; color: var(--muted); }
+.dropdown__panel {
+  position: fixed; z-index: 1300;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: var(--shadow-md); padding: 6px; min-width: 168px;
+  display: grid; gap: 2px; animation: toast-in .15s ease;
+}
+.dropdown__panel[hidden] { display: none; }
+.dropdown__opt {
+  display: flex; align-items: center; gap: 10px;
+  font: inherit; font-weight: 700; font-size: .9rem; color: var(--ink);
+  background: none; border: none; cursor: pointer; text-align: left;
+  padding: 9px 12px; border-radius: 9px;
+}
+.dropdown__opt i { font-size: 1.2rem; color: var(--muted); }
+.dropdown__opt:hover { background: var(--warm-bg); }
+.dropdown__opt--active { background: var(--coral-soft); color: var(--coral-dark); }
+.dropdown__opt--active i { color: var(--coral-dark); }
+
 /* ---------- Mini-hero institucional (se desliza con el scroll) ---------- */
 .infobar {
   padding: 12px 20px 14px; text-align: center;
@@ -138,11 +168,29 @@ body {
 }
 .infobar__logos { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; }
 .infobar__chip {
-  width: 38px; height: 38px; border-radius: 50%; background: #fff;
-  display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0,0,0,.18);
+  width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.18);
 }
-.infobar__chip img { width: 30px; height: 30px; object-fit: contain; display: block; }
-.infobar__how { font-weight: 500; font-size: .8rem; line-height: 1.4; color: rgba(255,255,255,.9); margin-top: 6px; }
+.infobar__chip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.infobar__cita {
+  font-style: italic; font-size: .84rem; line-height: 1.45; margin: 10px auto 0;
+  max-width: 620px; color: #fff; opacity: .96;
+}
+.infobar__howtitle { font-weight: 800; font-size: .88rem; margin-top: 14px; }
+.infobar__pasos {
+  list-style: none; counter-reset: paso; max-width: 620px; margin: 8px auto 0;
+  text-align: left; display: grid; gap: 7px;
+}
+.infobar__pasos li {
+  counter-increment: paso; position: relative; padding-left: 30px;
+  font-size: .82rem; font-weight: 500; line-height: 1.4; color: rgba(255,255,255,.95);
+}
+.infobar__pasos li::before {
+  content: counter(paso); position: absolute; left: 0; top: 0;
+  width: 21px; height: 21px; border-radius: 50%; background: rgba(255,255,255,.22);
+  color: #fff; font-weight: 800; font-size: .72rem; display: grid; place-items: center;
+}
+.infobar__pasos b { font-weight: 800; color: #fff; }
 .infobar__cta {
   margin-top: 12px; font: inherit; font-weight: 800; font-size: .9rem;
   background: #fff; color: #10617c; border: none; border-radius: 999px;
@@ -163,7 +211,7 @@ body {
 @media (min-width: 768px) {
   .infobar__lead { font-size: .95rem; }
   .infobar__desc { font-size: .86rem; }
-  .infobar__how { font-size: .84rem; }
+  .infobar__pasos li, .infobar__cita { font-size: .86rem; }
 }
 
 /* ---------- Mapa ---------- */
@@ -232,6 +280,7 @@ body {
   background: var(--surface); border-top: 1px solid var(--line);
   box-shadow: 0 -4px 16px rgba(42, 35, 32, .08);
 }
+.tabbar__side { flex: 1; display: flex; align-items: center; justify-content: space-around; height: 100%; }
 .tabbar__item {
   flex: 1; height: 100%;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
@@ -254,7 +303,7 @@ body {
 
 @media (max-width: 640px) {
   .tabbar { display: flex; }
-  .topbar__actions { display: none; }      /* la navegación pasa a la barra de abajo */
+  #btn-historias, #btn-soporte { display: none; }  /* pasan a la barra inferior; queda Ingresar */
   .fab { display: none; }                   /* el botón central reemplaza al flotante */
   .leaflet-bottom { bottom: var(--tabbar-h); }  /* controles del mapa sobre la barra */
   .toasts { bottom: calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom)); }

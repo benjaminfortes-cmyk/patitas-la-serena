@@ -59,7 +59,6 @@ function init() {
   document.querySelector('[data-tab="reportar"]')?.addEventListener('click', () => window.openReportForm?.());
   document.querySelector('[data-tab="historias"]')?.addEventListener('click', () => document.getElementById('btn-historias')?.click());
   document.querySelector('[data-tab="soporte"]')?.addEventListener('click', () => document.getElementById('btn-soporte')?.click());
-  document.querySelector('[data-tab="cuenta"]')?.addEventListener('click', () => document.getElementById('btn-login')?.click());
 
   // Aviso de modo demo
   if (!isConfigured) {
