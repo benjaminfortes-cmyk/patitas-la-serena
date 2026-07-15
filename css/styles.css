@@ -27,24 +27,22 @@
 
   --topbar-h: 56px;
   --filters-h: 104px;
-  --infobar-h: 42px;
+  --tabbar-h: 62px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body { height: 100%; }
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   color: var(--ink);
   background: var(--warm-bg);
   -webkit-font-smoothing: antialiased;
-  overflow: hidden; /* el mapa maneja el scroll */
+  overflow-x: clip;  /* el documento hace scroll vertical; evitamos el horizontal */
 }
 
 /* ---------- Encabezado ---------- */
 .topbar {
-  position: fixed; inset: 0 0 auto 0; height: var(--topbar-h); z-index: 1000;
+  position: sticky; top: 0; height: var(--topbar-h); z-index: 1000;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 14px; background: var(--surface);
   box-shadow: var(--shadow-sm);
@@ -56,20 +54,6 @@ body {
 }
 .brand__name { font-size: 1.1rem; line-height: 1; color: var(--coral-dark); white-space: nowrap; }
 .brand__name strong { display: block; font-size: .72rem; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
-
-/* ---------- Logos de universidades ---------- */
-.topbar__unis {
-  display: flex; align-items: center; gap: 10px;
-  margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--line);
-}
-.uni-logo { display: block; width: auto; height: 30px; }
-@media (max-width: 560px) {
-  .topbar__unis { gap: 7px; margin-left: 8px; padding-left: 8px; }
-  .uni-logo { height: 24px; }
-}
-@media (max-width: 600px) {
-  .topbar__unis { display: none; }  /* en móvil los logos quedan solo en la barra superior */
-}
 
 /* ---------- Botones ---------- */
 .btn {
@@ -88,7 +72,8 @@ body {
 
 /* ---------- Filtros ---------- */
 .filters {
-  position: fixed; top: var(--topbar-h); left: 0; right: 0; z-index: 900;
+  position: sticky; top: var(--topbar-h); z-index: 900;
+  scroll-margin-top: var(--topbar-h);
   background: var(--surface); border-bottom: 1px solid var(--line);
   padding: 10px 0 12px; box-shadow: var(--shadow-sm);
 }
@@ -129,14 +114,44 @@ body {
 .chip--encontrado.chip--active { background: var(--encontrado); border-color: var(--encontrado); }
 .chip--avistado.chip--active   { background: var(--avistado);   border-color: var(--avistado); }
 
-/* ---------- Franja institucional (fija) ---------- */
+/* Filtros desplegables (Estado / Tiempo) */
+.select { position: relative; display: inline-flex; flex: 0 0 auto; }
+.select select {
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  font: inherit; font-weight: 600; font-size: .88rem; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: 999px; padding: 7px 30px 7px 14px; cursor: pointer;
+  white-space: nowrap; transition: border-color .15s;
+}
+.select select:hover { border-color: var(--coral); }
+.select select:focus { outline: none; border-color: var(--coral); }
+.select::after {
+  content: '\25BE'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: var(--muted); font-size: .85rem;
+}
+
+/* ---------- Mini-hero institucional (se desliza con el scroll) ---------- */
 .infobar {
-  position: fixed; left: 0; right: 0; z-index: 850;
-  top: calc(var(--topbar-h) + var(--filters-h));
-  padding: 9px 20px; text-align: center;
+  padding: 12px 20px 14px; text-align: center;
   background: linear-gradient(135deg, #1f95b8 0%, #12667f 100%);
   color: #fff;
 }
+.infobar__logos { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; }
+.infobar__chip {
+  width: 38px; height: 38px; border-radius: 50%; background: #fff;
+  display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0,0,0,.18);
+}
+.infobar__chip img { width: 30px; height: 30px; object-fit: contain; display: block; }
+.infobar__how { font-weight: 500; font-size: .8rem; line-height: 1.4; color: rgba(255,255,255,.9); margin-top: 6px; }
+.infobar__cta {
+  margin-top: 12px; font: inherit; font-weight: 800; font-size: .9rem;
+  background: #fff; color: #10617c; border: none; border-radius: 999px;
+  padding: 9px 22px; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.18);
+  display: inline-flex; align-items: center; gap: 8px; transition: transform .12s, background .15s;
+}
+.infobar__cta:hover { background: #eaf9ff; }
+.infobar__cta:active { transform: scale(.97); }
+.infobar__cta i { font-size: 1.1em; }
 .infobar__lead {
   font-weight: 800; font-size: .9rem; line-height: 1.3;
   text-shadow: 0 1px 2px rgba(0,0,0,.12);
@@ -148,10 +163,15 @@ body {
 @media (min-width: 768px) {
   .infobar__lead { font-size: .95rem; }
   .infobar__desc { font-size: .86rem; }
+  .infobar__how { font-size: .84rem; }
 }
 
 /* ---------- Mapa ---------- */
-.map-wrap { position: absolute; inset: calc(var(--topbar-h) + var(--filters-h) + var(--infobar-h)) 0 0 0; }
+.map-wrap {
+  position: relative;
+  height: calc(100vh - var(--topbar-h) - var(--filters-h));
+  height: calc(100dvh - var(--topbar-h) - var(--filters-h));
+}
 #map { width: 100%; height: 100%; background: #e8edf0; z-index: 1; }
 .leaflet-control-zoom { box-shadow: var(--shadow-sm) !important; border: none !important; }
 
@@ -201,6 +221,43 @@ body {
 /* Respeta a quien prefiere menos movimiento */
 @media (prefers-reduced-motion: reduce) {
   .fab { animation: none; }
+}
+
+/* ---------- Barra de navegación inferior (móvil) ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1200;
+  display: none; align-items: center; justify-content: space-around;
+  height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface); border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 16px rgba(42, 35, 32, .08);
+}
+.tabbar__item {
+  flex: 1; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  background: none; border: none; cursor: pointer; font: inherit;
+  color: var(--muted); font-size: .66rem; font-weight: 700;
+}
+.tabbar__item i { font-size: 1.45rem; }
+.tabbar__item:active { color: var(--coral-dark); transform: scale(.94); }
+.tabbar__report {
+  flex: 0 0 auto; margin-top: -26px;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: var(--coral); color: #fff; border: 4px solid var(--surface);
+  display: grid; place-items: center; cursor: pointer;
+  box-shadow: 0 8px 18px rgba(255, 111, 97, .45);
+  transition: transform .12s, background .2s;
+}
+.tabbar__report i { font-size: 1.9rem; }
+.tabbar__report:hover { background: var(--coral-dark); }
+.tabbar__report:active { transform: scale(.94); }
+
+@media (max-width: 640px) {
+  .tabbar { display: flex; }
+  .topbar__actions { display: none; }      /* la navegación pasa a la barra de abajo */
+  .fab { display: none; }                   /* el botón central reemplaza al flotante */
+  .leaflet-bottom { bottom: var(--tabbar-h); }  /* controles del mapa sobre la barra */
+  .toasts { bottom: calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom)); }
 }
 
 /* ---------- Ilustración de estado vacío (Historias) ---------- */

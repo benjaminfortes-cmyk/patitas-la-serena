@@ -27,28 +27,28 @@ function toggle(arr, value) {
 }
 
 export function initFilters() {
-  // Chips de estado y de animal (atributo data-filter / data-value)
-  document.querySelectorAll('[data-filter="kind"], [data-filter="animal"]').forEach((btn) => {
+  // Especie (perro/gato/otro): botones de selección múltiple
+  document.querySelectorAll('[data-filter="animal"]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const arr = btn.dataset.filter === 'kind' ? filterState.kinds : filterState.animals;
-      toggle(arr, btn.dataset.value);
+      toggle(filterState.animals, btn.dataset.value);
       btn.classList.toggle('chip--active');
       btn.setAttribute('aria-pressed', btn.classList.contains('chip--active'));
       onChange();
     });
   });
 
-  // Selector de antigüedad (radio-like: solo uno activo)
-  document.querySelectorAll('[data-filter="age"]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      filterState.age = btn.dataset.value;
-      document.querySelectorAll('[data-filter="age"]').forEach((b) => {
-        const activo = b === btn;
-        b.classList.toggle('chip--active', activo);
-        b.setAttribute('aria-pressed', activo);
-      });
-      onChange();
-    });
+  // Estado (desplegable: una opción; vacío = todos)
+  const estado = document.getElementById('filter-estado');
+  estado?.addEventListener('change', () => {
+    filterState.kinds = estado.value ? [estado.value] : [];
+    onChange();
+  });
+
+  // Tiempo (desplegable: una opción)
+  const tiempo = document.getElementById('filter-tiempo');
+  tiempo?.addEventListener('change', () => {
+    filterState.age = tiempo.value;
+    onChange();
   });
 
   // Buscador

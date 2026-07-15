@@ -112,8 +112,15 @@ function toggleMenu(btn) {
   });
 
   const r = btn.getBoundingClientRect();
-  menu.style.top = `${r.bottom + 6}px`;
-  menu.style.right = `${window.innerWidth - r.right}px`;
+  if (r.width === 0) {
+    // El botón de arriba está oculto (móvil): mostramos el menú sobre la barra inferior.
+    menu.style.bottom = 'calc(var(--tabbar-h, 62px) + 12px + env(safe-area-inset-bottom))';
+    menu.style.left = '50%';
+    menu.style.transform = 'translateX(-50%)';
+  } else {
+    menu.style.top = `${r.bottom + 6}px`;
+    menu.style.right = `${window.innerWidth - r.right}px`;
+  }
 
   menu.querySelector('[data-signout]').addEventListener('click', async () => {
     await signOut();

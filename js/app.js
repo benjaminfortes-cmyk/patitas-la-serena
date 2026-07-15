@@ -37,7 +37,6 @@ function init() {
   initAlertas();
   initSoporte();
   initPWA();
-  initInfobar();
 
   // Si se abrió con ?reporte=ID (enlace compartido), abre esa ficha.
   abrirDesdeEnlace();
@@ -51,6 +50,17 @@ function init() {
     window.openReportForm?.();
   });
 
+  // "Ir al mapa": baja al final (mini-hero fuera; barra + filtros arriba, mapa completo).
+  const irAlMapa = () => window.scrollTo({ top: document.documentElement.scrollHeight });
+  document.getElementById('btn-ir-mapa')?.addEventListener('click', irAlMapa);
+
+  // Barra de navegación inferior (móvil): reutiliza los controles ya existentes.
+  document.querySelector('[data-tab="mapa"]')?.addEventListener('click', irAlMapa);
+  document.querySelector('[data-tab="reportar"]')?.addEventListener('click', () => window.openReportForm?.());
+  document.querySelector('[data-tab="historias"]')?.addEventListener('click', () => document.getElementById('btn-historias')?.click());
+  document.querySelector('[data-tab="soporte"]')?.addEventListener('click', () => document.getElementById('btn-soporte')?.click());
+  document.querySelector('[data-tab="cuenta"]')?.addEventListener('click', () => document.getElementById('btn-login')?.click());
+
   // Aviso de modo demo
   if (!isConfigured) {
     toast('Modo demo: configura Supabase para usar datos reales.', 'info');
@@ -60,18 +70,6 @@ function init() {
 
   // Ajusta el mapa cuando la pantalla cambia de tamaño (orientación móvil).
   window.addEventListener('resize', () => getMap()?.invalidateSize());
-}
-
-// Franja institucional fija: solo mide su alto real para que no tape el mapa.
-function initInfobar() {
-  const bar = document.getElementById('infobar');
-  if (!bar) return;
-  const ajustar = () => {
-    document.documentElement.style.setProperty('--infobar-h', bar.offsetHeight + 'px');
-    getMap()?.invalidateSize();
-  };
-  ajustar();
-  window.addEventListener('resize', ajustar);
 }
 
 // Abre una ficha directamente si la URL trae ?reporte=ID (enlace compartido).

@@ -38,10 +38,6 @@
       <span class="brand__logo" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
       <span class="brand__name">Busca Huellitas<strong>Región Coquimbo</strong></span>
     </div>
-    <div class="topbar__unis" aria-label="Respaldo institucional">
-      <img class="uni-logo" src="assets/img/uls.png" alt="Universidad de La Serena" loading="lazy" />
-      <img class="uni-logo" src="assets/img/cachupines.png" alt="Cachupines" loading="lazy" />
-    </div>
     <p class="topbar__tagline hide-mobile">Mapa comunitario y gratuito para reportar y encontrar mascotas perdidas en la Región de Coquimbo, Chile</p>
     <div class="topbar__actions">
       <button id="btn-historias" class="btn btn--ghost btn--sm" aria-label="Historias felices">
@@ -59,6 +55,18 @@
     </div>
   </header>
 
+  <!-- MINI-HERO INSTITUCIONAL (se desliza con el scroll) -->
+  <div class="infobar" id="infobar">
+    <div class="infobar__logos">
+      <span class="infobar__chip"><img src="assets/img/uls.png" alt="Universidad de La Serena" loading="lazy" /></span>
+      <span class="infobar__chip"><img src="assets/img/cachupines.png" alt="Cachupines" loading="lazy" /></span>
+    </div>
+    <p class="infobar__lead">Somos Busca Huellitas, un equipo de estudiantes universitarios de la Universidad de La Serena y la Universidad Católica del Norte.</p>
+    <p class="infobar__desc">Un mapa comunitario y gratuito de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo.</p>
+    <p class="infobar__how">Cómo funciona: primero regístrate con Google. Después publica tu reporte con foto y ubicación, o busca en el mapa y contacta directo por WhatsApp.</p>
+    <button class="infobar__cta" id="btn-ir-mapa" type="button"><i class="ph ph-map-trifold" aria-hidden="true"></i> Ir al mapa</button>
+  </div>
+
   <!-- BARRA DE FILTROS -->
   <section class="filters" aria-label="Filtros">
     <div class="search">
@@ -67,38 +75,58 @@
              aria-label="Buscar reportes" />
     </div>
 
-    <div class="chips" role="group" aria-label="Estado del reporte">
-      <button class="chip chip--perdido"    data-filter="kind" data-value="perdido"    aria-pressed="false"><span class="chip__dot chip__dot--perdido" aria-hidden="true"></span>Perdido</button>
-      <button class="chip chip--encontrado" data-filter="kind" data-value="encontrado" aria-pressed="false"><span class="chip__dot chip__dot--encontrado" aria-hidden="true"></span>Encontrado</button>
-      <button class="chip chip--avistado"   data-filter="kind" data-value="avistado"   aria-pressed="false"><span class="chip__dot chip__dot--avistado" aria-hidden="true"></span>Avistado</button>
-      <span class="chips__sep" aria-hidden="true"></span>
+    <div class="chips" role="group" aria-label="Filtros">
       <button class="chip" data-filter="animal" data-value="perro" aria-pressed="false"><i class="ph ph-dog" aria-hidden="true"></i>Perro</button>
       <button class="chip" data-filter="animal" data-value="gato"  aria-pressed="false"><i class="ph ph-cat" aria-hidden="true"></i>Gato</button>
       <button class="chip" data-filter="animal" data-value="otro"  aria-pressed="false"><i class="ph ph-paw-print" aria-hidden="true"></i>Otro</button>
-      <span class="chips__sep" aria-hidden="true"></span>
-      <button class="chip chip--active" data-filter="age" data-value="all"   aria-pressed="true">Todo</button>
-      <button class="chip" data-filter="age" data-value="24h"   aria-pressed="false">Últimas 24h</button>
-      <button class="chip" data-filter="age" data-value="week"  aria-pressed="false">Semana</button>
-      <button class="chip" data-filter="age" data-value="month" aria-pressed="false">Mes</button>
+      <span class="select">
+        <select id="filter-estado" aria-label="Estado del reporte">
+          <option value="">Estado: todos</option>
+          <option value="perdido">Perdidos</option>
+          <option value="encontrado">Encontrados</option>
+          <option value="avistado">Avistados</option>
+        </select>
+      </span>
+      <span class="select">
+        <select id="filter-tiempo" aria-label="Tiempo">
+          <option value="all">Tiempo: todo</option>
+          <option value="24h">Últimas 24h</option>
+          <option value="week">Última semana</option>
+          <option value="month">Último mes</option>
+        </select>
+      </span>
     </div>
   </section>
-
-  <!-- FRANJA INSTITUCIONAL (fija) -->
-  <div class="infobar" id="infobar">
-    <p class="infobar__lead">Somos Busca Huellitas, un equipo de estudiantes universitarios de la Universidad de La Serena y la Universidad Católica del Norte.</p>
-    <p class="infobar__desc">Un mapa comunitario y gratuito para publicar y encontrar mascotas perdidas, encontradas y avistadas en la Región de Coquimbo, con foto, ubicación exacta y contacto directo.</p>
-  </div>
 
   <!-- MAPA -->
   <main class="map-wrap">
     <div id="map" role="application" aria-label="Mapa de reportes de mascotas"></div>
   </main>
 
-  <!-- BOTÓN FLOTANTE REPORTAR -->
+  <!-- BOTÓN FLOTANTE REPORTAR (escritorio) -->
   <button id="btn-report" class="fab" aria-label="Publicar un reporte">
     <i class="ph ph-plus" aria-hidden="true"></i>
     <span>Reportar</span>
   </button>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR (móvil) -->
+  <nav class="tabbar" aria-label="Navegación principal">
+    <button class="tabbar__item" type="button" data-tab="mapa">
+      <i class="ph ph-map-trifold" aria-hidden="true"></i><span>Mapa</span>
+    </button>
+    <button class="tabbar__item" type="button" data-tab="historias">
+      <i class="ph ph-heart" aria-hidden="true"></i><span>Historias</span>
+    </button>
+    <button class="tabbar__report" type="button" data-tab="reportar" aria-label="Publicar reporte">
+      <i class="ph ph-plus" aria-hidden="true"></i>
+    </button>
+    <button class="tabbar__item" type="button" data-tab="soporte">
+      <i class="ph ph-lifebuoy" aria-hidden="true"></i><span>Soporte</span>
+    </button>
+    <button class="tabbar__item" type="button" data-tab="cuenta">
+      <i class="ph ph-user" aria-hidden="true"></i><span>Cuenta</span>
+    </button>
+  </nav>
 
   <!-- FICHA DEL REPORTE  -->
   <div id="backdrop" class="backdrop"></div>
