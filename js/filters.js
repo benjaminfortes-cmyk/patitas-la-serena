@@ -35,25 +35,32 @@ export function initFilters() {
     const label = ddAnimal.querySelector('.dropdown__label');
     const triggerIcon = trigger.querySelector('i');
 
+    // El panel se "porta" al body al abrir, así ningún overflow (el scroll de
+    // filtros en el celular) lo recorta ni lo esconde.
     const abrir = (v) => {
-      panel.hidden = !v;
       trigger.setAttribute('aria-expanded', String(v));
       if (v) {
+        document.body.appendChild(panel);
+        panel.hidden = false;
         const r = trigger.getBoundingClientRect();
+        const w = panel.offsetWidth || 176;
         panel.style.top = `${r.bottom + 6}px`;
-        panel.style.left = `${Math.max(8, r.left)}px`;
+        panel.style.left = `${Math.min(Math.max(8, r.left), window.innerWidth - w - 8)}px`;
+      } else {
+        panel.hidden = true;
       }
     };
 
     trigger.addEventListener('click', (e) => { e.stopPropagation(); abrir(panel.hidden); });
     panel.addEventListener('click', (e) => e.stopPropagation());
     document.addEventListener('click', () => abrir(false));
+    window.addEventListener('resize', () => abrir(false));
 
-    ddAnimal.querySelectorAll('.dropdown__opt').forEach((opt) => {
+    panel.querySelectorAll('.dropdown__opt').forEach((opt) => {
       opt.addEventListener('click', () => {
         const val = opt.dataset.animal;
         filterState.animals = val ? [val] : [];
-        ddAnimal.querySelectorAll('.dropdown__opt').forEach((o) =>
+        panel.querySelectorAll('.dropdown__opt').forEach((o) =>
           o.classList.toggle('dropdown__opt--active', o === opt));
         // el trigger refleja lo elegido (ícono + nombre)
         label.textContent = val ? opt.textContent.trim() : 'Animal';

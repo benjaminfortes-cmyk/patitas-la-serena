@@ -30,7 +30,7 @@
 
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
+<body data-vista="home">
 
   <!-- ENCABEZADO -->
   <header class="topbar">
@@ -55,68 +55,76 @@
     </div>
   </header>
 
-  <!-- MINI-HERO INSTITUCIONAL (se desliza con el scroll) -->
-  <div class="infobar" id="infobar">
-    <div class="infobar__logos">
-      <span class="infobar__chip"><img src="assets/img/uls.png" alt="Universidad de La Serena" loading="lazy" /></span>
-      <span class="infobar__chip"><img src="assets/img/cachupines.png" alt="Cachupines" loading="lazy" /></span>
-    </div>
-    <p class="infobar__lead">Somos Busca Huellitas, un equipo de estudiantes universitarios de la Universidad de La Serena y la Universidad Católica del Norte.</p>
-    <p class="infobar__desc">Un mapa comunitario y gratuito de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo.</p>
-    <p class="infobar__cita">«Cada mascota merece volver a casa. Y cada familia, el alivio de reencontrarla o el amor de una nueva.»</p>
-    <p class="infobar__howtitle">¿Cómo funciona?</p>
-    <ol class="infobar__pasos">
-      <li><b>Regístrate</b> con tu cuenta de Google.</li>
-      <li>¿Perdiste a tu mascota? <b>Búscala en el mapa</b>. ¿La encontraste o quieres avisar? <b>Publica un reporte</b> con foto y ubicación llenando el formulario.</li>
-      <li><b>Espera el contacto:</b> quien la vea te escribirá directo por WhatsApp.</li>
-    </ol>
-    <button class="infobar__cta" id="btn-ir-mapa" type="button"><i class="ph ph-map-trifold" aria-hidden="true"></i> Ir al mapa</button>
-  </div>
+  <!-- VISTAS: Inicio (hero) y Mapa -->
+  <main class="views">
 
-  <!-- BARRA DE FILTROS -->
-  <section class="filters" aria-label="Filtros">
-    <div class="search">
-      <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-      <input id="search" type="search" placeholder="Buscar por nombre, raza o color…"
-             aria-label="Buscar reportes" />
-    </div>
-
-    <div class="chips" role="group" aria-label="Filtros">
-      <div class="dropdown" id="dd-animal">
-        <button class="dropdown__trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-          <i class="ph ph-paw-print" aria-hidden="true"></i>
-          <span class="dropdown__label">Animal</span>
-          <i class="ph ph-caret-down dropdown__caret" aria-hidden="true"></i>
-        </button>
-        <div class="dropdown__panel" role="listbox" hidden>
-          <button class="dropdown__opt dropdown__opt--active" type="button" data-animal="" role="option"><i class="ph ph-list-dashes" aria-hidden="true"></i> Todos</button>
-          <button class="dropdown__opt" type="button" data-animal="perro" role="option"><i class="ph ph-dog" aria-hidden="true"></i> Perro</button>
-          <button class="dropdown__opt" type="button" data-animal="gato"  role="option"><i class="ph ph-cat" aria-hidden="true"></i> Gato</button>
-          <button class="dropdown__opt" type="button" data-animal="otro"  role="option"><i class="ph ph-paw-print" aria-hidden="true"></i> Otro</button>
+    <!-- Vista INICIO: quiénes somos + cómo funciona -->
+    <section class="view view--home" id="view-home">
+      <div class="infobar" id="infobar">
+        <div class="infobar__logos">
+          <span class="infobar__chip"><img src="assets/img/uls.png" alt="Universidad de La Serena" loading="lazy" /></span>
+          <span class="infobar__chip"><img src="assets/img/cachupines.png" alt="Cachupines" loading="lazy" /></span>
         </div>
+        <p class="infobar__lead">Somos Busca Huellitas, un equipo de estudiantes universitarios de la Universidad de La Serena y la Universidad Católica del Norte.</p>
+        <p class="infobar__desc">Un mapa comunitario y gratuito de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo.</p>
+        <p class="infobar__cita">«Cada mascota merece volver a casa. Y cada familia, el alivio de reencontrarla o el amor de una nueva.»</p>
+        <p class="infobar__howtitle">¿Cómo funciona?</p>
+        <ol class="infobar__pasos">
+          <li><b>Regístrate</b> con tu cuenta de Google.</li>
+          <li>¿Perdiste a tu mascota? <b>Búscala en el mapa</b>. ¿La encontraste o quieres avisar? <b>Publica un reporte</b> con foto y ubicación llenando el formulario.</li>
+          <li><b>Espera el contacto:</b> quien la vea te escribirá directo por WhatsApp.</li>
+        </ol>
+        <button class="infobar__cta" id="btn-ir-mapa" type="button"><i class="ph ph-map-trifold" aria-hidden="true"></i> Ir al mapa</button>
       </div>
-      <span class="select">
-        <select id="filter-estado" aria-label="Estado del reporte">
-          <option value="">Estado: todos</option>
-          <option value="perdido">Perdidos</option>
-          <option value="encontrado">Encontrados</option>
-          <option value="avistado">Avistados</option>
-        </select>
-      </span>
-      <span class="select">
-        <select id="filter-tiempo" aria-label="Tiempo">
-          <option value="all">Tiempo: todo</option>
-          <option value="24h">Últimas 24h</option>
-          <option value="week">Última semana</option>
-          <option value="month">Último mes</option>
-        </select>
-      </span>
-    </div>
-  </section>
+    </section>
 
-  <!-- MAPA -->
-  <main class="map-wrap">
-    <div id="map" role="application" aria-label="Mapa de reportes de mascotas"></div>
+    <!-- Vista MAPA: filtros + mapa -->
+    <section class="view view--map" id="view-map">
+      <section class="filters" aria-label="Filtros">
+        <div class="search">
+          <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+          <input id="search" type="search" placeholder="Buscar por nombre, raza o color…"
+                 aria-label="Buscar reportes" />
+        </div>
+
+        <div class="chips" role="group" aria-label="Filtros">
+          <div class="dropdown" id="dd-animal">
+            <button class="dropdown__trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <i class="ph ph-paw-print" aria-hidden="true"></i>
+              <span class="dropdown__label">Animal</span>
+              <i class="ph ph-caret-down dropdown__caret" aria-hidden="true"></i>
+            </button>
+            <div class="dropdown__panel" role="listbox" hidden>
+              <button class="dropdown__opt dropdown__opt--active" type="button" data-animal="" role="option"><i class="ph ph-list-dashes" aria-hidden="true"></i> Todos</button>
+              <button class="dropdown__opt" type="button" data-animal="perro" role="option"><i class="ph ph-dog" aria-hidden="true"></i> Perro</button>
+              <button class="dropdown__opt" type="button" data-animal="gato"  role="option"><i class="ph ph-cat" aria-hidden="true"></i> Gato</button>
+              <button class="dropdown__opt" type="button" data-animal="otro"  role="option"><i class="ph ph-paw-print" aria-hidden="true"></i> Otro</button>
+            </div>
+          </div>
+          <span class="select">
+            <select id="filter-estado" aria-label="Estado del reporte">
+              <option value="">Estado: todos</option>
+              <option value="perdido">Perdidos</option>
+              <option value="encontrado">Encontrados</option>
+              <option value="avistado">Avistados</option>
+            </select>
+          </span>
+          <span class="select">
+            <select id="filter-tiempo" aria-label="Tiempo">
+              <option value="all">Tiempo: todo</option>
+              <option value="24h">Últimas 24h</option>
+              <option value="week">Última semana</option>
+              <option value="month">Último mes</option>
+            </select>
+          </span>
+        </div>
+      </section>
+
+      <div class="map-wrap">
+        <div id="map" role="application" aria-label="Mapa de reportes de mascotas"></div>
+      </div>
+    </section>
+
   </main>
 
   <!-- BOTÓN FLOTANTE REPORTAR (escritorio) -->
@@ -128,8 +136,8 @@
   <!-- BARRA DE NAVEGACIÓN INFERIOR (móvil) -->
   <nav class="tabbar" aria-label="Navegación principal">
     <div class="tabbar__side">
-      <button class="tabbar__item" type="button" data-tab="mapa">
-        <i class="ph ph-map-trifold" aria-hidden="true"></i><span>Mapa</span>
+      <button class="tabbar__item" type="button" data-tab="inicio">
+        <i class="ph ph-house" aria-hidden="true"></i><span>Inicio</span>
       </button>
       <button class="tabbar__item" type="button" data-tab="historias">
         <i class="ph ph-heart" aria-hidden="true"></i><span>Historias</span>
@@ -139,6 +147,9 @@
       <i class="ph ph-plus" aria-hidden="true"></i>
     </button>
     <div class="tabbar__side">
+      <button class="tabbar__item" type="button" data-tab="alertas">
+        <i class="ph ph-bell" aria-hidden="true"></i><span>Alertas</span>
+      </button>
       <button class="tabbar__item" type="button" data-tab="soporte">
         <i class="ph ph-lifebuoy" aria-hidden="true"></i><span>Soporte</span>
       </button>

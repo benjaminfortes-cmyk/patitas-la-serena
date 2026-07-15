@@ -37,17 +37,17 @@ body {
   color: var(--ink);
   background: var(--warm-bg);
   -webkit-font-smoothing: antialiased;
-  overflow-x: clip;  /* el documento hace scroll vertical; evitamos el horizontal */
+  overflow: hidden;  /* cada vista maneja su propio alto */
 }
 
 /* ---------- Encabezado ---------- */
 .topbar {
-  position: sticky; top: 0; height: var(--topbar-h); z-index: 1000;
+  position: fixed; inset: 0 0 auto 0; height: var(--topbar-h); z-index: 1000;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 14px; background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; cursor: pointer; }
 .brand__logo {
   display: grid; place-items: center; width: 34px; height: 34px;
   background: var(--coral); color: #fff; border-radius: 10px; font-size: 1.15rem;
@@ -72,8 +72,7 @@ body {
 
 /* ---------- Filtros ---------- */
 .filters {
-  position: sticky; top: var(--topbar-h); z-index: 900;
-  scroll-margin-top: var(--topbar-h);
+  position: relative; z-index: 900;
   background: var(--surface); border-bottom: 1px solid var(--line);
   padding: 10px 0 12px; box-shadow: var(--shadow-sm);
 }
@@ -160,12 +159,19 @@ body {
 .dropdown__opt--active { background: var(--coral-soft); color: var(--coral-dark); }
 .dropdown__opt--active i { color: var(--coral-dark); }
 
-/* ---------- Mini-hero institucional (se desliza con el scroll) ---------- */
-.infobar {
-  padding: 12px 20px 14px; text-align: center;
+/* ---------- Vistas: Inicio (hero) y Mapa ---------- */
+.views { position: fixed; left: 0; right: 0; top: var(--topbar-h); bottom: 0; }
+.view { position: absolute; inset: 0; }
+.view--home {
+  display: block; overflow-y: auto; color: #fff;
   background: linear-gradient(135deg, #1f95b8 0%, #12667f 100%);
-  color: #fff;
 }
+.view--map { display: flex; flex-direction: column; }
+body[data-vista="mapa"] .view--home { display: none; }
+body[data-vista="home"] .view--map  { display: none; }
+
+/* Hero: contenido de la vista Inicio */
+.infobar { max-width: 640px; margin: 0 auto; padding: 28px 22px 40px; text-align: center; }
 .infobar__logos { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; }
 .infobar__chip {
   width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #fff;
@@ -215,11 +221,7 @@ body {
 }
 
 /* ---------- Mapa ---------- */
-.map-wrap {
-  position: relative;
-  height: calc(100vh - var(--topbar-h) - var(--filters-h));
-  height: calc(100dvh - var(--topbar-h) - var(--filters-h));
-}
+.map-wrap { position: relative; flex: 1; min-height: 0; }
 #map { width: 100%; height: 100%; background: #e8edf0; z-index: 1; }
 .leaflet-control-zoom { box-shadow: var(--shadow-sm) !important; border: none !important; }
 
@@ -289,6 +291,8 @@ body {
 }
 .tabbar__item i { font-size: 1.45rem; }
 .tabbar__item:active { color: var(--coral-dark); transform: scale(.94); }
+.tabbar__item--active { color: var(--coral-dark); }
+.tabbar__item--active i { color: var(--coral-dark); }
 .tabbar__report {
   flex: 0 0 auto; margin-top: -26px;
   width: 58px; height: 58px; border-radius: 50%;
@@ -303,11 +307,14 @@ body {
 
 @media (max-width: 640px) {
   .tabbar { display: flex; }
+  .views { bottom: var(--tabbar-h); }       /* deja espacio para la barra inferior */
   #btn-historias, #btn-soporte { display: none; }  /* pasan a la barra inferior; queda Ingresar */
   .fab { display: none; }                   /* el botón central reemplaza al flotante */
-  .leaflet-bottom { bottom: var(--tabbar-h); }  /* controles del mapa sobre la barra */
   .toasts { bottom: calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom)); }
 }
+
+/* El botón flotante Reportar (escritorio) solo en la vista Mapa */
+body[data-vista="home"] .fab { display: none; }
 
 /* ---------- Ilustración de estado vacío (Historias) ---------- */
 .empty__art { font-size: 3rem; color: var(--coral); opacity: .5; }

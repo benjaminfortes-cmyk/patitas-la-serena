@@ -50,15 +50,23 @@ function init() {
     window.openReportForm?.();
   });
 
-  // "Ir al mapa": baja al final (mini-hero fuera; barra + filtros arriba, mapa completo).
-  const irAlMapa = () => window.scrollTo({ top: document.documentElement.scrollHeight });
-  document.getElementById('btn-ir-mapa')?.addEventListener('click', irAlMapa);
+  // Cambio de vistas Inicio <-> Mapa (misma app, sin recargar).
+  const mostrarVista = (v) => {
+    document.body.dataset.vista = v;
+    document.querySelectorAll('.tabbar__item').forEach((t) =>
+      t.classList.toggle('tabbar__item--active', t.dataset.tab === 'inicio' && v === 'home'));
+    if (v === 'mapa') requestAnimationFrame(() => getMap()?.invalidateSize());
+  };
+  window.mostrarVista = mostrarVista;
+  document.getElementById('btn-ir-mapa')?.addEventListener('click', () => mostrarVista('mapa'));
+  document.querySelector('.brand')?.addEventListener('click', () => mostrarVista('home'));
 
   // Barra de navegación inferior (móvil): reutiliza los controles ya existentes.
-  document.querySelector('[data-tab="mapa"]')?.addEventListener('click', irAlMapa);
+  document.querySelector('[data-tab="inicio"]')?.addEventListener('click', () => mostrarVista('home'));
   document.querySelector('[data-tab="reportar"]')?.addEventListener('click', () => window.openReportForm?.());
   document.querySelector('[data-tab="historias"]')?.addEventListener('click', () => document.getElementById('btn-historias')?.click());
   document.querySelector('[data-tab="soporte"]')?.addEventListener('click', () => document.getElementById('btn-soporte')?.click());
+  document.querySelector('[data-tab="alertas"]')?.addEventListener('click', () => window.openAlertas?.());
 
   // Aviso de modo demo
   if (!isConfigured) {
@@ -76,7 +84,7 @@ async function abrirDesdeEnlace() {
   const id = new URLSearchParams(location.search).get('reporte');
   if (!id) return;
   const r = await fetchReportById(id);
-  if (r) { openReportCard(r); if (r.lat != null) flyTo(r.lat, r.lng, 16); }
+  if (r) { window.mostrarVista?.('mapa'); openReportCard(r); if (r.lat != null) flyTo(r.lat, r.lng, 16); }
 }
 
 document.addEventListener('DOMContentLoaded', init);
