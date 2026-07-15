@@ -8,7 +8,7 @@
 //   - CDNs, fuentes y tiles del mapa: cache-first (se guardan al usarse).
 // ============================================================================
 
-const VERSION = 'patitas-v2';
+const VERSION = 'patitas-v4';
 
 // Archivos propios que se precachean al instalar.
 const SHELL = [
@@ -89,7 +89,7 @@ async function cacheFirst(req) {
 // ---- Notificaciones push --------------------------------------------------
 self.addEventListener('push', (e) => {
   const d = (() => { try { return e.data?.json() ?? {}; } catch { return {}; } })();
-  const title = d.title || 'Patitas La Serena';
+  const title = d.title || 'Busca Huellitas';
   const opciones = {
     body: d.body || 'Hay un nuevo reporte cerca de tu zona.',
     icon: 'assets/icon.svg',

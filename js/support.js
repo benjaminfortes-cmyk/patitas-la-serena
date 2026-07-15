@@ -79,7 +79,7 @@ async function enviar(overlay, cerrar) {
         name: nombre || 'Sin nombre',
         email: correo,
         message: mensaje,
-        _subject: 'Soporte · Patitas La Serena',
+        _subject: 'Soporte · Busca Huellitas',
         _template: 'table',
         _captcha: 'false',
       }),

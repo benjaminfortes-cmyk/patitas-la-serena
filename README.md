@@ -1,4 +1,4 @@
-# 🐾 Patitas La Serena
+# 🐾 Busca Huellitas
 
 Plataforma centralizada para **reportar y encontrar mascotas perdidas, encontradas y avistadas** en La Serena, Chile. Toda la información en un solo mapa, en vez de dispersa entre Instagram, Facebook, estados de WhatsApp y carteles impresos.
 
@@ -46,7 +46,7 @@ Cuatro features centrales lo justifican: **matching por radio** y **alertas por 
 ## Estructura del proyecto
 
 ```
-patitas-la-serena/         # la raíz ES el sitio (estático)
+buscahuellitas/            # la raíz ES el sitio (estático)
 ├─ index.html
 ├─ manifest.webmanifest     # PWA
 ├─ sw.js                    # service worker: offline + push

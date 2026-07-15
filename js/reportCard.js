@@ -16,7 +16,7 @@ const SIZE_LABEL = { chico: 'Chico', mediano: 'Mediano', grande: 'Grande' };
 // Link de WhatsApp con mensaje pre-redactado.
 function whatsappLink(report) {
   const num = report.contact_whatsapp.replace(/[^0-9]/g, ''); // 569XXXXXXXX
-  const msg = `Hola, vi tu publicación en Patitas La Serena sobre ${tituloReporte(report)}. ¿Sigue activa la búsqueda?`;
+  const msg = `Hola, vi tu publicación en Busca Huellitas sobre ${tituloReporte(report)}. ¿Sigue activa la búsqueda?`;
   return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -43,6 +43,21 @@ export function openReportCard(report) {
     <button class="btn btn--ghost detail__keepalive" data-action="reactivar">
       <i class="ph ph-arrow-clockwise"></i> Sigue activo (reiniciar caducidad)
     </button>` : '';
+
+  // Zona de administrador: archivar (ocultar) o borrar CUALQUIER reporte.
+  // La base de datos ya lo permite vía RLS (is_admin); aquí solo van los botones.
+  const esAdmin = user && isAdminUser();
+  const archivado = report.lifecycle === 'archivado';
+  const accionesAdmin = esAdmin ? `
+    <div class="detail__admin">
+      <p class="detail__adminnote"><i class="ph ph-shield-star"></i> Zona de administrador</p>
+      <div class="detail__adminbtns">
+        ${archivado
+          ? '<span class="detail__archivedtag"><i class="ph ph-eye-slash"></i> Archivado (oculto del mapa)</span>'
+          : '<button class="btn btn--outline" data-action="archivar"><i class="ph ph-archive-box"></i> Archivar (ocultar)</button>'}
+        <button class="btn btn--danger" data-action="borrar"><i class="ph ph-trash"></i> Borrar</button>
+      </div>
+    </div>` : '';
 
   sheet.innerHTML = `
     <button class="sheet__close" aria-label="Cerrar" data-close>&times;</button>
@@ -74,6 +89,7 @@ export function openReportCard(report) {
       </div>
 
       ${accionesDueno}
+      ${accionesAdmin}
     </div>`;
 
   // Cableado de botones
@@ -86,6 +102,8 @@ export function openReportCard(report) {
     closeReportCard();
     window.openReportForm?.(report);
   });
+  sheet.querySelector('[data-action="archivar"]')?.addEventListener('click', () => archivar(report));
+  sheet.querySelector('[data-action="borrar"]')?.addEventListener('click', () => borrar(report));
 
   sheet.classList.add('sheet--open');
   document.getElementById('backdrop').classList.add('backdrop--show');
@@ -100,8 +118,8 @@ export function closeReportCard() {
 async function compartir(report) {
   const url = `${location.origin}${location.pathname}?reporte=${report.id}`;
   const datos = {
-    title: 'Patitas La Serena',
-    text: `Ayuda con ${tituloReporte(report)} en Patitas La Serena`,
+    title: 'Busca Huellitas',
+    text: `Ayuda con ${tituloReporte(report)} en Busca Huellitas`,
     url,
   };
   if (navigator.share) {
@@ -138,6 +156,40 @@ async function reactivar(report) {
     if (r) r.last_active_at = new Date().toISOString();
   }
   toast('Listo, el reporte sigue activo.', 'exito');
+}
+
+// ---- Admin: archivar (ocultar del mapa, reversible con "Sigue activo") ----
+async function archivar(report) {
+  if (!confirm('¿Archivar este reporte? Se ocultará del mapa. Podrás volver a mostrarlo con "Sigue activo".')) return;
+
+  if (isConfigured) {
+    const { error } = await supabase.from('reports')
+      .update({ lifecycle: 'archivado', updated_at: new Date().toISOString() })
+      .eq('id', report.id);
+    if (error) return toast(error.message, 'error');
+  } else {
+    const r = DEMO_REPORTS.find((x) => x.id === report.id);
+    if (r) r.lifecycle = 'archivado';
+  }
+  toast('Reporte archivado (oculto del mapa).', 'exito');
+  closeReportCard();
+  window.recargarMapa?.();
+}
+
+// ---- Admin: borrar definitivamente (no se puede deshacer) -----------------
+async function borrar(report) {
+  if (!confirm('¿Borrar este reporte para SIEMPRE? Esta acción no se puede deshacer.')) return;
+
+  if (isConfigured) {
+    const { error } = await supabase.from('reports').delete().eq('id', report.id);
+    if (error) return toast(error.message, 'error');
+  } else {
+    const i = DEMO_REPORTS.findIndex((x) => x.id === report.id);
+    if (i >= 0) DEMO_REPORTS.splice(i, 1);
+  }
+  toast('Reporte borrado.', 'exito');
+  closeReportCard();
+  window.recargarMapa?.();
 }
 
 // ---- Denuncia (info incorrecta / duplicada) -------------------------------

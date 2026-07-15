@@ -1,5 +1,5 @@
 /* ============================================================================
-   Patitas La Serena — Estilos
+   Busca Huellitas — Estilos
    Mobile-first. Paleta coral cálida, mucho aire, esquinas redondeadas.
    ============================================================================ */
 
@@ -53,7 +53,7 @@ body {
   display: grid; place-items: center; width: 34px; height: 34px;
   background: var(--coral); color: #fff; border-radius: 10px; font-size: 1.15rem;
 }
-.brand__name { font-size: 1.15rem; line-height: 1; color: var(--coral-dark); }
+.brand__name { font-size: 1.1rem; line-height: 1; color: var(--coral-dark); white-space: nowrap; }
 .brand__name strong { display: block; font-size: .72rem; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
 
 /* ---------- Botones ---------- */
@@ -348,6 +348,17 @@ textarea.input { resize: vertical; }
   display: flex; gap: 10px; margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--line);
 }
 .detail__owner .btn { flex: 1; font-size: .92rem; padding: 11px; }
+
+/* Zona de administrador (archivar / borrar cualquier reporte) */
+.detail__admin { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.detail__adminbtns { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
+.detail__adminbtns .btn { flex: 1; font-size: .92rem; padding: 11px; }
+.detail__archivedtag {
+  flex: 1; display: flex; align-items: center; gap: 6px;
+  color: var(--muted); font-size: .85rem; font-weight: 700;
+}
+.btn--danger { background: #d92d20; color: #fff; }
+.btn--danger:hover { background: #b42318; }
 
 /* ---------- Panel de coincidencias / denuncia ---------- */
 .matches-overlay {

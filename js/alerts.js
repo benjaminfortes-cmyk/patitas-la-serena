@@ -89,7 +89,7 @@ async function activar(cerrar) {
   // ---- MODO DEMO: muestra una notificación de ejemplo ----
   if (!isConfigured) {
     const reg = await navigator.serviceWorker.ready;
-    reg.showNotification('Patitas La Serena', {
+    reg.showNotification('Busca Huellitas', {
       body: 'Así se verán tus alertas cuando haya un reporte en tu zona.',
       icon: 'assets/icon.svg',
     });

@@ -1,5 +1,5 @@
 -- ============================================================================
--- Patitas La Serena — Esquema inicial
+-- Busca Huellitas — Esquema inicial
 -- Backend: Supabase (PostgreSQL + PostGIS)
 --
 -- Este archivo crea TODO el backend: extensiones, tipos, tablas, índices,
