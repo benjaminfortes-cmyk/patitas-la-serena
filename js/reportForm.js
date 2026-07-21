@@ -10,7 +10,7 @@ import { getUser, ensureSession } from './auth.js';
 import { comprimirImagen } from './imageCompress.js';
 import { subirFoto } from './storage.js';
 import { normalizarWhatsapp, formatearWhatsapp } from './validation.js';
-import { toast } from './ui.js';
+import { toast, escapeHtml } from './ui.js';
 import { flyTo } from './map.js';
 import { MAP_CENTER, MAP_ZOOM } from './config.js';
 import { DEMO_REPORTS } from './demo.js';
@@ -48,11 +48,24 @@ function wire() {
   // Geolocalización
   document.getElementById('btn-geoloc').addEventListener('click', usarMiUbicacion);
 
-  // Buscador de direcciones
-  document.getElementById('btn-addr').addEventListener('click', buscarDireccion);
-  document.getElementById('addr-input').addEventListener('keydown', (e) => {
-    // Enter dentro del formulario enviaría el reporte: lo usamos para buscar.
-    if (e.key === 'Enter') { e.preventDefault(); buscarDireccion(); }
+  // Buscador de direcciones: sugiere mientras se escribe, con una pausa breve
+  // para no disparar una consulta por cada tecla.
+  const addr = document.getElementById('addr-input');
+  addr.addEventListener('input', () => {
+    clearTimeout(addrTimer);
+    addrTimer = setTimeout(sugerirDirecciones, 300);
+  });
+  addr.addEventListener('keydown', (e) => {
+    // Enter dentro del formulario enviaría el reporte: aquí elige la primera
+    // sugerencia, que es lo que espera quien viene de Maps.
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.querySelector('#addr-results .addr__opt')?.click();
+    }
+    if (e.key === 'Escape') cerrarSugerencias();
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.addr') && !e.target.closest('.addr__results')) cerrarSugerencias();
   });
 
   // Contador de caracteres
@@ -218,60 +231,105 @@ function fijarPunto(lat, lng) {
 }
 
 // ---------------------------------------------------------------------------
-// Buscador de direcciones (Nominatim de OpenStreetMap)
+// Buscador de direcciones con sugerencias mientras se escribe.
+//
+// Usa Photon (OpenStreetMap), que a diferencia de Nominatim sí está pensado
+// para autocompletar. La caja `bbox` deja fuera el resto del país: si no,
+// "Balmaceda" caería en Santiago.
 // ---------------------------------------------------------------------------
+const PHOTON = 'https://photon.komoot.io/api/';
+const CAJA_REGION = '-71.85,-32.35,-69.75,-28.95';  // izq,abajo,der,arriba
 
-// Caja que encierra la Región de Coquimbo: evita que "Balmaceda" caiga en
-// Santiago. Formato de Nominatim: izquierda,arriba,derecha,abajo.
-const CAJA_REGION = '-71.85,-28.95,-69.75,-32.35';
+let addrPeticion;      // aborta la búsqueda anterior si llega otra tecla
+let addrTimer;
 
-async function buscarDireccion() {
+// Arma el texto de cada sugerencia: título en negrita + dónde queda.
+function etiquetaLugar(p) {
+  const titulo = p.name || [p.street, p.housenumber].filter(Boolean).join(' ') || 'Sin nombre';
+  const partes = [p.district, p.city, p.county].filter(Boolean);
+  const detalle = [...new Set(partes)].join(', ');
+  return { titulo, detalle };
+}
+
+function cerrarSugerencias() {
+  const lista = document.getElementById('addr-results');
+  lista.hidden = true;
+  document.getElementById('addr-input').setAttribute('aria-expanded', 'false');
+}
+
+function pintarMensaje(texto) {
+  const lista = document.getElementById('addr-results');
+  lista.hidden = false;
+  lista.innerHTML = `<li class="addr__msg">${texto}</li>`;
+}
+
+async function sugerirDirecciones() {
   const input = document.getElementById('addr-input');
   const lista = document.getElementById('addr-results');
   const consulta = input.value.trim();
-  if (!consulta) return;
 
-  lista.hidden = false;
-  lista.innerHTML = '<li class="addr__msg">Buscando…</li>';
+  if (consulta.length < 3) return cerrarSugerencias();
 
-  const url = 'https://nominatim.openstreetmap.org/search'
-    + `?format=json&q=${encodeURIComponent(consulta)}`
-    + `&countrycodes=cl&viewbox=${CAJA_REGION}&bounded=1&limit=5&accept-language=es`;
+  addrPeticion?.abort();
+  addrPeticion = new AbortController();
 
-  let resultados;
+  const url = `${PHOTON}?q=${encodeURIComponent(consulta)}`
+    + `&limit=8&lang=default&bbox=${CAJA_REGION}`;
+
+  let lugares;
   try {
-    const r = await fetch(url);
+    const r = await fetch(url, { signal: addrPeticion.signal });
     if (!r.ok) throw new Error();
-    resultados = await r.json();
-  } catch {
-    lista.innerHTML = '<li class="addr__msg">No se pudo buscar. Marca el punto en el mapa.</li>';
-    return;
+    lugares = (await r.json()).features ?? [];
+  } catch (err) {
+    if (err.name === 'AbortError') return;   // llegó otra tecla, no molestamos
+    return pintarMensaje('No se pudo buscar. Marca el punto en el mapa.');
   }
 
-  if (!resultados.length) {
-    lista.innerHTML = '<li class="addr__msg">Sin resultados. Prueba con menos palabras (solo la calle o el barrio) o marca el punto en el mapa.</li>';
-    return;
+  // Photon repite el mismo lugar (paraderos, tramos de calle). Nos quedamos
+  // con el primero de cada nombre+comuna, que es el más relevante.
+  const vistos = new Set();
+  const unicos = lugares.filter((f) => {
+    const { titulo, detalle } = etiquetaLugar(f.properties);
+    const clave = `${titulo}|${detalle}`;
+    if (vistos.has(clave)) return false;
+    vistos.add(clave);
+    return true;
+  }).slice(0, 5);
+
+  if (!unicos.length) {
+    return pintarMensaje('Sin resultados. Prueba con menos palabras o marca el punto en el mapa.');
   }
 
   lista.innerHTML = '';
-  resultados.forEach((r) => {
-    const li = document.createElement('li');
+  unicos.forEach((f) => {
+    const { titulo, detalle } = etiquetaLugar(f.properties);
+    const [lng, lat] = f.geometry.coordinates;
+
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'addr__opt';
-    btn.textContent = r.display_name;
-    btn.addEventListener('click', () => {
-      const lat = Number(r.lat), lng = Number(r.lon);
-      formMarker.setLatLng([lat, lng]);
-      formMap.setView([lat, lng], 17);
-      fijarPunto(lat, lng);
-      input.value = r.display_name.split(',').slice(0, 3).join(',');
-      lista.hidden = true;
-      toast('Ubicación marcada. Ajústala arrastrando el pin si hace falta.', 'exito');
-    });
+    btn.setAttribute('role', 'option');
+    btn.innerHTML = `<i class="ph ph-map-pin" aria-hidden="true"></i>
+      <span><b>${escapeHtml(titulo)}</b>${detalle ? `<small>${escapeHtml(detalle)}</small>` : ''}</span>`;
+    btn.addEventListener('click', () => elegirLugar(lat, lng, titulo));
+
+    const li = document.createElement('li');
     li.appendChild(btn);
     lista.appendChild(li);
   });
+
+  lista.hidden = false;
+  input.setAttribute('aria-expanded', 'true');
+}
+
+function elegirLugar(lat, lng, titulo) {
+  formMarker.setLatLng([lat, lng]);
+  formMap.setView([lat, lng], 17);
+  fijarPunto(lat, lng);
+  document.getElementById('addr-input').value = titulo;
+  cerrarSugerencias();
+  toast('Ubicación marcada. Arrastra el pin si necesitas afinarla.', 'exito');
 }
 
 function usarMiUbicacion() {

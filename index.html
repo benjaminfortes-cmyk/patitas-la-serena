@@ -81,12 +81,43 @@
         <div class="infobar__logos">
           <span class="infobar__chip"><img src="assets/img/difusion4region.png" alt="Difusión 4 Región" loading="lazy" /></span>
           <span class="infobar__chip"><img src="assets/img/ayuda2.png" alt="Organización colaboradora" loading="lazy" /></span>
+          <span class="infobar__chip"><img src="assets/img/proyectoarca.png" alt="Fundación Proyecto Arca" loading="lazy" /></span>
           <span class="infobar__chip"><img src="assets/img/uls.png" alt="Universidad de La Serena" loading="lazy" /></span>
           <span class="infobar__chip"><img src="assets/img/cachupines.png" alt="Cachupines" loading="lazy" /></span>
         </div>
         <p class="infobar__lead">Somos Busca Huellitas, un equipo de estudiantes universitarios de la Universidad de La Serena y la Universidad Católica del Norte. <strong>Difusión 4 Región</strong> es una de las organizaciones que más ha apoyado e impulsado esta iniciativa.</p>
         <p class="infobar__desc">Un mapa comunitario y gratuito de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo.</p>
         <p class="infobar__cita">«Cada mascota merece volver a casa. Y cada familia, el alivio de reencontrarla o el amor de una nueva.»</p>
+
+        <!-- Accesos directos -->
+        <p class="infobar__howtitle">¿Qué quieres hacer hoy?</p>
+        <div class="acciones">
+          <button class="accion" type="button" data-accion="buscar">
+            <i class="ph ph-magnifying-glass accion__ico" aria-hidden="true"></i>
+            <span class="accion__txt">
+              <b>Perdí a mi mascota</b>
+              <small>Búscala en el mapa y publica un reporte con su foto.</small>
+            </span>
+            <i class="ph ph-caret-right accion__flecha" aria-hidden="true"></i>
+          </button>
+          <button class="accion" type="button" data-accion="publicar">
+            <i class="ph ph-map-pin accion__ico" aria-hidden="true"></i>
+            <span class="accion__txt">
+              <b>Encontré o vi un animal</b>
+              <small>Publícalo con foto y ubicación para que su familia lo encuentre.</small>
+            </span>
+            <i class="ph ph-caret-right accion__flecha" aria-hidden="true"></i>
+          </button>
+          <button class="accion" type="button" data-accion="ayudar">
+            <i class="ph ph-hand-heart accion__ico" aria-hidden="true"></i>
+            <span class="accion__txt">
+              <b>Quiero ayudar</b>
+              <small>Mira los reportes de tu sector y comparte los que puedas.</small>
+            </span>
+            <i class="ph ph-caret-right accion__flecha" aria-hidden="true"></i>
+          </button>
+        </div>
+
         <p class="infobar__howtitle">¿Cómo funciona?</p>
         <ol class="infobar__pasos">
           <li><b>No necesitas registrarte.</b> Entras y reportas al tiro, sin cuenta ni contraseña.</li>
@@ -270,13 +301,12 @@
 
         <!-- Buscador de direcciones -->
         <div class="addr">
-          <input type="search" id="addr-input" class="input" autocomplete="off"
-                 placeholder="Ej: Balmaceda 1234 · La Cantera · Parque Pedro de Valdivia" aria-label="Buscar dirección" />
-          <button type="button" id="btn-addr" class="btn btn--ghost btn--sm">
-            <i class="ph ph-magnifying-glass" aria-hidden="true"></i> Buscar
-          </button>
+          <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+          <input type="search" id="addr-input" class="addr__input" autocomplete="off"
+                 placeholder="Escribe una dirección o lugar…" aria-label="Buscar dirección"
+                 role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="addr-results" />
         </div>
-        <ul id="addr-results" class="addr__results" hidden></ul>
+        <ul id="addr-results" class="addr__results" role="listbox" hidden></ul>
 
         <div id="form-map" class="form-map"></div>
         <button type="button" id="btn-geoloc" class="btn btn--ghost btn--sm">

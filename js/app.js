@@ -59,6 +59,14 @@ function init() {
   };
   window.mostrarVista = mostrarVista;
   document.getElementById('btn-ir-mapa')?.addEventListener('click', () => mostrarVista('mapa'));
+
+  // Accesos directos de la portada
+  document.querySelectorAll('.accion').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.accion === 'publicar') window.openReportForm?.();
+      else mostrarVista('mapa');
+    });
+  });
   document.getElementById('btn-alertas')?.addEventListener('click', () => window.openAlertas?.());
   document.querySelector('.brand')?.addEventListener('click', () => mostrarVista('home'));
 
