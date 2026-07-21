@@ -7,7 +7,7 @@ import { fetchReports, fetchReportById } from './data.js';
 import { openReportCard, closeReportCard } from './reportCard.js';
 import { toast } from './ui.js';
 import { isConfigured } from './supabase.js';
-import { initAuth } from './auth.js';
+import { initAuth, initAdminAccess } from './auth.js';
 import { initReportForm } from './reportForm.js';
 import { initMatching } from './matching.js';
 import { initHistorias } from './historias.js';
@@ -30,6 +30,7 @@ function init() {
 
   // Sesión anónima (invisible: nadie tiene que registrarse) y formulario
   initAuth();
+  initAdminAccess();   // botón de admin, solo si se entró con ?admin=1
   initReportForm(recargar);
   initMatching();
   initHistorias();

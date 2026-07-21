@@ -5,11 +5,14 @@
 // invisible. Eso le da a la persona un `user_id` real —y con él sus reportes,
 // sus fotos y sus permisos— sin pedirle nombre, correo ni contraseña.
 //
+// Hay una sola excepción: el acceso de administrador, oculto tras ?admin=1.
+// Ver initAdminAccess() al final del archivo.
+//
 // En MODO DEMO (sin backend) simula un usuario para poder probar el flujo
 // de publicar sin configurar nada.
 // ============================================================================
 import { supabase, isConfigured } from './supabase.js';
-
+import { escapeHtml } from './ui.js';
 
 let currentUser = null;
 let esAdmin = false;
@@ -80,6 +83,23 @@ export async function signOut() {
   await supabase.auth.signOut();
 }
 
+/**
+ * Entra con Google. Es exclusivo del acceso de administrador: el público
+ * jamás llega acá.
+ */
+export async function signInWithGoogle() {
+  if (!isConfigured) return;
+  // Cerramos la sesión anónima ANTES de arrancar el OAuth. Si no, Supabase
+  // vincula la identidad de Google al usuario anónimo actual en vez de entrar
+  // a la cuenta de administrador que ya existe, y el rol nunca aparecería.
+  await supabase.auth.signOut();
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    // Conserva el ?admin=1 al volver, para que el botón siga visible.
+    options: { redirectTo: window.location.href.split('#')[0] },
+  });
+}
+
 // Primer nombre de la persona, con formato prolijo. Las sesiones anónimas no
 // tienen nombre: devuelve null y quien lo use decide qué mostrar.
 export function displayName() {
@@ -90,5 +110,43 @@ export function displayName() {
   const primero = n.trim().split(/\s+/)[0];
   if (!primero) return null;
   return primero.charAt(0).toUpperCase() + primero.slice(1).toLowerCase();
+}
+
+// ---- Acceso de administrador (oculto) --------------------------------------
+// El público nunca ve un login. Abriendo la app con ?admin=1 aparece un botón
+// discreto para entrar con Google; los permisos reales de moderación los da
+// la base de datos (profiles.role = 'admin'), no este botón.
+// El modo dura lo que dure la pestaña (sessionStorage).
+const ADMIN_FLAG = 'bh-admin';
+
+export function initAdminAccess() {
+  if (new URLSearchParams(location.search).get('admin') === '1') {
+    sessionStorage.setItem(ADMIN_FLAG, '1');
+  }
+  if (sessionStorage.getItem(ADMIN_FLAG) !== '1') return;
+
+  const btn = document.createElement('button');
+  btn.id = 'btn-admin';
+  btn.className = 'btn btn--ghost btn--sm';
+  document.querySelector('.topbar__actions')?.appendChild(btn);
+
+  onAuthChange(() => {
+    const dentro = isAdminUser();
+    btn.innerHTML = dentro
+      ? `<i class="ph-fill ph-shield-check" aria-hidden="true"></i><span>${escapeHtml(displayName() ?? 'Admin')}</span>`
+      : `<i class="ph ph-shield" aria-hidden="true"></i><span>Admin</span>`;
+    btn.title = dentro ? 'Sesión de administrador — click para salir' : 'Entrar como administrador';
+  });
+
+  btn.addEventListener('click', async () => {
+    if (isAdminUser()) {
+      // Salir: volvemos a la app normal, con sesión anónima limpia.
+      sessionStorage.removeItem(ADMIN_FLAG);
+      await signOut();
+      location.href = location.pathname;
+    } else {
+      await signInWithGoogle();
+    }
+  });
 }
 
