@@ -7,7 +7,7 @@ import { fetchReports, fetchReportById } from './data.js';
 import { openReportCard, closeReportCard } from './reportCard.js';
 import { toast } from './ui.js';
 import { isConfigured } from './supabase.js';
-import { initAuth, initAuthUI } from './auth.js';
+import { initAuth } from './auth.js';
 import { initReportForm } from './reportForm.js';
 import { initMatching } from './matching.js';
 import { initHistorias } from './historias.js';
@@ -28,9 +28,8 @@ function init() {
   initFilters();
   onFiltersChange(recargar);
 
-  // Sesión (Google) y formulario de publicación
+  // Sesión anónima (invisible: nadie tiene que registrarse) y formulario
   initAuth();
-  initAuthUI();
   initReportForm(recargar);
   initMatching();
   initHistorias();
@@ -59,6 +58,7 @@ function init() {
   };
   window.mostrarVista = mostrarVista;
   document.getElementById('btn-ir-mapa')?.addEventListener('click', () => mostrarVista('mapa'));
+  document.getElementById('btn-alertas')?.addEventListener('click', () => window.openAlertas?.());
   document.querySelector('.brand')?.addEventListener('click', () => mostrarVista('home'));
 
   // Barra de navegación inferior (móvil): reutiliza los controles ya existentes.

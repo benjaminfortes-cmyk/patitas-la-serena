@@ -8,7 +8,7 @@
 // guardamos la suscripción del navegador y la zona elegida.
 // ============================================================================
 import { supabase, isConfigured } from './supabase.js';
-import { getUser, signIn } from './auth.js';
+import { getUser, ensureSession } from './auth.js';
 import { VAPID_PUBLIC_KEY, MAP_CENTER, MAP_ZOOM } from './config.js';
 import { toast } from './ui.js';
 
@@ -19,11 +19,8 @@ export function initAlertas() {
 let mapa, marcador, circulo;
 const seleccion = { lat: MAP_CENTER[0], lng: MAP_CENTER[1], radius: 3000 };
 
-function abrir() {
-  if (isConfigured && !getUser()) {
-    toast('Inicia sesión para activar alertas.', 'info');
-    return signIn();
-  }
+async function abrir() {
+  await ensureSession();
 
   const overlay = document.createElement('div');
   overlay.className = 'matches-overlay';

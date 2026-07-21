@@ -6,7 +6,7 @@
 // aquí solo enviamos lat/lng crudos y la base se encarga del resto.
 // ============================================================================
 import { supabase, isConfigured } from './supabase.js';
-import { getUser, signIn } from './auth.js';
+import { getUser, ensureSession } from './auth.js';
 import { comprimirImagen } from './imageCompress.js';
 import { subirFoto } from './storage.js';
 import { normalizarWhatsapp, formatearWhatsapp } from './validation.js';
@@ -82,11 +82,9 @@ function segmented(group, onSet) {
 // Abrir / cerrar el modal
 // ---------------------------------------------------------------------------
 async function abrir(report) {
-  // Puerta de autenticación: ver el mapa es libre, publicar requiere sesión.
-  if (isConfigured && !getUser()) {
-    toast('Inicia sesión con Google para publicar.', 'info');
-    return signIn();
-  }
+  // Publicar es libre: si todavía no hay sesión, se abre una anónima sin que
+  // la persona note nada. La foto obligatoria es el control anti-spam.
+  await ensureSession();
 
   reset();
   // `report` solo llega cuando se abre desde "Editar"; el botón flotante no lo pasa.
@@ -314,7 +312,8 @@ async function onSubmit(e) {
 
 // Envío real a Supabase: sube foto y llama a create_report(). Devuelve el reporte.
 async function publicarReal(d) {
-  const user = getUser();
+  const user = await ensureSession();
+  if (!user) throw new Error('No se pudo preparar la sesión. Recarga la página.');
   const { url, path } = await subirFoto(estado.fotoBlob, user.id);
 
   const { data, error } = await supabase.rpc('create_report', {

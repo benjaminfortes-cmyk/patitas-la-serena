@@ -7,7 +7,7 @@
 // ============================================================================
 import { KIND_META, nombreAnimal, tiempoRelativo, tituloReporte } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
-import { getUser, signIn, isAdminUser } from './auth.js';
+import { getUser, ensureSession, isAdminUser } from './auth.js';
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 
@@ -193,11 +193,8 @@ async function borrar(report) {
 }
 
 // ---- Denuncia (info incorrecta / duplicada) -------------------------------
-function abrirDenuncia(report) {
-  if (isConfigured && !getUser()) {
-    toast('Inicia sesión para reportar.', 'info');
-    return signIn();
-  }
+async function abrirDenuncia(report) {
+  await ensureSession();
 
   const overlay = document.createElement('div');
   overlay.className = 'matches-overlay';

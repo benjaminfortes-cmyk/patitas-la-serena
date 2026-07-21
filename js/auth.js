@@ -1,11 +1,15 @@
 // ============================================================================
-// Autenticación con Google (Supabase Auth).
+// Sesión anónima (Supabase Auth).
+//
+// Nadie tiene que registrarse: al abrir la app se crea una sesión anónima
+// invisible. Eso le da a la persona un `user_id` real —y con él sus reportes,
+// sus fotos y sus permisos— sin pedirle nombre, correo ni contraseña.
 //
 // En MODO DEMO (sin backend) simula un usuario para poder probar el flujo
 // de publicar sin configurar nada.
 // ============================================================================
 import { supabase, isConfigured } from './supabase.js';
-import { escapeHtml } from './ui.js';
+
 
 let currentUser = null;
 let esAdmin = false;
@@ -39,20 +43,36 @@ export async function initAuth() {
     await refreshAdmin();
     emit();
   });
+
+  // Sin sesión previa: creamos una anónima de inmediato, para que publicar
+  // no tope con ninguna pantalla de por medio.
+  if (!currentUser) await ensureSession();
 }
 
-export async function signIn() {
+/**
+ * Devuelve el usuario actual y, si no hay ninguno, abre una sesión anónima.
+ * Es el único punto de entrada a la sesión: no hay pantalla de login.
+ */
+export async function ensureSession() {
   if (!isConfigured) {
     // Demo: usuario falso en memoria
-    currentUser = { id: 'demo-user', user_metadata: { full_name: 'Usuario Demo' } };
-    emit();
-    return;
+    if (!currentUser) {
+      currentUser = { id: 'demo-user', user_metadata: { full_name: 'Usuario Demo' } };
+      emit();
+    }
+    return currentUser;
   }
-  // OAuth con Google; al volver, Supabase restablece la sesión.
-  await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.href.split('#')[0] },
-  });
+  if (currentUser) return currentUser;
+
+  const { data, error } = await supabase.auth.signInAnonymously();
+  if (error) {
+    console.error('No se pudo iniciar la sesión anónima:', error.message);
+    return null;
+  }
+  currentUser = data.user ?? null;
+  await refreshAdmin();
+  emit();
+  return currentUser;
 }
 
 export async function signOut() {
@@ -60,76 +80,15 @@ export async function signOut() {
   await supabase.auth.signOut();
 }
 
-// Primer nombre para mostrar en la barra, con formato prolijo:
-// - Si hay nombre de Google, usa el primero (capitalizado).
-// - Si solo hay correo, usa lo que va antes del @ (sin puntos ni números raros).
+// Primer nombre de la persona, con formato prolijo. Las sesiones anónimas no
+// tienen nombre: devuelve null y quien lo use decide qué mostrar.
 export function displayName() {
   const u = currentUser;
   if (!u) return null;
   let n = u.user_metadata?.full_name || u.user_metadata?.name || '';
   if (!n && u.email) n = u.email.split('@')[0].replace(/[._\-+0-9]+/g, ' ');
   const primero = n.trim().split(/\s+/)[0];
-  if (!primero) return 'Mi cuenta';
+  if (!primero) return null;
   return primero.charAt(0).toUpperCase() + primero.slice(1).toLowerCase();
 }
 
-// ---- Interfaz del botón de sesión ----------------------------------------
-export function initAuthUI() {
-  const btn = document.getElementById('btn-login');
-
-  onAuthChange((user) => {
-    btn.innerHTML = user
-      ? `<i class="ph ph-user-circle" aria-hidden="true"></i><span>${escapeHtml(displayName())}</span>`
-      : `<i class="ph ph-sign-in" aria-hidden="true"></i><span>Ingresar</span>`;
-  });
-
-  btn.addEventListener('click', () => {
-    if (getUser()) toggleMenu(btn);
-    else signIn();
-  });
-}
-
-// Pequeño menú con "Cerrar sesión".
-function toggleMenu(btn) {
-  let menu = document.getElementById('user-menu');
-  if (menu) { menu.remove(); return; }
-
-  menu = document.createElement('div');
-  menu.id = 'user-menu';
-  menu.className = 'user-menu';
-  menu.innerHTML = `
-    <button type="button" class="user-menu__item" data-alertas>
-      <i class="ph ph-bell" aria-hidden="true"></i> Alertas por zona
-    </button>
-    <button type="button" class="user-menu__item" data-signout>
-      <i class="ph ph-sign-out" aria-hidden="true"></i> Cerrar sesión
-    </button>`;
-  document.body.appendChild(menu);
-
-  menu.querySelector('[data-alertas]').addEventListener('click', () => {
-    menu.remove();
-    window.openAlertas?.();
-  });
-
-  const r = btn.getBoundingClientRect();
-  if (r.width === 0) {
-    // El botón de arriba está oculto (móvil): mostramos el menú sobre la barra inferior.
-    menu.style.bottom = 'calc(var(--tabbar-h, 62px) + 12px + env(safe-area-inset-bottom))';
-    menu.style.left = '50%';
-    menu.style.transform = 'translateX(-50%)';
-  } else {
-    menu.style.top = `${r.bottom + 6}px`;
-    menu.style.right = `${window.innerWidth - r.right}px`;
-  }
-
-  menu.querySelector('[data-signout]').addEventListener('click', async () => {
-    await signOut();
-    menu.remove();
-  });
-  // Cerrar al hacer click fuera
-  setTimeout(() => {
-    document.addEventListener('click', function close(e) {
-      if (!menu.contains(e.target) && e.target !== btn) { menu.remove(); document.removeEventListener('click', close); }
-    });
-  }, 0);
-}
