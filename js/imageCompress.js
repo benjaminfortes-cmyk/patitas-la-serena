@@ -9,7 +9,16 @@ export async function comprimirImagen(file, { maxLado = 1280, calidad = 0.7 } = 
     throw new Error('El archivo debe ser una imagen.');
   }
 
-  const bitmap = await createImageBitmap(file);
+  // Algunos formatos de celular (HEIC/HEIF de iPhone, AVIF) no los sabe
+  // decodificar el navegador. El error nativo es incomprensible, así que lo
+  // traducimos a algo accionable.
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    throw new Error('No pudimos leer esa foto. Prueba con otra, o sácale una captura de pantalla y sube esa.');
+  }
+
   let { width, height } = bitmap;
 
   if (Math.max(width, height) > maxLado) {

@@ -8,8 +8,7 @@
   <meta name="description" content="Mapa colaborativo de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo, Chile." />
   <meta name="google-site-verification" content="_rXavW0I76Q8R1HAGo8sTn4_H2Te2e1mvIW-1OsyY20" />
 
-  <!-- Vista previa al compartir (WhatsApp, Facebook, X). Sin esto, las redes
-       eligen cualquier imagen de la página: antes salía el logo de la ULS. -->
+  <!-- Vista previa al compartir -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Busca Huellitas" />
   <meta property="og:locale" content="es_CL" />
@@ -224,7 +223,7 @@
           <div id="photo-placeholder" class="photo-drop__placeholder">
             <i class="ph ph-camera" aria-hidden="true"></i>
             <span>Toca para tomar una foto o elegirla de tu galería</span>
-            <small>Máx 5 MB · se comprime automáticamente</small>
+            <small>Cualquier foto del celular sirve · se comprime sola</small>
           </div>
           <img id="photo-preview" class="photo-drop__preview" alt="Vista previa de la foto" hidden />
         </label>
@@ -267,7 +266,18 @@
       <!-- Ubicación -->
       <fieldset class="form__group" id="field-location">
         <legend>¿Dónde? <span class="req">*</span></legend>
-        <p class="form__hint">Marca el punto exacto en el mapa o usa tu ubicación actual.</p>
+        <p class="form__hint">Busca la dirección, marca el punto en el mapa o usa tu ubicación actual.</p>
+
+        <!-- Buscador de direcciones -->
+        <div class="addr">
+          <input type="search" id="addr-input" class="input" autocomplete="off"
+                 placeholder="Ej: Balmaceda 1234 · La Cantera · Parque Pedro de Valdivia" aria-label="Buscar dirección" />
+          <button type="button" id="btn-addr" class="btn btn--ghost btn--sm">
+            <i class="ph ph-magnifying-glass" aria-hidden="true"></i> Buscar
+          </button>
+        </div>
+        <ul id="addr-results" class="addr__results" hidden></ul>
+
         <div id="form-map" class="form-map"></div>
         <button type="button" id="btn-geoloc" class="btn btn--ghost btn--sm">
           <i class="ph ph-crosshair" aria-hidden="true"></i> Usar mi ubicación actual

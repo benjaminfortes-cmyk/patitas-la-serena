@@ -48,6 +48,13 @@ function wire() {
   // Geolocalización
   document.getElementById('btn-geoloc').addEventListener('click', usarMiUbicacion);
 
+  // Buscador de direcciones
+  document.getElementById('btn-addr').addEventListener('click', buscarDireccion);
+  document.getElementById('addr-input').addEventListener('keydown', (e) => {
+    // Enter dentro del formulario enviaría el reporte: lo usamos para buscar.
+    if (e.key === 'Enter') { e.preventDefault(); buscarDireccion(); }
+  });
+
   // Contador de caracteres
   const desc = document.getElementById('description');
   desc.addEventListener('input', () => {
@@ -171,6 +178,8 @@ function reset() {
   document.getElementById('photo-preview').hidden = true;
   document.getElementById('photo-placeholder').hidden = false;
   document.getElementById('desc-count').textContent = '0';
+  document.getElementById('addr-input').value = '';
+  document.getElementById('addr-results').hidden = true;
 
   // Fecha por defecto: ahora (en hora local, formato datetime-local)
   const ahora = new Date();
@@ -208,6 +217,63 @@ function fijarPunto(lat, lng) {
   estado.lng = lng;
 }
 
+// ---------------------------------------------------------------------------
+// Buscador de direcciones (Nominatim de OpenStreetMap)
+// ---------------------------------------------------------------------------
+
+// Caja que encierra la Región de Coquimbo: evita que "Balmaceda" caiga en
+// Santiago. Formato de Nominatim: izquierda,arriba,derecha,abajo.
+const CAJA_REGION = '-71.85,-28.95,-69.75,-32.35';
+
+async function buscarDireccion() {
+  const input = document.getElementById('addr-input');
+  const lista = document.getElementById('addr-results');
+  const consulta = input.value.trim();
+  if (!consulta) return;
+
+  lista.hidden = false;
+  lista.innerHTML = '<li class="addr__msg">Buscando…</li>';
+
+  const url = 'https://nominatim.openstreetmap.org/search'
+    + `?format=json&q=${encodeURIComponent(consulta)}`
+    + `&countrycodes=cl&viewbox=${CAJA_REGION}&bounded=1&limit=5&accept-language=es`;
+
+  let resultados;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error();
+    resultados = await r.json();
+  } catch {
+    lista.innerHTML = '<li class="addr__msg">No se pudo buscar. Marca el punto en el mapa.</li>';
+    return;
+  }
+
+  if (!resultados.length) {
+    lista.innerHTML = '<li class="addr__msg">Sin resultados. Prueba con menos palabras (solo la calle o el barrio) o marca el punto en el mapa.</li>';
+    return;
+  }
+
+  lista.innerHTML = '';
+  resultados.forEach((r) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'addr__opt';
+    btn.textContent = r.display_name;
+    btn.addEventListener('click', () => {
+      const lat = Number(r.lat), lng = Number(r.lon);
+      formMarker.setLatLng([lat, lng]);
+      formMap.setView([lat, lng], 17);
+      fijarPunto(lat, lng);
+      input.value = r.display_name.split(',').slice(0, 3).join(',');
+      lista.hidden = true;
+      toast('Ubicación marcada. Ajústala arrastrando el pin si hace falta.', 'exito');
+    });
+    li.appendChild(btn);
+    lista.appendChild(li);
+  });
+}
+
 function usarMiUbicacion() {
   if (!navigator.geolocation) return toast('Tu navegador no permite geolocalización.', 'error');
   toast('Obteniendo tu ubicación…', 'info');
@@ -230,11 +296,19 @@ async function onFoto(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  if (file.size > 5 * 1024 * 1024) {
-    toast('La foto supera los 5 MB. Elige una más liviana.', 'error');
+  // El tope se mide sobre el archivo ORIGINAL solo para descartar barbaridades
+  // (un video, un RAW enorme) que podrían colgar el navegador al procesarlos.
+  // Las fotos normales de celular pesan 4–8 MB y pasan sin problema: la
+  // compresión las deja bajo 300 KB antes de subirlas.
+  if (file.size > 30 * 1024 * 1024) {
+    toast('Ese archivo es demasiado pesado (más de 30 MB).', 'error');
     e.target.value = '';
     return;
   }
+
+  const placeholder = document.getElementById('photo-placeholder');
+  const textoOriginal = placeholder.innerHTML;
+  placeholder.innerHTML = '<i class="ph ph-spinner"></i><span>Preparando la foto…</span>';
 
   try {
     estado.fotoBlob = await comprimirImagen(file);
@@ -242,9 +316,14 @@ async function onFoto(e) {
     const img = document.getElementById('photo-preview');
     img.src = estado.fotoPreview;
     img.hidden = false;
-    document.getElementById('photo-placeholder').hidden = true;
+    placeholder.hidden = true;
   } catch (err) {
+    e.target.value = '';
     toast(err.message, 'error');
+  } finally {
+    // Siempre devolvemos el texto original: si no, al reabrir el formulario
+    // el recuadro se quedaría mostrando "Preparando la foto…".
+    placeholder.innerHTML = textoOriginal;
   }
 }
 
