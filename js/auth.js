@@ -156,9 +156,11 @@ export function initAdminAccess() {
       document.querySelector('.topbar__actions')?.appendChild(btn);
     }
 
+    // En el celular queda solo el escudo (hide-mobile): la barra ya lleva tres
+    // botones y el nombre no cabe. El ícono relleno ya indica sesión activa.
     btn.innerHTML = dentro
-      ? `<i class="ph-fill ph-shield-check" aria-hidden="true"></i><span>${escapeHtml(displayName() ?? 'Admin')}</span>`
-      : `<i class="ph ph-shield" aria-hidden="true"></i><span>Admin</span>`;
+      ? `<i class="ph-fill ph-shield-check" aria-hidden="true"></i><span class="hide-mobile">${escapeHtml(displayName() ?? 'Admin')}</span>`
+      : `<i class="ph ph-shield" aria-hidden="true"></i><span class="hide-mobile">Admin</span>`;
     btn.title = dentro ? 'Sesión de administrador — click para salir' : 'Entrar como administrador';
   });
 }
