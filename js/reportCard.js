@@ -65,7 +65,7 @@ export function openReportCard(report) {
       <img src="${escapeHtml(report.photo_url)}"
            alt="Foto de ${escapeHtml(tituloReporte(report))}" loading="lazy" />
       <span class="badge" style="--badge:${k.color}">${k.label}</span>
-      ${resuelto ? '<span class="badge badge--reunidos"><i class="ph-fill ph-heart"></i> Reunidos</span>' : ''}
+      ${resuelto ? '<span class="badge badge--reunidos"><i class="ph-fill ph-heart"></i> Reunidos con familia</span>' : ''}
     </div>
 
     <div class="detail__body">
@@ -132,7 +132,7 @@ async function compartir(report) {
 
 // ---- Marcar como resuelto -------------------------------------------------
 async function resolver(report) {
-  if (!confirm('¿Marcar como resuelto? Quedará visible 7 días como "Reunidos" y luego se archiva.')) return;
+  if (!confirm('¿Marcar como resuelto? Quedará visible 7 días como "Reunidos con familia" y luego se archiva.')) return;
 
   if (isConfigured) {
     const { error } = await supabase.rpc('mark_resolved', { p_report_id: report.id });
@@ -141,7 +141,7 @@ async function resolver(report) {
     const r = DEMO_REPORTS.find((x) => x.id === report.id);
     if (r) { r.lifecycle = 'resuelto'; r.resolved_at = new Date().toISOString(); }
   }
-  toast('¡Reunidos! Gracias por avisar.', 'exito');
+  toast('¡Reunidos con familia! Gracias por avisar.', 'exito');
   closeReportCard();
   window.recargarMapa?.();
 }

@@ -113,32 +113,25 @@ export function displayName() {
 }
 
 // ---- Acceso de administrador (oculto) --------------------------------------
-// El público nunca ve un login. Abriendo la app con ?admin=1 aparece un botón
-// discreto para entrar con Google; los permisos reales de moderación los da
-// la base de datos (profiles.role = 'admin'), no este botón.
-// El modo dura lo que dure la pestaña (sessionStorage).
+// El público nunca ve un login. El botón aparece en dos casos:
+//   1. Se abrió la app con ?admin=1 (para poder entrar).
+//   2. La sesión actual YA es de un administrador (para poder salir).
+// El caso 2 es clave: sin él, quien entra como admin queda atrapado en ese
+// modo —viendo el botón "Borrar" en cada reporte— sin ninguna forma de salir.
+// El público nunca cae en ninguno de los dos: siempre es anónimo.
+//
+// Los permisos reales los da la base de datos (profiles.role = 'admin'),
+// no este botón.
 const ADMIN_FLAG = 'bh-admin';
 
 export function initAdminAccess() {
   if (new URLSearchParams(location.search).get('admin') === '1') {
     sessionStorage.setItem(ADMIN_FLAG, '1');
   }
-  if (sessionStorage.getItem(ADMIN_FLAG) !== '1') return;
 
-  const btn = document.createElement('button');
-  btn.id = 'btn-admin';
-  btn.className = 'btn btn--ghost btn--sm';
-  document.querySelector('.topbar__actions')?.appendChild(btn);
+  let btn = null;
 
-  onAuthChange(() => {
-    const dentro = isAdminUser();
-    btn.innerHTML = dentro
-      ? `<i class="ph-fill ph-shield-check" aria-hidden="true"></i><span>${escapeHtml(displayName() ?? 'Admin')}</span>`
-      : `<i class="ph ph-shield" aria-hidden="true"></i><span>Admin</span>`;
-    btn.title = dentro ? 'Sesión de administrador — click para salir' : 'Entrar como administrador';
-  });
-
-  btn.addEventListener('click', async () => {
+  const alClick = async () => {
     if (isAdminUser()) {
       // Salir: volvemos a la app normal, con sesión anónima limpia.
       sessionStorage.removeItem(ADMIN_FLAG);
@@ -147,6 +140,26 @@ export function initAdminAccess() {
     } else {
       await signInWithGoogle();
     }
+  };
+
+  onAuthChange(() => {
+    const dentro = isAdminUser();
+    const pedido = sessionStorage.getItem(ADMIN_FLAG) === '1';
+
+    if (!dentro && !pedido) { btn?.remove(); btn = null; return; }
+
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'btn-admin';
+      btn.className = 'btn btn--ghost btn--sm';
+      btn.addEventListener('click', alClick);
+      document.querySelector('.topbar__actions')?.appendChild(btn);
+    }
+
+    btn.innerHTML = dentro
+      ? `<i class="ph-fill ph-shield-check" aria-hidden="true"></i><span>${escapeHtml(displayName() ?? 'Admin')}</span>`
+      : `<i class="ph ph-shield" aria-hidden="true"></i><span>Admin</span>`;
+    btn.title = dentro ? 'Sesión de administrador — click para salir' : 'Entrar como administrador';
   });
 }
 

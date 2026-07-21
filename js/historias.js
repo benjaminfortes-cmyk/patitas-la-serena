@@ -23,10 +23,10 @@ async function abrir() {
           <button class="historia" data-id="${escapeHtml(r.id)}">
             <div class="historia__img">
               <img src="${escapeHtml(r.photo_url)}" alt="Foto de ${escapeHtml(tituloReporte(r))}" loading="lazy" />
-              <span class="badge badge--reunidos"><i class="ph-fill ph-heart"></i> Reunidos</span>
+              <span class="badge badge--reunidos"><i class="ph-fill ph-heart"></i> Reunidos con familia</span>
             </div>
             <span class="historia__title">${escapeHtml(r.pet_name || nombreAnimal(r))}</span>
-            <small class="historia__when">${r.resolved_at ? 'Reunidos ' + tiempoRelativo(r.resolved_at) : ''}</small>
+            <small class="historia__when">${r.resolved_at ? 'Reunidos con familia ' + tiempoRelativo(r.resolved_at) : ''}</small>
           </button>`).join('')}
        </div>`
     : `<div class="historias__empty">
