@@ -57,7 +57,7 @@ function abrir() {
       maxZoom: 19, attribution: '&copy; OpenStreetMap',
     }).addTo(mapa);
     marcador = L.marker(MAP_CENTER, { draggable: true }).addTo(mapa);
-    circulo = L.circle(MAP_CENTER, { radius: seleccion.radius, color: '#FF6F61', fillOpacity: 0.12 }).addTo(mapa);
+    circulo = L.circle(MAP_CENTER, { radius: seleccion.radius, color: '#1f95b8', fillOpacity: 0.12 }).addTo(mapa);
 
     const fijar = (lat, lng) => {
       seleccion.lat = lat; seleccion.lng = lng;

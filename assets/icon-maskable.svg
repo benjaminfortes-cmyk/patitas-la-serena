@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Busca Huellitas">
   <!-- Versión maskable: el contenido vive dentro de la "zona segura" central
        para que no se corte cuando el sistema le aplica una máscara redonda. -->
-  <rect width="512" height="512" fill="#FF6F61"/>
+  <rect width="512" height="512" fill="#1f95b8"/>
   <g fill="#ffffff" transform="translate(86 86) scale(0.66)">
     <circle cx="168" cy="206" r="42"/>
     <circle cx="232" cy="168" r="46"/>
