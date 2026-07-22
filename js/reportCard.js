@@ -8,6 +8,7 @@
 import { KIND_META, nombreAnimal, tiempoRelativo, tituloReporte } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
 import { getUser, ensureSession, isAdminUser } from './auth.js';
+import { hacerAmpliable, cerrarVisor } from './lightbox.js';
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 
@@ -92,6 +93,9 @@ export function openReportCard(report) {
       ${accionesAdmin}
     </div>`;
 
+  // La foto se puede tocar para verla en grande
+  hacerAmpliable(sheet.querySelector('.detail__photo img'), `Foto de ${tituloReporte(report)}`);
+
   // Cableado de botones
   sheet.querySelector('[data-close]').addEventListener('click', closeReportCard);
   sheet.querySelector('[data-action="compartir"]').addEventListener('click', () => compartir(report));
@@ -110,6 +114,7 @@ export function openReportCard(report) {
 }
 
 export function closeReportCard() {
+  cerrarVisor();   // por si la ficha se cierra sola con la foto abierta
   document.getElementById('detail')?.classList.remove('sheet--open');
   document.getElementById('backdrop')?.classList.remove('backdrop--show');
 }
