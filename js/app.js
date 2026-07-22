@@ -14,6 +14,7 @@ import { initHistorias } from './historias.js';
 import { initPWA } from './pwa.js';
 import { initAlertas } from './alerts.js';
 import { initSoporte } from './support.js';
+import { initGuia } from './guia.js';
 
 // Recarga reportes según los filtros actuales y los pinta en el mapa.
 async function recargar() {
@@ -36,6 +37,7 @@ function init() {
   initHistorias();
   initAlertas();
   initSoporte();
+  initGuia();
   initPWA();
 
   // Si se abrió con ?reporte=ID (enlace compartido), abre esa ficha.
@@ -55,7 +57,9 @@ function init() {
     document.body.dataset.vista = v;
     document.querySelectorAll('.tabbar__item').forEach((t) =>
       t.classList.toggle('tabbar__item--active', t.dataset.tab === 'inicio' && v === 'home'));
-    if (v === 'mapa') requestAnimationFrame(() => getMap()?.invalidateSize());
+    // Síncrono a propósito: medir el contenedor ya fuerza el recálculo, y un
+    // requestAnimationFrame no se ejecuta si la pestaña está en segundo plano.
+    if (v === 'mapa') getMap()?.invalidateSize();
   };
   window.mostrarVista = mostrarVista;
   document.getElementById('btn-ir-mapa')?.addEventListener('click', () => mostrarVista('mapa'));
@@ -75,7 +79,7 @@ function init() {
   document.querySelector('[data-tab="reportar"]')?.addEventListener('click', () => window.openReportForm?.());
   document.querySelector('[data-tab="historias"]')?.addEventListener('click', () => document.getElementById('btn-historias')?.click());
   document.querySelector('[data-tab="soporte"]')?.addEventListener('click', () => document.getElementById('btn-soporte')?.click());
-  document.querySelector('[data-tab="alertas"]')?.addEventListener('click', () => window.openAlertas?.());
+  document.querySelector('[data-tab="guia"]')?.addEventListener('click', () => window.openGuia?.());
 
   // Aviso de modo demo
   if (!isConfigured) {

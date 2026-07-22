@@ -54,7 +54,9 @@ export function renderReports(reports, onSelect) {
   clusterGroup.clearLayers();
 
   reports.forEach((r) => {
-    if (r.lat == null || r.lng == null) return;
+    // Number.isFinite y no `!= null`: un NaN colado pasaría esa comprobación
+    // y Leaflet lanzaría "Invalid LatLng object" al crear el marcador.
+    if (!Number.isFinite(r.lat) || !Number.isFinite(r.lng)) return;
     const marker = L.marker([r.lat, r.lng], {
       icon: crearIcono(r),
       keyboard: true,
@@ -72,7 +74,20 @@ export function renderReports(reports, onSelect) {
 
 // Centra el mapa en una coordenada (al crear un reporte o elegir una coincidencia).
 export function flyTo(lat, lng, zoom = 16) {
-  map?.flyTo([lat, lng], zoom, { duration: 0.8 });
+  if (!map || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+  // Si el mapa venía oculto (vista Inicio) mide 0x0 hasta que se recalcula.
+  // La animación de flyTo divide por ese tamaño, y dividir por cero deja el
+  // centro en NaN: Leaflet revienta con "Invalid LatLng object: (NaN, NaN)".
+  // Medir fuerza el recálculo, así que aquí ya llega el tamaño real.
+  map.invalidateSize();
+  const { x, y } = map.getSize();
+  if (x === 0 || y === 0) {
+    map.setView([lat, lng], zoom, { animate: false });
+    return;
+  }
+
+  map.flyTo([lat, lng], zoom, { duration: 0.8 });
 }
 
 export function getMap() {

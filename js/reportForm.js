@@ -507,6 +507,8 @@ async function onSubmit(e) {
       const nuevo = !isConfigured ? await publicarDemo(datos) : await publicarReal(datos);
       cerrar();
       toast('¡Reporte publicado! Gracias por ayudar.', 'exito');
+      // Al mapa, para que vea su reporte recién publicado.
+      window.mostrarVista?.('mapa');
       flyTo(datos.lat, datos.lng, 16);
       onPublished?.();
       // Matching inteligente: busca coincidencias cercanas del tipo opuesto.
