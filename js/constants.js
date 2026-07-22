@@ -5,10 +5,15 @@
 
 // Los colores acompañan el significado: rojo urgencia, azul a salvo,
 // ámbar dato incierto. El verde queda para los reencuentros (--reunidos).
+// `titular` es la frase de la franja superior de la ficha: dice de una lo que
+// pasa con ese animal, sin que haya que interpretar una etiqueta.
 export const KIND_META = {
-  perdido:    { label: 'Perdido',                   color: '#EF4444', verbo: 'busca a' },
-  encontrado: { label: 'Resguardado temporalmente', color: '#2563EB', verbo: 'resguardó a' },
-  avistado:   { label: 'Avistado',                  color: '#CA8A04', verbo: 'vio a' },
+  perdido:    { label: 'Perdido',                   color: '#EF4444', verbo: 'busca a',
+                titular: 'Se busca',     verboCorto: 'lo busca',     icon: 'ph-magnifying-glass' },
+  encontrado: { label: 'Resguardado temporalmente', color: '#2563EB', verbo: 'resguardó a',
+                titular: 'Está a salvo', verboCorto: 'lo resguarda', icon: 'ph-house-line' },
+  avistado:   { label: 'Avistado',                  color: '#CA8A04', verbo: 'vio a',
+                titular: 'Lo vieron',    verboCorto: 'lo vio',       icon: 'ph-eye' },
 };
 
 // `icon` es el nombre del ícono Phosphor que representa al animal.
@@ -43,6 +48,18 @@ export function tiempoRelativo(iso) {
   if (d < 30) return `hace ${d} ${d === 1 ? 'día' : 'días'}`;
   const meses = Math.round(d / 30);
   return `hace ${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+}
+
+// Fecha exacta y corta: "10 de julio". Acompaña a la relativa, que sirve para
+// medir urgencia pero no para recordar "¿fue el día que salí de viaje?".
+export function fechaCorta(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const texto = d.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+  // Si cruzó de año, el mes solo no basta.
+  return d.getFullYear() === new Date().getFullYear()
+    ? texto
+    : `${texto} ${d.getFullYear()}`;
 }
 
 // Título corto para una mascota/reporte (para mensajes y compartir).

@@ -5,7 +5,7 @@
 // fallback a copiar), denuncia de info incorrecta/duplicada, y —si es del
 // usuario logueado— botones "Marcar como resuelto ❤️" y "Editar".
 // ============================================================================
-import { KIND_META, nombreAnimal, tiempoRelativo, tituloReporte } from './constants.js';
+import { KIND_META, nombreAnimal, tiempoRelativo, fechaCorta, tituloReporte } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
 import { getUser, ensureSession, isAdminUser } from './auth.js';
 import { hacerAmpliable, cerrarVisor } from './lightbox.js';
@@ -30,9 +30,6 @@ export function openReportCard(report) {
   // El administrador puede gestionar cualquier reporte (la base de datos
   // también lo permite vía RLS; aquí solo mostramos los botones).
   const puedeGestionar = esDueno || (user && isAdminUser());
-
-  const fila = (label, val) =>
-    val ? `<div class="detail__row"><dt>${label}</dt><dd>${escapeHtml(val)}</dd></div>` : '';
 
   // Botones de gestión (resolver / editar / sigue activo): dueño o admin, si no está resuelto.
   const accionesDueno = (puedeGestionar && !resuelto) ? `
@@ -60,38 +57,67 @@ export function openReportCard(report) {
       </div>
     </div>` : '';
 
+  // Datos cortos y exactos, en cuadrícula. Solo los que existen: si el reporte
+  // no trae raza, no queda una celda vacía ocupando media fila.
+  const dato = (label, val) =>
+    val ? `<div class="detail__fact"><span class="detail__fact-k">${label}</span>
+             <span class="detail__fact-v">${escapeHtml(val)}</span></div>` : '';
+  const datos = [
+    dato('Raza', report.breed),
+    dato('Tamaño', SIZE_LABEL[report.size]),
+    dato(report.kind === 'perdido' ? 'Se perdió el' : 'Visto el', fechaCorta(report.event_at)),
+  ].join('');
+
   sheet.innerHTML = `
-    <button class="sheet__close" aria-label="Cerrar" data-close>&times;</button>
+    <div class="detail__strip" style="--strip:${resuelto ? 'var(--reunidos)' : k.color}">
+      <span class="detail__strip-l">
+        <i class="ph-fill ${resuelto ? 'ph-heart' : k.icon}" aria-hidden="true"></i>
+        ${resuelto ? 'Reunidos con familia' : k.titular}
+      </span>
+      <span class="detail__strip-r">${tiempoRelativo(report.event_at)}</span>
+    </div>
+
+    <div class="detail__head">
+      <button class="sheet__close" aria-label="Cerrar" data-close>&times;</button>
+      <h2 class="detail__title">${report.pet_name ? escapeHtml(report.pet_name) : nombreAnimal(report)}</h2>
+      <p class="detail__meta">
+        ${report.pet_name ? `<span>${nombreAnimal(report)}</span>` : ''}
+        <span class="detail__sector" hidden></span>
+      </p>
+    </div>
+
     <div class="detail__photo">
       <img src="${escapeHtml(report.photo_url)}"
            alt="Foto de ${escapeHtml(tituloReporte(report))}" loading="lazy" />
-      <span class="badge" style="--badge:${k.color}">${k.label}</span>
-      ${resuelto ? '<span class="badge badge--reunidos"><i class="ph-fill ph-heart"></i> Reunidos con familia</span>' : ''}
+      <span class="detail__zoom"><i class="ph ph-magnifying-glass-plus" aria-hidden="true"></i> Ampliar</span>
     </div>
 
     <div class="detail__body">
-      <h2 class="detail__title">${report.pet_name ? escapeHtml(report.pet_name) : nombreAnimal(report)}</h2>
-      <p class="detail__meta">${nombreAnimal(report)} · ${tiempoRelativo(report.event_at)}</p>
+      ${datos ? `<div class="detail__facts">${datos}</div>` : ''}
 
-      <dl class="detail__list">
-        ${fila('Raza', report.breed)}
-        ${fila('Color / señas', report.color)}
-        ${fila('Tamaño', SIZE_LABEL[report.size])}
-        ${fila('Descripción', report.description)}
-      </dl>
+      ${report.color ? `
+        <div class="detail__note">
+          <span class="detail__note-k">Señas particulares</span>
+          <span class="detail__note-v">${escapeHtml(report.color)}</span>
+        </div>` : ''}
+
+      ${report.description ? `<p class="detail__quote">${escapeHtml(report.description)}</p>` : ''}
 
       <a class="btn btn--whatsapp" href="${whatsappLink(report)}" target="_blank" rel="noopener">
-        <i class="ph ph-whatsapp-logo"></i> Contactar por WhatsApp
+        <i class="ph ph-whatsapp-logo"></i> Escribir a quien ${k.verboCorto}
       </a>
 
       <div class="detail__actions">
-        <button class="btn btn--soft" data-action="compartir"><i class="ph ph-share-network"></i> Compartir</button>
-        <button class="btn btn--soft" data-action="denunciar"><i class="ph ph-flag"></i> Info incorrecta</button>
+        <button class="detail__minor" data-action="compartir"><i class="ph ph-share-network"></i> Compartir</button>
+        <button class="detail__minor" data-action="denunciar"><i class="ph ph-flag"></i> Reportar</button>
       </div>
 
       ${accionesDueno}
       ${accionesAdmin}
     </div>`;
+
+  // El sector se resuelve después: la ficha no espera a la red para abrirse.
+  mostrarSector(sheet, report);
 
   // La foto se puede tocar para verla en grande
   hacerAmpliable(sheet.querySelector('.detail__photo img'), `Foto de ${tituloReporte(report)}`);
@@ -117,6 +143,40 @@ export function closeReportCard() {
   cerrarVisor();   // por si la ficha se cierra sola con la foto abierta
   document.getElementById('detail')?.classList.remove('sheet--open');
   document.getElementById('backdrop')?.classList.remove('backdrop--show');
+}
+
+// ---- Sector (geocodificación inversa) -------------------------------------
+// Para reconocer a un animal el barrio importa tanto como el color, pero en la
+// base solo hay un punto. Se lo preguntamos a Photon —el mismo servicio que ya
+// usa el buscador de direcciones— después de abrir la ficha, para no demorarla.
+const PHOTON_REVERSE = 'https://photon.komoot.io/reverse';
+const sectorCache = new Map();   // id del reporte → texto ya resuelto
+
+async function mostrarSector(sheet, report) {
+  if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
+
+  const pintar = (texto) => {
+    // La ficha pudo cerrarse o cambiar de reporte mientras respondía la red.
+    const el = sheet.querySelector('.detail__sector');
+    if (!el || !texto) return;
+    el.textContent = texto;
+    el.hidden = false;
+  };
+
+  if (sectorCache.has(report.id)) return pintar(sectorCache.get(report.id));
+
+  let texto = '';
+  try {
+    const r = await fetch(`${PHOTON_REVERSE}?lat=${report.lat}&lon=${report.lng}&limit=1`);
+    if (!r.ok) throw new Error();
+    const p = (await r.json()).features?.[0]?.properties ?? {};
+    // district = barrio/población; city = comuna. Sin repetir si coinciden.
+    texto = [...new Set([p.district, p.city ?? p.county].filter(Boolean))].join(', ');
+  } catch {
+    return;   // sin sector la ficha se ve igual, solo con una línea menos
+  }
+  sectorCache.set(report.id, texto);
+  pintar(texto);
 }
 
 // ---- Compartir ------------------------------------------------------------

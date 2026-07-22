@@ -67,8 +67,16 @@ body {
 .btn--primary { background: var(--brand); color: #fff; box-shadow: var(--shadow-sm); }
 .btn--primary:hover { background: var(--brand-dark); }
 .btn--ghost { background: var(--brand-soft); color: var(--brand-dark); }
-.btn--whatsapp { width: 100%; background: #25D366; color: #fff; font-size: 1.05rem; padding: 14px; }
-.btn--whatsapp:hover { background: #1ebe5b; }
+/* Píldora verde suave: el color de WhatsApp se reconoce igual sin gritar, y
+   convive mejor con la franja de color del estado que hay arriba.
+   text-decoration: es un <a>, si no hereda el subrayado del navegador y
+   parece un enlace roto en vez de un botón. */
+.btn--whatsapp {
+  width: 100%; font-size: 1.02rem; padding: 14px; border-radius: 999px;
+  background: #eafaf0; color: #16A34A; box-shadow: inset 0 0 0 1.5px #b6e6c8;
+  text-decoration: none;
+}
+.btn--whatsapp:hover { background: #dcf5e6; color: #12833c; box-shadow: inset 0 0 0 1.5px #8fd8ab; }
 .btn i { font-size: 1.2em; }
 
 /* ---------- Filtros ---------- */
@@ -355,8 +363,29 @@ body[data-vista="home"] .fab { display: none; }
   box-shadow: var(--shadow-sm);
 }
 
-.detail__photo { position: relative; }
-.detail__photo img { width: 100%; height: 280px; object-fit: cover; display: block; }
+/* Franja de estado: lo primero que se lee, en el color del tipo de reporte. */
+.detail__strip {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: var(--strip, var(--brand)); color: #fff; padding: 11px 18px;
+}
+.detail__strip-l {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 800; font-size: .82rem; letter-spacing: .1em; text-transform: uppercase;
+}
+.detail__strip-r { font-size: .8rem; font-weight: 700; color: rgba(255,255,255,.92); }
+
+.detail__head { position: relative; padding: 16px 18px 0; }
+/* El botón de cerrar ya no va sobre la foto, sino sobre fondo blanco. */
+.detail__head .sheet__close { top: 10px; right: 12px; background: var(--brand-soft); }
+
+.detail__photo { position: relative; margin: 14px 18px 0; border-radius: 16px; overflow: hidden; }
+.detail__photo img { width: 100%; height: 220px; object-fit: cover; display: block; }
+.detail__zoom {
+  position: absolute; right: 10px; bottom: 10px; pointer-events: none;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(9,28,35,.72); color: #fff; font-size: .74rem; font-weight: 700;
+  padding: 5px 9px; border-radius: 8px;
+}
 
 /* Foto ampliable */
 .is-zoomable { cursor: zoom-in; }
@@ -387,13 +416,47 @@ body[data-vista="home"] .fab { display: none; }
 }
 .badge--reunidos { left: auto; right: 12px; background: var(--reunidos); }
 
-.detail__body { padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
-.detail__title { font-size: 1.5rem; font-weight: 800; }
-.detail__meta { color: var(--muted); margin-bottom: 14px; font-weight: 700; }
-.detail__list { display: grid; gap: 10px; margin-bottom: 18px; }
-.detail__row { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: baseline; }
-.detail__row dt { color: var(--muted); font-weight: 700; font-size: .9rem; }
-.detail__row dd { font-weight: 700; }
+.detail__body {
+  padding: 16px 18px calc(18px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 14px;
+}
+.detail__title { font-size: 1.55rem; font-weight: 800; letter-spacing: -.02em; padding-right: 44px; }
+.detail__meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  color: var(--muted); font-weight: 700; font-size: .9rem; margin-top: 3px;
+}
+/* El punto separa animal de sector; si el nombre de la mascota no existe el
+   título ya dice "Perro", no se repite arriba y el sector queda solo. */
+.detail__sector:not(:first-child)::before { content: '·'; margin-right: 8px; }
+
+/* Datos exactos y cortos, en cuadrícula de dos. Si queda uno solo, se estira. */
+.detail__facts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--line); border: 1px solid var(--line);
+  border-radius: 14px; overflow: hidden;
+}
+.detail__fact {
+  background: var(--surface); padding: 10px 13px;
+  display: flex; flex-direction: column; gap: 1px;
+}
+.detail__fact:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.detail__fact-k {
+  font-size: .67rem; font-weight: 800; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--muted);
+}
+.detail__fact-v { font-size: .96rem; font-weight: 800; }
+
+/* Texto libre: la etiqueta va arriba, el dato usa todo el ancho. */
+.detail__note { display: flex; flex-direction: column; gap: 3px; }
+.detail__note-k {
+  font-size: .68rem; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted);
+}
+.detail__note-v { font-size: .97rem; font-weight: 600; }
+.detail__quote {
+  border-left: 3px solid var(--line); padding-left: 12px;
+  font-size: .95rem; color: var(--ink); opacity: .82; font-style: italic;
+}
 
 /* ---------- Toasts ---------- */
 .toasts {
@@ -562,15 +625,25 @@ textarea.input { resize: vertical; }
 .btn--outline { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
 .btn--outline:hover { border-color: var(--brand); color: var(--brand-dark); }
 
-.detail__actions { display: flex; gap: 10px; margin-top: 12px; }
-.detail__actions .btn { flex: 1; font-size: .92rem; padding: 11px; }
+/* Compartir y Reportar son secundarias: texto discreto, sin fondo compitiendo
+   con el botón de WhatsApp. */
+.detail__actions { display: flex; justify-content: center; gap: 22px; }
+.detail__minor {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer; font: inherit;
+  color: var(--muted); font-size: .88rem; font-weight: 700;
+  padding: 6px 8px; border-radius: 8px; transition: color .15s, background .15s;
+}
+.detail__minor:hover { color: var(--brand-dark); background: var(--brand-soft); }
+.detail__minor:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
 .detail__owner {
-  display: flex; gap: 10px; margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--line);
+  display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line);
 }
 .detail__owner .btn { flex: 1; font-size: .92rem; padding: 11px; }
 
 /* Zona de administrador (archivar / borrar cualquier reporte) */
-.detail__admin { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.detail__admin { padding-top: 12px; border-top: 1px dashed var(--line); }
 .detail__adminbtns { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
 .detail__adminbtns .btn { flex: 1; font-size: .92rem; padding: 11px; }
 .detail__archivedtag {
@@ -648,9 +721,9 @@ textarea.input { resize: vertical; }
 }
 @media (max-width: 420px) { .hide-mobile { display: none; } }
 
-.detail__keepalive { width: 100%; margin-top: 10px; font-size: .9rem; }
+.detail__keepalive { width: 100%; font-size: .9rem; }
 .detail__adminnote {
-  display: flex; align-items: center; gap: 6px; margin-top: 12px;
+  display: flex; align-items: center; gap: 6px;
   color: var(--muted); font-size: .85rem; font-weight: 600;
 }
 .badge i { vertical-align: -2px; }
