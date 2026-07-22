@@ -264,15 +264,6 @@ body[data-vista="home"] .view--map  { display: none; }
 .pin--resuelto { background: var(--reunidos); }
 @keyframes pin-pop { from { transform: rotate(-45deg) scale(0); } to { transform: rotate(-45deg) scale(1); } }
 
-/* Clusters en tono celeste */
-.marker-cluster {
-  background: rgba(31,149,184,.25); border-radius: 50%;
-}
-.marker-cluster div {
-  background: var(--brand); color: #fff; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 700;
-  box-shadow: var(--shadow-sm);
-}
-
 /* ---------- Botón flotante ---------- */
 .fab {
   position: fixed; right: 18px; bottom: 24px; z-index: 1100;

@@ -21,12 +21,38 @@ function visibleEnMapa(r) {
   return r.resolved_at && (Date.now() - new Date(r.resolved_at).getTime()) <= VENTANA_RESUELTO_MS;
 }
 
-// Búsqueda de texto local sobre los campos visibles (nombre/raza/color/desc).
+// Minúsculas y sin tildes, para que "cafe" encuentre "café" y viceversa.
+function normalizar(s) {
+  return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+// Sinónimos de lo que la gente escribe → palabras que sí están en el reporte.
+// (el valor guardado es 'chico'/'mediano'/'grande', pero se busca "pequeño")
+const SINONIMOS = {
+  pequeno: 'chico', pequena: 'chico', peque: 'chico', mini: 'chico',
+  pequenito: 'chico', chiquito: 'chico', chica: 'chico',
+  medio: 'mediano', mediana: 'mediano',
+  grandes: 'grande', grandote: 'grande',
+  perra: 'perro', perrito: 'perro', perrita: 'perro', can: 'perro', quiltro: 'perro',
+  gata: 'gato', gatito: 'gato', gatita: 'gato', minino: 'gato',
+  perdida: 'perdido', perdidos: 'perdido', extraviado: 'perdido', extraviada: 'perdido',
+  encontrada: 'encontrado', encontrados: 'encontrado', hallado: 'encontrado',
+  avistada: 'avistado', avistamiento: 'avistado', visto: 'avistado',
+};
+
+// Búsqueda de texto local sobre todos los campos visibles del reporte:
+// nombre, raza, color, descripción, tamaño, tipo de animal y estado.
 function coincideTexto(r, q) {
   if (!q) return true;
-  const txt = [r.pet_name, r.breed, r.color, r.description, r.animal_type_other]
-    .filter(Boolean).join(' ').toLowerCase();
-  return q.toLowerCase().split(/\s+/).every((t) => txt.includes(t));
+  const txt = normalizar(
+    [r.pet_name, r.breed, r.color, r.description, r.animal_type_other,
+     r.size, r.animal_type, r.kind]
+      .filter(Boolean).join(' ')
+  );
+  return normalizar(q).split(/\s+/).filter(Boolean).every((t) => {
+    const sin = SINONIMOS[t];
+    return txt.includes(t) || (sin && txt.includes(sin));
+  });
 }
 
 /**

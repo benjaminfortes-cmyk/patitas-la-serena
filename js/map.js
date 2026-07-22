@@ -6,7 +6,7 @@ import { MAP_CENTER, MAP_ZOOM } from './config.js';
 import { KIND_META, ANIMAL_META } from './constants.js';
 
 let map;
-let clusterGroup;
+let markersLayer;
 
 // Crea el ícono de un marcador: pin con el color del estado y el ícono del animal.
 function crearIcono(report) {
@@ -39,19 +39,17 @@ export function initMap() {
     attribution: '&copy; OpenStreetMap',
   }).addTo(map);
 
-  // Agrupa marcadores cercanos en clusters (Leaflet.markercluster).
-  clusterGroup = L.markerClusterGroup({
-    maxClusterRadius: 50,
-    showCoverageOnHover: false,
-  });
-  map.addLayer(clusterGroup);
+  // Capa simple: cada reporte se ve siempre como su propio marcador,
+  // sin agruparse al alejar el zoom.
+  markersLayer = L.layerGroup();
+  map.addLayer(markersLayer);
 
   return map;
 }
 
 // Pinta (o repinta) los reportes en el mapa. `onSelect` se llama al hacer click.
 export function renderReports(reports, onSelect) {
-  clusterGroup.clearLayers();
+  markersLayer.clearLayers();
 
   reports.forEach((r) => {
     // Number.isFinite y no `!= null`: un NaN colado pasaría esa comprobación
@@ -68,7 +66,7 @@ export function renderReports(reports, onSelect) {
     marker.on('keypress', (e) => {
       if (e.originalEvent.key === 'Enter') onSelect?.(r);
     });
-    clusterGroup.addLayer(marker);
+    markersLayer.addLayer(marker);
   });
 }
 
