@@ -34,8 +34,9 @@ export function initReportForm(cbRecargar) {
 function wire() {
   // Selectores segmentados (kind / animal / size)
   segmented('kind', (v) => {
-    // El nombre de la mascota solo aplica a "perdido"
+    // El nombre solo lo sabe el dueño; a los demás no se les pregunta.
     document.getElementById('field-name').hidden = v !== 'perdido';
+    aplicarTextos(v);
   });
   segmented('animal', (v) => {
     document.getElementById('animal-other').hidden = v !== 'otro';
@@ -80,6 +81,76 @@ function wire() {
 
   // Enviar
   document.getElementById('report-form').addEventListener('submit', onSubmit);
+}
+
+// ---------------------------------------------------------------------------
+// Textos que cambian según lo que pasó.
+//
+// Quien vio un animal suelto no sabe su nombre, su raza ni su edad: preguntarle
+// lo mismo que al dueño lo hace dudar y abandonar. Cada caso pregunta lo suyo.
+// ---------------------------------------------------------------------------
+const TEXTOS = {
+  perdido: {
+    foto:      'Sube una foto de tu mascota',
+    breed:     'Raza',
+    color:     'Color y señas particulares',
+    colorPh:   'Ej: café con pecho blanco, cojea de una pata…',
+    fecha:     '¿Cuándo se perdió?',
+    donde:     '¿Dónde se perdió?',
+    dondeHint: 'Marca el último lugar donde la viste. Busca la dirección, toca el mapa o usa tu ubicación.',
+    desc:      'Cuenta lo que ayude a reconocerla: si es asustadiza, si responde a su nombre…',
+  },
+  encontrado: {
+    foto:      'Sube una foto del animal que tienes resguardado',
+    breed:     'Raza aproximada (si no sabes, déjalo en blanco)',
+    color:     'Color y señas particulares',
+    colorPh:   'Ej: negro con las patas blancas, tiene collar rojo…',
+    fecha:     '¿Cuándo lo encontraste?',
+    donde:     '¿Dónde lo encontraste?',
+    dondeHint: 'Marca dónde lo encontraste, no dónde está ahora. Busca la dirección, toca el mapa o usa tu ubicación.',
+    desc:      'Cuenta si trae collar o placa, cómo está de salud, si se deja acercar…',
+  },
+  avistado: {
+    foto:      'Sube una foto del animal que viste',
+    breed:     'Raza aproximada (si no sabes, déjalo en blanco)',
+    color:     'Color y señas que alcanzaste a ver',
+    colorPh:   'Ej: café claro, mediano, andaba con collar…',
+    fecha:     '¿Cuándo lo viste?',
+    donde:     '¿Dónde lo viste?',
+    dondeHint: 'Marca el lugar exacto donde lo viste. Busca la dirección, toca el mapa o usa tu ubicación.',
+    desc:      'Cuenta hacia dónde iba, si se dejaba acercar, si se veía herido…',
+  },
+};
+
+// Textos neutros: se usan mientras nadie ha elegido todavía qué pasó.
+const TEXTOS_NEUTROS = {
+  foto:      'Toca para tomar una foto o elegirla de tu galería',
+  breed:     'Raza aproximada',
+  color:     'Color / señas particulares',
+  colorPh:   'Ej: café con pecho blanco, cojea de una pata…',
+  fecha:     '¿Cuándo fue?',
+  donde:     '¿Dónde?',
+  dondeHint: 'Busca la dirección, marca el punto en el mapa o usa tu ubicación actual.',
+  desc:      'Cuenta detalles que ayuden a identificarla…',
+};
+
+function aplicarTextos(kind) {
+  const t = TEXTOS[kind] ?? TEXTOS_NEUTROS;
+  // `photo-hint` desaparece mientras se comprime una foto, así que ningún
+  // cambio de tipo en ese momento debe reventar el resto de los textos.
+  const poner = (id, prop, valor) => {
+    const el = document.getElementById(id);
+    if (el) el[prop] = valor;
+  };
+  poner('photo-hint',  'textContent', t.foto);
+  poner('label-breed', 'textContent', t.breed);
+  poner('label-color', 'textContent', t.color);
+  poner('color',       'placeholder', t.colorPh);
+  poner('label-fecha', 'textContent', t.fecha);
+  poner('description', 'placeholder', t.desc);
+  poner('hint-donde',  'textContent', t.dondeHint);
+  // El asterisco de obligatorio vive dentro de la leyenda: hay que rehacerlo.
+  poner('legend-donde', 'innerHTML', `${t.donde} <span class="req">*</span>`);
 }
 
 // Helper genérico para botones segmentados (radio visual).
@@ -143,6 +214,7 @@ function setSeg(group, value) {
 // Rellena el formulario con un reporte existente (modo edición).
 function prefill(r) {
   setSeg('kind', r.kind);
+  aplicarTextos(r.kind);   // setSeg no dispara el callback del selector
   document.getElementById('field-name').hidden = r.kind !== 'perdido';
   setSeg('animal', r.animal_type);
   const other = document.getElementById('animal-other');
@@ -188,6 +260,7 @@ function reset() {
   });
   document.getElementById('field-name').hidden = true;
   document.getElementById('animal-other').hidden = true;
+  aplicarTextos(null);   // vuelve a los textos neutros
   document.getElementById('photo-preview').hidden = true;
   document.getElementById('photo-placeholder').hidden = false;
   document.getElementById('desc-count').textContent = '0';

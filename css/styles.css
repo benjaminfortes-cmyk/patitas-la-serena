@@ -13,10 +13,11 @@
   --muted:        #6B8189;
   --line:         #DCEAF0;
 
-  --perdido:      #EF4444;
-  --encontrado:   #16A34A;
-  --avistado:     #2563EB;
-  --reunidos:     #E11D8F;
+  --perdido:      #EF4444;   /* urgencia: lo estoy buscando  */
+  --encontrado:   #2563EB;   /* a salvo: alguien lo resguarda */
+  --avistado:     #CA8A04;   /* dato suelto: solo lo vieron   */
+  --reunidos:     #16A34A;   /* caso cerrado, final feliz     */
+  --exito:        #16A34A;
 
   --shadow-sm: 0 2px 8px rgba(16, 42, 52, .08);
   --shadow-md: 0 8px 24px rgba(16, 42, 52, .14);
@@ -414,7 +415,7 @@ body[data-vista="home"] .fab { display: none; }
   padding: 12px 18px; border-radius: 999px; box-shadow: var(--shadow-md);
   animation: toast-in .28s ease; text-align: center;
 }
-.toast--exito { background: var(--encontrado); }
+.toast--exito { background: var(--exito); }
 .toast--error { background: var(--perdido); }
 .toast--out { animation: toast-out .4s ease forwards; }
 @keyframes toast-in  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }

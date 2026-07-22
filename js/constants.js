@@ -3,10 +3,12 @@
 // y pequeños helpers de formato. Lo usan el mapa, los filtros y las fichas.
 // ============================================================================
 
+// Los colores acompañan el significado: rojo urgencia, azul a salvo,
+// ámbar dato incierto. El verde queda para los reencuentros (--reunidos).
 export const KIND_META = {
-  perdido:    { label: 'Perdido',    color: '#EF4444', verbo: 'busca a' },
-  encontrado: { label: 'Encontrado', color: '#16A34A', verbo: 'resguardó a' },
-  avistado:   { label: 'Avistado',   color: '#2563EB', verbo: 'vio a' },
+  perdido:    { label: 'Perdido',                   color: '#EF4444', verbo: 'busca a' },
+  encontrado: { label: 'Resguardado temporalmente', color: '#2563EB', verbo: 'resguardó a' },
+  avistado:   { label: 'Avistado',                  color: '#CA8A04', verbo: 'vio a' },
 };
 
 // `icon` es el nombre del ícono Phosphor que representa al animal.

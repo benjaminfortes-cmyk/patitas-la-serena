@@ -156,7 +156,7 @@
             <select id="filter-estado" aria-label="Estado del reporte">
               <option value="">Estado: todos</option>
               <option value="perdido">Perdidos</option>
-              <option value="encontrado">Encontrados</option>
+              <option value="encontrado">Resguardados</option>
               <option value="avistado">Avistados</option>
             </select>
           </span>
@@ -229,10 +229,10 @@
             <i class="ph ph-magnifying-glass" aria-hidden="true"></i> Perdí a mi mascota
           </button>
           <button type="button" class="seg__btn seg__btn--encontrado" data-seg="kind" data-value="encontrado" aria-pressed="false">
-            <i class="ph ph-house-line" aria-hidden="true"></i> Encontré y resguardé
+            <i class="ph ph-house-line" aria-hidden="true"></i> Lo tengo resguardado
           </button>
           <button type="button" class="seg__btn seg__btn--avistado"   data-seg="kind" data-value="avistado"   aria-pressed="false">
-            <i class="ph ph-eye" aria-hidden="true"></i> Vi una suelta
+            <i class="ph ph-eye" aria-hidden="true"></i> Vi uno suelto
           </button>
         </div>
       </fieldset>
@@ -254,7 +254,7 @@
         <label class="photo-drop" for="photo">
           <div id="photo-placeholder" class="photo-drop__placeholder">
             <i class="ph ph-camera" aria-hidden="true"></i>
-            <span>Toca para tomar una foto o elegirla de tu galería</span>
+            <span id="photo-hint">Toca para tomar una foto o elegirla de tu galería</span>
             <small>Cualquier foto del celular sirve · se comprime sola</small>
           </div>
           <img id="photo-preview" class="photo-drop__preview" alt="Vista previa de la foto" hidden />
@@ -271,7 +271,7 @@
       <!-- Raza --- tamaño -->
       <div class="form__row">
         <div class="form__group">
-          <label for="breed">Raza aproximada</label>
+          <label for="breed" id="label-breed">Raza aproximada</label>
           <input type="text" id="breed" class="input" placeholder="Ej: Quiltro, Labrador…" maxlength="60" />
         </div>
         <div class="form__group">
@@ -285,20 +285,20 @@
       </div>
 
       <div class="form__group">
-        <label for="color">Color / señas particulares</label>
+        <label for="color" id="label-color">Color / señas particulares</label>
         <input type="text" id="color" class="input" placeholder="Ej: café con pecho blanco, cojea de una pata…" maxlength="120" />
       </div>
 
       <!-- Fecha del evento -->
       <div class="form__group">
-        <label for="event-at">¿Cuándo fue?</label>
+        <label for="event-at" id="label-fecha">¿Cuándo fue?</label>
         <input type="datetime-local" id="event-at" class="input" />
       </div>
 
       <!-- Ubicación -->
       <fieldset class="form__group" id="field-location">
-        <legend>¿Dónde? <span class="req">*</span></legend>
-        <p class="form__hint">Busca la dirección, marca el punto en el mapa o usa tu ubicación actual.</p>
+        <legend id="legend-donde">¿Dónde? <span class="req">*</span></legend>
+        <p class="form__hint" id="hint-donde">Busca la dirección, marca el punto en el mapa o usa tu ubicación actual.</p>
 
         <!-- Buscador de direcciones -->
         <div class="addr">
