@@ -240,7 +240,7 @@ function vistaCompartir(s) {
 
   const segK = [
     { label: 'Perdidos',     valor: s.kinds[0], color: COLOR_KIND.perdido },
-    { label: 'Resguardados', valor: s.kinds[1], color: COLOR_KIND.encontrado },
+    { label: 'Rescatados, buscan familia', valor: s.kinds[1], color: COLOR_KIND.encontrado },
     { label: 'Avistados',    valor: s.kinds[2], color: COLOR_KIND.avistado },
   ];
   const legK = segK.map((x, i) => ({ ...x, pct: pctKind[i] }));
@@ -322,7 +322,7 @@ function vistaInterna(s) {
 
   const filas = [
     ['Perdidos',                s.kinds[0]],
-    ['Resguardados',            s.kinds[1]],
+    ['Rescatados, buscan familia', s.kinds[1]],
     ['Avistados',               s.kinds[2]],
     ['— Perros',                s.animales[0]],
     ['— Gatos',                 s.animales[1]],

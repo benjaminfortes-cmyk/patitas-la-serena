@@ -15,7 +15,7 @@ const LEYENDA = [
   {
     clase: '', color: KIND_META.encontrado.color, icono: 'ph-house-line',
     titulo: KIND_META.encontrado.label,
-    texto: 'Alguien lo encontró y lo tiene a salvo mientras aparece su familia.',
+    texto: 'Alguien lo rescató y lo tiene a salvo, pero su familia todavía no aparece.',
   },
   {
     clase: '', color: KIND_META.avistado.color, icono: 'ph-eye',

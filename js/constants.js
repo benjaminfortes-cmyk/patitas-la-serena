@@ -3,15 +3,20 @@
 // y pequeños helpers de formato. Lo usan el mapa, los filtros y las fichas.
 // ============================================================================
 
-// Los colores acompañan el significado: rojo urgencia, azul a salvo,
+// Los colores acompañan el significado: rojo urgencia, azul rescatado,
 // ámbar dato incierto. El verde queda para los reencuentros (--reunidos).
 // `titular` es la frase de la franja superior de la ficha: dice de una lo que
 // pasa con ese animal, sin que haya que interpretar una etiqueta.
 export const KIND_META = {
   perdido:    { label: 'Perdido',                   color: '#EF4444', verbo: 'busca a',
                 titular: 'Se busca',     verboCorto: 'lo busca',     icon: 'ph-magnifying-glass' },
-  encontrado: { label: 'Resguardado temporalmente', color: '#2563EB', verbo: 'resguardó a',
-                titular: 'Está a salvo', verboCorto: 'lo resguarda', icon: 'ph-house-line' },
+  // "Está a salvo" no bastaba: nadie entendía que el animal está bien PERO su
+  // familia sigue sin aparecer, que es justo lo que hace falta difundir.
+  // El titular va en versalitas dentro de una franja angosta: medido en un
+  // celular de 360px, "busca a su familia" la parte en dos líneas y "busca
+  // familia" entra justo en una.
+  encontrado: { label: 'Rescatado, busca a su familia', color: '#2563EB', verbo: 'rescató a',
+                titular: 'Rescatado, busca familia', verboCorto: 'lo rescató', icon: 'ph-house-line' },
   avistado:   { label: 'Avistado',                  color: '#CA8A04', verbo: 'vio a',
                 titular: 'Lo vieron',    verboCorto: 'lo vio',       icon: 'ph-eye' },
 };

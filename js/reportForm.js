@@ -101,7 +101,7 @@ const TEXTOS = {
     desc:      'Cuenta lo que ayude a reconocerla: si es asustadiza, si responde a su nombre…',
   },
   encontrado: {
-    foto:      'Sube una foto del animal que tienes resguardado',
+    foto:      'Sube una foto del animal que rescataste',
     breed:     'Raza aproximada (si no sabes, déjalo en blanco)',
     color:     'Color y señas particulares',
     colorPh:   'Ej: negro con las patas blancas, tiene collar rojo…',
