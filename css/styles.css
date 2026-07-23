@@ -748,6 +748,203 @@ textarea.input { resize: vertical; }
 .historias__empty { text-align: center; padding: 30px 10px; color: var(--muted); }
 .historias__empty .empty__art { font-size: 3rem; }
 
+/* ---------- Instagram (portada) ---------- */
+.social {
+  display: flex; align-items: center; gap: 12px; width: 100%; max-width: 620px;
+  margin: 18px auto 0; text-align: left; text-decoration: none; color: #fff;
+  background: rgba(255,255,255,.13); border: 1.5px solid rgba(255,255,255,.28);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  transition: background .15s, transform .12s;
+}
+.social:hover { background: rgba(255,255,255,.22); }
+.social:active { transform: scale(.98); }
+/* Degradado de Instagram: se reconoce de inmediato sin usar el logo de marca. */
+.social__ico {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 42px; height: 42px; border-radius: 12px; font-size: 1.5rem; color: #fff;
+  background: linear-gradient(45deg, #F58529, #DD2A7B 45%, #8134AF 75%, #515BD4);
+  box-shadow: 0 3px 10px rgba(0,0,0,.2);
+}
+.social__txt { flex: 1; min-width: 0; }
+.social__txt b { display: block; font-weight: 800; font-size: .95rem; }
+.social__txt small { display: block; font-size: .8rem; font-weight: 500; line-height: 1.35; opacity: .9; margin-top: 2px; }
+.social__flecha { font-size: 1rem; opacity: .7; flex: 0 0 auto; }
+
+/* ---------- Estadísticas (solo administradores) ---------- */
+/* Con la sesión de admin la barra pasa de tres botones a cinco. Antes de que
+   se aprieten, Admin y Estadística se quedan solo con el ícono: son los dos
+   que únicamente ve el dueño, que ya sabe cuál es cuál. */
+@media (max-width: 900px) {
+  #btn-admin span, #btn-stats span { display: none; }
+}
+
+.est-panel { max-width: 760px; }
+
+.est-controles {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;
+  align-items: center; margin-bottom: 14px;
+}
+.est-tabs { display: flex; gap: 6px; background: var(--warm-bg); border-radius: 999px; padding: 4px; }
+.est-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-weight: 800; font-size: .85rem; color: var(--muted);
+  background: none; border: none; border-radius: 999px; padding: 8px 14px; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.est-tab i { font-size: 1.1em; }
+.est-tab--activa { background: var(--surface); color: var(--brand-dark); box-shadow: var(--shadow-sm); }
+.est-periodos { display: flex; gap: 6px; }
+.est-periodo {
+  font: inherit; font-weight: 700; font-size: .82rem; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 999px;
+  padding: 6px 12px; cursor: pointer; transition: all .15s;
+}
+.est-periodo:hover { border-color: var(--brand); }
+.est-periodo--activo { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.est-hint {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--muted); font-size: .82rem; font-weight: 600; line-height: 1.35;
+  background: var(--warm-bg); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 14px;
+}
+.est-hint i { font-size: 1.1rem; flex: 0 0 auto; }
+
+.est-vacio { text-align: center; padding: 34px 10px; color: var(--muted); font-weight: 600; }
+.est-vacio i { font-size: 2.6rem; display: block; margin-bottom: 8px; }
+
+/* Elementos comunes a los dos modos */
+.est-punto { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; display: inline-block; }
+.est-donut { width: 100%; height: 100%; display: block; }
+
+.est-leyenda { list-style: none; display: grid; gap: 7px; }
+.est-leyenda li { display: flex; align-items: center; gap: 8px; font-size: .82rem; font-weight: 700; }
+.est-leyenda__txt { flex: 1; min-width: 0; color: var(--ink); }
+.est-leyenda__pct { color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* La grilla vive en la lista (no en cada fila) para que las tres columnas
+   queden alineadas aunque las etiquetas midan distinto. */
+.est-barras {
+  list-style: none; display: grid;
+  grid-template-columns: minmax(88px, auto) 1fr auto;
+  align-items: center; gap: 9px;
+}
+.est-barra { display: contents; }
+.est-barra__label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: .8rem; font-weight: 700; color: var(--ink); white-space: nowrap;
+}
+.est-barra__pista { height: 10px; border-radius: 999px; background: var(--warm-bg); overflow: hidden; }
+.est-barra__fill { display: block; height: 100%; border-radius: 0 4px 4px 0; min-width: 3px; }
+.est-barra__valor { font-size: .82rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Tarjeta 4:5 lista para el feed de Instagram */
+.est-hint--interna { background: #fff6e8; color: #8a5a00; }
+
+/* La tarjeta tiene proporción fija 4:5 (la del feed). Para que la composición
+   se vea idéntica en un celular angosto y en el escritorio, TODO lo de adentro
+   se mide en `cqw` (1cqw = 1% del ancho de la tarjeta): así el contenido escala
+   junto con la caja y nunca se desborda ni queda recortado.
+   La referencia es un ancho de 400px, o sea 4px = 1cqw. */
+.ig-card {
+  container-type: inline-size;
+  width: 100%; max-width: 400px; margin: 0 auto; aspect-ratio: 4 / 5;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--surface); border-radius: 20px;
+  box-shadow: var(--shadow-md); border: 1px solid var(--line);
+}
+.ig-card__top {
+  display: flex; align-items: center; gap: 2.5cqw; padding: 3cqw 4cqw; color: #fff;
+  background: linear-gradient(135deg, #1f95b8 0%, #12667f 100%);
+}
+.ig-card__logo {
+  display: grid; place-items: center; width: 8.5cqw; height: 8.5cqw; flex: 0 0 auto;
+  background: rgba(255,255,255,.2); border-radius: 2.5cqw; font-size: 4.6cqw;
+}
+.ig-card__brand { flex: 1; min-width: 0; line-height: 1.15; }
+.ig-card__brand b { display: block; font-weight: 800; font-size: 3.8cqw; }
+.ig-card__brand small { display: block; font-size: 2.6cqw; font-weight: 600; opacity: .85; text-transform: uppercase; letter-spacing: .04em; }
+.ig-card__handle { display: inline-flex; align-items: center; gap: 1.2cqw; font-size: 2.8cqw; font-weight: 700; opacity: .9; white-space: nowrap; }
+
+.ig-card__body {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  gap: 3cqw; padding: 3.5cqw 4.5cqw 2.5cqw;
+}
+.ig-card__periodo {
+  font-size: 2.7cqw; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ig-hero { text-align: center; }
+/* Cifras proporcionales: a este tamaño tabular-nums deja el número desarmado. */
+.ig-hero__valor { display: block; font-size: 13.6cqw; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
+.ig-hero__label {
+  display: block; margin: 1.5cqw auto 0; max-width: 72cqw;
+  font-size: 3.2cqw; font-weight: 600; line-height: 1.35; color: var(--muted);
+}
+.ig-hero__label b { color: var(--ink); font-weight: 800; }
+
+.ig-grid { flex: 1; min-height: 0; display: grid; gap: 3.5cqw; align-content: center; }
+.ig-fig figcaption {
+  font-size: 2.7cqw; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 2cqw;
+}
+.ig-fig__row { display: grid; grid-template-columns: 24cqw 1fr; gap: 4cqw; align-items: center; }
+.ig-fig__donut { position: relative; width: 24cqw; height: 24cqw; }
+.est-donut__centro {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: var(--brand); font-size: 6.4cqw; line-height: 1;
+}
+
+/* Los gráficos escalan con la tarjeta; fuera de ella conservan su tamaño en rem. */
+.ig-card .est-punto { width: 2.2cqw; height: 2.2cqw; }
+.ig-card .est-leyenda { gap: 1.8cqw; }
+.ig-card .est-leyenda li { gap: 2cqw; font-size: 3.3cqw; }
+.ig-card .est-barras { gap: 2.2cqw 2.2cqw; grid-template-columns: minmax(22cqw, auto) 1fr auto; }
+.ig-card .est-barra__label { font-size: 3.2cqw; gap: 1.8cqw; }
+.ig-card .est-barra__valor { font-size: 3.3cqw; }
+.ig-card .est-barra__pista { height: 2.5cqw; }
+.ig-card .est-barra__fill { border-radius: 0 1cqw 1cqw 0; }
+
+.ig-card__pie {
+  display: flex; align-items: center; justify-content: space-between; gap: 2.5cqw;
+  padding: 2.5cqw 4.5cqw; background: var(--brand-dark); color: #fff;
+  font-size: 2.9cqw; font-weight: 700;
+}
+.ig-card__pieig { display: inline-flex; align-items: center; gap: 1.2cqw; }
+.ig-card__pieig i { font-size: 1.1em; }
+
+/* Vista interna: cifras exactas */
+.est-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.est-tile {
+  background: var(--warm-bg); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.est-tile__label { display: block; font-size: .76rem; font-weight: 700; color: var(--muted); line-height: 1.3; }
+.est-tile__valor { display: block; font-size: 1.75rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
+.est-tile__extra { display: block; font-size: .72rem; font-weight: 700; color: var(--muted); margin-top: 2px; }
+
+.est-bloque { margin-top: 18px; }
+.est-bloque figcaption {
+  font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+.est-cols { display: flex; align-items: flex-end; gap: 10px; height: 150px; }
+.est-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; }
+.est-col__valor { font-size: .78rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.est-col__pista { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.est-col__fill {
+  width: 100%; max-width: 24px; min-height: 3px;
+  background: var(--brand); border-radius: 4px 4px 0 0;
+}
+.est-col__label { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: capitalize; }
+
+.est-tabla { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.est-tabla th, .est-tabla td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.est-tabla thead th { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.est-tabla tbody th { font-weight: 700; color: var(--ink); }
+.est-tabla td { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+
 /* Respeta usuarios que prefieren menos movimiento */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }

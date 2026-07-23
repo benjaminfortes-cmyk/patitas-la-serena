@@ -15,6 +15,7 @@ import { initPWA } from './pwa.js';
 import { initAlertas } from './alerts.js';
 import { initSoporte } from './support.js';
 import { initGuia } from './guia.js';
+import { initEstadisticas } from './stats.js';
 
 // Recarga reportes según los filtros actuales y los pinta en el mapa.
 async function recargar() {
@@ -32,6 +33,7 @@ function init() {
   // Sesión anónima (invisible: nadie tiene que registrarse) y formulario
   initAuth();
   initAdminAccess();   // botón de admin, solo si se entró con ?admin=1
+  initEstadisticas();  // botón "Estadística", al lado del de admin y solo para admins
   initReportForm(recargar);
   initMatching();
   initHistorias();
