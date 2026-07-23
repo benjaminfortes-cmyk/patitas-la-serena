@@ -266,9 +266,6 @@ function vistaCompartir(s) {
         texto: `de los reportes son <b>${escapeHtml(segK[mayor].label.toLowerCase())}</b> en la Región de Coquimbo` };
 
   return `
-    <p class="est-hint"><i class="ph ph-camera" aria-hidden="true"></i>
-      Sácale un pantallazo a esta tarjeta: ya viene en formato 4:5 para el feed.</p>
-
     <article class="ig-card" id="ig-card">
       <header class="ig-card__top">
         <span class="ig-card__logo" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
@@ -340,9 +337,6 @@ function vistaInterna(s) {
   ];
 
   return `
-    <p class="est-hint est-hint--interna"><i class="ph ph-lock-simple" aria-hidden="true"></i>
-      Cifras exactas, sin porcentajes. Esta vista es para ti, no para publicar.</p>
-
     <div class="est-tiles">
       ${tile('Reportes en el período', s.total)}
       ${tile('Reunidos con su familia', s.resueltos, `${Math.round(s.tasa)}% del total`)}
@@ -392,8 +386,6 @@ async function abrir() {
         <h3>Estadísticas</h3>
         <button class="sheet__close" data-close aria-label="Cerrar">&times;</button>
       </div>
-      <p class="matches__sub">Solo tú ves esto. Cambia entre la tarjeta para Instagram y el detalle interno.</p>
-
       <div class="est-controles">
         <div class="est-tabs" role="group" aria-label="Vista">
           <button class="est-tab est-tab--activa" type="button" data-modo="compartir">

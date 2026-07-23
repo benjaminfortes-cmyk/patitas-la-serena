@@ -782,7 +782,7 @@ textarea.input { resize: vertical; }
 
 .est-controles {
   display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;
-  align-items: center; margin-bottom: 14px;
+  align-items: center; margin: 14px 0 16px;
 }
 .est-tabs { display: flex; gap: 6px; background: var(--warm-bg); border-radius: 999px; padding: 4px; }
 .est-tab {
@@ -801,13 +801,6 @@ textarea.input { resize: vertical; }
 }
 .est-periodo:hover { border-color: var(--brand); }
 .est-periodo--activo { background: var(--ink); color: #fff; border-color: var(--ink); }
-
-.est-hint {
-  display: flex; align-items: center; gap: 8px;
-  color: var(--muted); font-size: .82rem; font-weight: 600; line-height: 1.35;
-  background: var(--warm-bg); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 14px;
-}
-.est-hint i { font-size: 1.1rem; flex: 0 0 auto; }
 
 .est-vacio { text-align: center; padding: 34px 10px; color: var(--muted); font-weight: 600; }
 .est-vacio i { font-size: 2.6rem; display: block; margin-bottom: 8px; }
@@ -836,9 +829,6 @@ textarea.input { resize: vertical; }
 .est-barra__pista { height: 10px; border-radius: 999px; background: var(--warm-bg); overflow: hidden; }
 .est-barra__fill { display: block; height: 100%; border-radius: 0 4px 4px 0; min-width: 3px; }
 .est-barra__valor { font-size: .82rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
-
-/* Tarjeta 4:5 lista para el feed de Instagram */
-.est-hint--interna { background: #fff6e8; color: #8a5a00; }
 
 /* La tarjeta tiene proporción fija 4:5 (la del feed). Para que la composición
    se vea idéntica en un celular angosto y en el escritorio, TODO lo de adentro
