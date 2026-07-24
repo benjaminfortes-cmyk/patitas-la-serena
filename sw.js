@@ -8,7 +8,7 @@
 //   - CDNs, fuentes y tiles del mapa: cache-first (se guardan al usarse).
 // ============================================================================
 
-const VERSION = 'patitas-v15';
+const VERSION = 'patitas-v16';
 
 // Archivos propios que se precachean al instalar.
 const SHELL = [
