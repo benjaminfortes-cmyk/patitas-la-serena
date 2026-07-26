@@ -431,6 +431,15 @@ body[data-vista="home"] .fab { display: none; }
    título ya dice "Perro", no se repite arriba y el sector queda solo. */
 .detail__sector:not(:first-child)::before { content: '·'; margin-right: 8px; }
 
+/* Cuándo se subió el aviso: aclara que aunque la mascota se haya perdido hace
+   meses, el reporte puede ser reciente (que no parezca una página abandonada). */
+.detail__posted {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 8px; padding: 3px 10px;
+  border-radius: 999px; background: var(--brand-soft, #eaf9ff);
+  color: var(--brand-dark, #12667f); font-weight: 700; font-size: .82rem;
+}
+
 /* Datos exactos y cortos, en cuadrícula de dos. Si queda uno solo, se estira. */
 .detail__facts {
   display: grid; grid-template-columns: 1fr 1fr; gap: 1px;

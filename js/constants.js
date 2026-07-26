@@ -55,6 +55,29 @@ export function tiempoRelativo(iso) {
   return `hace ${meses} ${meses === 1 ? 'mes' : 'meses'}`;
 }
 
+// Cuándo se PUBLICÓ el aviso (distinto de cuándo se perdió la mascota). Una
+// mascota perdida hace 15 meses puede tener un reporte recién subido: sin esto
+// la ficha parecería vieja y daría la impresión de que la página está muerta.
+// Redactado en días naturales ("ayer" aunque hayan pasado <24 h reales).
+export function fechaPublicacion(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const hoy = new Date();
+  const dias = Math.floor(
+    (Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()) -
+     Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000
+  );
+  if (dias <= 0) return 'Publicado hoy';
+  if (dias === 1) return 'Publicado ayer';
+  if (dias < 7)  return `Publicado hace ${dias} días`;
+  if (dias < 30) {
+    const sem = Math.round(dias / 7);
+    return `Publicado hace ${sem} ${sem === 1 ? 'semana' : 'semanas'}`;
+  }
+  const meses = Math.round(dias / 30);
+  return `Publicado hace ${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+}
+
 // Fecha exacta y corta: "10 de julio". Acompaña a la relativa, que sirve para
 // medir urgencia pero no para recordar "¿fue el día que salí de viaje?".
 export function fechaCorta(iso) {

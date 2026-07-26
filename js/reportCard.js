@@ -5,7 +5,7 @@
 // fallback a copiar), denuncia de info incorrecta/duplicada, y —si es del
 // usuario logueado— botones "Marcar como resuelto ❤️" y "Editar".
 // ============================================================================
-import { KIND_META, nombreAnimal, tiempoRelativo, fechaCorta, tituloReporte } from './constants.js';
+import { KIND_META, nombreAnimal, tiempoRelativo, fechaCorta, fechaPublicacion, tituloReporte } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
 import { getUser, ensureSession, isAdminUser } from './auth.js';
 import { hacerAmpliable, cerrarVisor } from './lightbox.js';
@@ -84,6 +84,7 @@ export function openReportCard(report) {
         ${report.pet_name ? `<span>${nombreAnimal(report)}</span>` : ''}
         <span class="detail__sector" hidden></span>
       </p>
+      ${report.created_at ? `<p class="detail__posted"><i class="ph ph-clock" aria-hidden="true"></i> ${fechaPublicacion(report.created_at)}</p>` : ''}
     </div>
 
     <div class="detail__photo">
