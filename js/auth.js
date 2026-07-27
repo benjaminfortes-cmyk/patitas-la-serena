@@ -47,9 +47,11 @@ export async function initAuth() {
     emit();
   });
 
-  // Sin sesión previa: creamos una anónima de inmediato, para que publicar
-  // no tope con ninguna pantalla de por medio.
-  if (!currentUser) await ensureSession();
+  // Ojo: acá NO se crea la sesión. Quien solo mira el mapa no necesita una, y
+  // crearla al entrar significaba un usuario nuevo en Supabase por cada visita
+  // —además del límite de registros anónimos por IP, que en una hora de mucho
+  // tráfico móvil puede dejar a alguien sin poder publicar—. La sesión se crea
+  // sola, con ensureSession(), al publicar un reporte o activar las alertas.
 }
 
 /**

@@ -1,15 +1,18 @@
 // ============================================================================
 // Subida de fotos al bucket `report-photos` de Supabase Storage.
-// Ruta: {user_id}/{uuid}.jpg  (las políticas RLS exigen la carpeta propia).
+// Ruta: {user_id}/{uuid}.webp (o .jpg)  — las políticas RLS exigen la carpeta
+// propia; la extensión sale del formato que logró comprimir el navegador.
 // ============================================================================
 import { supabase } from './supabase.js';
 
 export async function subirFoto(blob, userId) {
-  const path = `${userId}/${crypto.randomUUID()}.jpg`;
+  const tipo = blob.type || 'image/jpeg';
+  const ext = tipo === 'image/webp' ? 'webp' : 'jpg';
+  const path = `${userId}/${crypto.randomUUID()}.${ext}`;
 
   const { error } = await supabase.storage
     .from('report-photos')
-    .upload(path, blob, { contentType: 'image/jpeg', upsert: false });
+    .upload(path, blob, { contentType: tipo, upsert: false });
 
   if (error) throw new Error('No se pudo subir la foto: ' + error.message);
 
