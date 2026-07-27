@@ -12,7 +12,6 @@ import { hacerAmpliable, cerrarVisor } from './lightbox.js';
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 import { generarCartel } from './poster.js';
-import { renderPistas } from './sightings.js';
 
 const SIZE_LABEL = { chico: 'Chico', mediano: 'Mediano', grande: 'Grande' };
 
@@ -119,18 +118,12 @@ export function openReportCard(report) {
         <button class="detail__minor" data-action="denunciar"><i class="ph ph-flag"></i> Reportar</button>
       </div>
 
-      <section class="detail__pistas" id="detail-pistas"></section>
-
       ${accionesDueno}
       ${accionesAdmin}
     </div>`;
 
   // El sector se resuelve después: la ficha no espera a la red para abrirse.
   mostrarSector(sheet, report);
-
-  // Las pistas de la comunidad también se cargan después de abrir.
-  const contPistas = sheet.querySelector('#detail-pistas');
-  if (contPistas) renderPistas(contPistas, report);
 
   // La foto se puede tocar para verla en grande
   hacerAmpliable(sheet.querySelector('.detail__photo img'), `Foto de ${tituloReporte(report)}`);

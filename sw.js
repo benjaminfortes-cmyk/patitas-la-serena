@@ -19,7 +19,7 @@ const SHELL = [
   './js/auth.js', './js/imageCompress.js', './js/storage.js', './js/validation.js',
   './js/reportForm.js', './js/matching.js', './js/historias.js', './js/pwa.js', './js/alerts.js',
   './js/support.js', './js/guia.js', './js/lightbox.js', './js/stats.js',
-  './js/poster.js', './js/sightings.js',
+  './js/poster.js',
   './assets/icon.svg',
 ];
 

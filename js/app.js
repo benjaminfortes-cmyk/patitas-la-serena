@@ -2,7 +2,7 @@
 // Orquestador principal: arranca el mapa, los filtros y la carga de reportes.
 // ============================================================================
 import { initMap, renderReports, getMap, flyTo } from './map.js';
-import { initFilters, onFiltersChange, filterState } from './filters.js';
+import { initFilters, onFiltersChange, filterState, filtrarPorTipo } from './filters.js';
 import { fetchReports, fetchReportById } from './data.js';
 import { openReportCard, closeReportCard } from './reportCard.js';
 import { toast } from './ui.js';
@@ -69,8 +69,13 @@ function init() {
   // Accesos directos de la portada
   document.querySelectorAll('.accion').forEach((btn) => {
     btn.addEventListener('click', () => {
-      if (btn.dataset.accion === 'publicar') window.openReportForm?.();
-      else mostrarVista('mapa');
+      const accion = btn.dataset.accion;
+      if (accion === 'publicar') return window.openReportForm?.();
+      // "Quiero adoptar" entra al mapa mostrando solo los rescatados que
+      // buscan familia; el resto entra al mapa tal como está.
+      if (accion === 'adoptar') filtrarPorTipo('encontrado');
+      else if (filterState.kinds.length) filtrarPorTipo('');
+      mostrarVista('mapa');
     });
   });
   document.getElementById('btn-alertas')?.addEventListener('click', () => window.openAlertas?.());

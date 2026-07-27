@@ -181,7 +181,19 @@ body[data-vista="home"] .view--map  { display: none; }
 
 /* Hero: contenido de la vista Inicio */
 .infobar { max-width: 640px; margin: 0 auto; padding: 28px 22px 40px; text-align: center; }
-.infobar__logos { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; }
+.infobar__titulo {
+  font-size: 1.55rem; font-weight: 800; line-height: 1.15; margin: 0;
+  text-shadow: 0 1px 3px rgba(0,0,0,.16);
+}
+/* Separa los bloques de la portada para que se lean como secciones */
+.infobar__sep {
+  border: none; height: 1px; background: rgba(255,255,255,.22);
+  max-width: 620px; margin: 26px auto 4px;
+}
+.infobar__logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 12px; }
+/* Arriba van más chicos: acompañan, no compiten con el título */
+.infobar__logos--top { gap: 6px; margin: 0 0 12px; }
+.infobar__logos--top .infobar__chip { width: 20px; height: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
 .infobar__chip {
   width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,.18);
@@ -191,7 +203,10 @@ body[data-vista="home"] .view--map  { display: none; }
   font-style: italic; font-size: .84rem; line-height: 1.45; margin: 10px auto 0;
   max-width: 620px; color: #fff; opacity: .96;
 }
-.infobar__howtitle { font-weight: 800; font-size: .88rem; margin-top: 14px; }
+.infobar__howtitle {
+  font-weight: 800; font-size: .95rem; margin-top: 20px;
+  letter-spacing: .01em;
+}
 .infobar__pasos {
   list-style: none; counter-reset: paso; max-width: 620px; margin: 8px auto 0;
   text-align: left; display: grid; gap: 7px;
@@ -206,6 +221,20 @@ body[data-vista="home"] .view--map  { display: none; }
   color: #fff; font-weight: 800; font-size: .72rem; display: grid; place-items: center;
 }
 .infobar__pasos b { font-weight: 800; color: #fff; }
+
+/* Leyenda breve de los pines en la portada */
+.pines {
+  list-style: none; max-width: 620px; margin: 10px auto 0;
+  display: grid; gap: 8px; text-align: left;
+}
+.pines__item { display: flex; align-items: center; gap: 11px; }
+.pines__item .pin { flex: 0 0 26px; }
+.pines__txt { min-width: 0; }
+.pines__txt b { font-weight: 800; font-size: .85rem; }
+.pines__txt small { display: block; font-size: .8rem; line-height: 1.3; color: rgba(255,255,255,.88); }
+@media (min-width: 620px) {
+  .pines { grid-template-columns: 1fr 1fr; gap: 10px 18px; }
+}
 
 /* Accesos directos ("¿Qué quieres hacer hoy?") */
 .acciones { display: grid; gap: 8px; max-width: 620px; margin: 10px auto 4px; }
@@ -246,6 +275,7 @@ body[data-vista="home"] .view--map  { display: none; }
   color: rgba(255,255,255,.95); margin-top: 3px;
 }
 @media (min-width: 768px) {
+  .infobar__titulo { font-size: 1.9rem; }
   .infobar__lead { font-size: .95rem; }
   .infobar__desc { font-size: .86rem; }
   .infobar__pasos li, .infobar__cita { font-size: .86rem; }
@@ -270,6 +300,9 @@ body[data-vista="home"] .view--map  { display: none; }
   transform: rotate(45deg); font-size: 1.1rem; color: #fff;
 }
 .pin--resuelto { background: var(--reunidos); }
+/* Pin chico para explicar los colores en la portada (no salta al aparecer) */
+.pin--mini { width: 26px; height: 26px; border-width: 2px; animation: none; box-shadow: var(--shadow-sm); }
+.pin--mini .pin__icon { font-size: .78rem; }
 @keyframes pin-pop { from { transform: rotate(-45deg) scale(0); } to { transform: rotate(-45deg) scale(1); } }
 
 /* ---------- Botón flotante ---------- */
@@ -737,21 +770,6 @@ textarea.input { resize: vertical; }
 }
 .btn--danger { background: #d92d20; color: #fff; }
 .btn--danger:hover { background: #b42318; }
-
-/* ---------- Pistas "Yo lo vi" (dentro de la ficha) ---------- */
-.detail__pistas { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
-.pistas__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.pistas__titulo { display: flex; align-items: center; gap: 7px; font-size: 1.02rem; font-weight: 800; }
-.pistas__titulo i { color: var(--brand); }
-.pistas__vacio { color: var(--muted); font-weight: 600; font-size: .9rem; margin-top: 10px; line-height: 1.4; }
-.pistas__lista { list-style: none; display: grid; gap: 8px; margin-top: 12px; }
-.pista { display: flex; gap: 10px; padding: 10px 12px; background: var(--warm-bg); border-radius: 14px; }
-.pista__ico { flex: 0 0 auto; color: var(--brand); font-size: 1.2rem; line-height: 1.3; }
-.pista__cuerpo { display: grid; gap: 3px; min-width: 0; }
-.pista__nota { font-weight: 700; font-size: .95rem; line-height: 1.35; }
-.pista__nota--sin { font-weight: 600; color: var(--muted); font-style: italic; }
-.pista__pie { color: var(--muted); font-size: .8rem; font-weight: 600; }
-.pista__pie a { color: var(--brand-dark); font-weight: 700; }
 
 /* ---------- Panel de coincidencias / denuncia ---------- */
 .matches-overlay {

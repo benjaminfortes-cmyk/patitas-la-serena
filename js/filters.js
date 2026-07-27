@@ -13,6 +13,16 @@ export const filterState = {
 let onChange = () => {};
 export function onFiltersChange(cb) { onChange = cb; }
 
+// Deja el mapa mostrando un solo tipo de reporte (lo usa "Quiero adoptar", que
+// entra directo a los rescatados que buscan familia). Mueve también el select
+// para que se vea qué filtro quedó puesto.
+export function filtrarPorTipo(kind) {
+  filterState.kinds = kind ? [kind] : [];
+  const estado = document.getElementById('filter-estado');
+  if (estado) estado.value = kind ?? '';
+  onChange();
+}
+
 // Pequeño debounce para el buscador (no consultar en cada tecla).
 function debounce(fn, ms = 300) {
   let t;
