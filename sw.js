@@ -8,7 +8,7 @@
 //   - CDNs, fuentes y tiles del mapa: cache-first (se guardan al usarse).
 // ============================================================================
 
-const VERSION = 'patitas-v17';
+const VERSION = 'patitas-v18';
 
 // Archivos propios que se precachean al instalar.
 const SHELL = [
@@ -74,6 +74,16 @@ async function networkFirst(req) {
 async function cacheFirst(req) {
   const cache = await caches.open(VERSION);
   const cached = await cache.match(req);
+  // Una respuesta "opaca" (guardada cuando la foto se mostró en una tarjeta) no
+  // se puede leer desde JavaScript. Si nos la piden con CORS —el cartel, que
+  // necesita dibujar la foto en un canvas— vamos a la red a buscarla de nuevo.
+  if (cached && req.mode === 'cors' && cached.type === 'opaque') {
+    try {
+      const res = await fetch(req);
+      if (res && res.ok) { cache.put(req, res.clone()); return res; }
+    } catch { /* sin red: devolvemos lo que había */ }
+    return cached;
+  }
   if (cached) return cached;
   try {
     const res = await fetch(req);
