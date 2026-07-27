@@ -1,8 +1,13 @@
 // ============================================================================
-// Guía del mapa: explica qué significa el color de cada pin.
-// Se abre desde la barra inferior (móvil).
+// Botón "Información" (barra inferior): muestra los reportes recientes en una
+// lista para desplazar, y debajo la guía de qué significa el color de cada pin.
+// Tocar un reporte lo abre en el mapa.
 // ============================================================================
-import { KIND_META } from './constants.js';
+import { KIND_META, nombreAnimal, tiempoRelativo, fechaPublicacion } from './constants.js';
+import { escapeHtml } from './ui.js';
+import { fetchReports } from './data.js';
+import { openReportCard } from './reportCard.js';
+import { flyTo } from './map.js';
 
 // Cada fila arma su pin con el MISMO color que usa el mapa. Así la guía no
 // puede quedar desfasada si algún día se cambian los colores.
@@ -34,7 +39,7 @@ export function initGuia() {
   window.openGuia = abrir;
 }
 
-function abrir() {
+async function abrir() {
   const overlay = document.createElement('div');
   overlay.className = 'matches-overlay';
 
@@ -50,17 +55,25 @@ function abrir() {
     </li>`).join('');
 
   overlay.innerHTML = `
-    <div class="matches" role="dialog" aria-modal="true" aria-label="Guía del mapa">
+    <div class="matches" role="dialog" aria-modal="true" aria-label="Reportes y guía del mapa">
       <div class="matches__head">
-        <h3>¿Qué significa cada color?</h3>
+        <h3>Reportes recientes</h3>
         <button class="sheet__close" data-close aria-label="Cerrar">&times;</button>
       </div>
-      <p class="matches__sub">El color del pin te dice en qué situación está el animal.</p>
-      <ul class="leyenda">${filas}</ul>
-      <p class="leyenda__pie">
-        <i class="ph ph-paw-print" aria-hidden="true"></i>
-        El dibujo dentro del pin indica si es un perro, un gato u otro animal.
-      </p>
+      <p class="matches__sub">Toca cualquiera para verlo en el mapa.</p>
+
+      <div class="listado" id="guia-listado">
+        <p class="listado__cargando">Cargando reportes…</p>
+      </div>
+
+      <div class="leyenda-bloque">
+        <h4 class="leyenda-bloque__titulo">¿Qué significa cada color?</h4>
+        <ul class="leyenda">${filas}</ul>
+        <p class="leyenda__pie">
+          <i class="ph ph-paw-print" aria-hidden="true"></i>
+          El dibujo dentro del pin indica si es un perro, un gato u otro animal.
+        </p>
+      </div>
     </div>`;
 
   document.body.appendChild(overlay);
@@ -68,4 +81,58 @@ function abrir() {
   const cerrar = () => overlay.remove();
   overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar(); });
   overlay.querySelector('[data-close]').addEventListener('click', cerrar);
+
+  // Carga los reportes después de abrir, para que el panel no espere a la red.
+  cargarListado(overlay, cerrar);
+}
+
+async function cargarListado(overlay, cerrar) {
+  const cont = overlay.querySelector('#guia-listado');
+  let reportes = [];
+  try {
+    reportes = await fetchReports({});
+  } catch {
+    cont.innerHTML = '<p class="listado__cargando">No se pudieron cargar los reportes.</p>';
+    return;
+  }
+
+  // Los más nuevos primero (por cuándo se publicaron).
+  reportes.sort((a, b) => new Date(b.created_at ?? b.event_at) - new Date(a.created_at ?? a.event_at));
+
+  if (!reportes.length) {
+    cont.innerHTML = '<p class="listado__cargando">Todavía no hay reportes en el mapa.</p>';
+    return;
+  }
+
+  cont.innerHTML = reportes.map((r) => {
+    const k = KIND_META[r.kind] ?? {};
+    const resuelto = r.lifecycle === 'resuelto';
+    const titulo = r.pet_name ? escapeHtml(r.pet_name) : escapeHtml(nombreAnimal(r));
+    const etiqueta = resuelto ? 'Reunidos con familia' : (k.titular ?? '');
+    const color = resuelto ? 'var(--reunidos)' : (k.color ?? '#888');
+    return `
+      <button class="listado__item" type="button" data-id="${r.id}">
+        <img class="listado__foto" src="${escapeHtml(r.photo_url)}" alt="" loading="lazy" />
+        <span class="listado__info">
+          <span class="listado__linea">
+            <span class="listado__punto" style="background:${color}"></span>
+            <b class="listado__titulo">${titulo}</b>
+          </span>
+          <span class="listado__estado">${etiqueta}</span>
+          <span class="listado__fecha">${r.created_at ? fechaPublicacion(r.created_at) : tiempoRelativo(r.event_at)}</span>
+        </span>
+        <i class="ph ph-caret-right listado__flecha" aria-hidden="true"></i>
+      </button>`;
+  }).join('');
+
+  cont.querySelectorAll('.listado__item').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const r = reportes.find((x) => x.id === btn.dataset.id);
+      if (!r) return;
+      cerrar();
+      window.mostrarVista?.('mapa');
+      openReportCard(r);
+      if (r.lat != null) flyTo(r.lat, r.lng, 16);
+    });
+  });
 }

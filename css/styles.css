@@ -637,6 +637,9 @@ textarea.input { resize: vertical; }
 .btn--outline { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
 .btn--outline:hover { border-color: var(--brand); color: var(--brand-dark); }
 
+/* Cartel: acción destacada pero por debajo del WhatsApp. */
+.detail__cartel { width: 100%; margin-top: 10px; border-radius: 999px; }
+
 /* Compartir y Reportar son secundarias: texto discreto, sin fondo compitiendo
    con el botón de WhatsApp. */
 .detail__actions { display: flex; justify-content: center; gap: 22px; }
@@ -664,6 +667,21 @@ textarea.input { resize: vertical; }
 }
 .btn--danger { background: #d92d20; color: #fff; }
 .btn--danger:hover { background: #b42318; }
+
+/* ---------- Pistas "Yo lo vi" (dentro de la ficha) ---------- */
+.detail__pistas { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.pistas__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pistas__titulo { display: flex; align-items: center; gap: 7px; font-size: 1.02rem; font-weight: 800; }
+.pistas__titulo i { color: var(--brand); }
+.pistas__vacio { color: var(--muted); font-weight: 600; font-size: .9rem; margin-top: 10px; line-height: 1.4; }
+.pistas__lista { list-style: none; display: grid; gap: 8px; margin-top: 12px; }
+.pista { display: flex; gap: 10px; padding: 10px 12px; background: var(--warm-bg); border-radius: 14px; }
+.pista__ico { flex: 0 0 auto; color: var(--brand); font-size: 1.2rem; line-height: 1.3; }
+.pista__cuerpo { display: grid; gap: 3px; min-width: 0; }
+.pista__nota { font-weight: 700; font-size: .95rem; line-height: 1.35; }
+.pista__nota--sin { font-weight: 600; color: var(--muted); font-style: italic; }
+.pista__pie { color: var(--muted); font-size: .8rem; font-weight: 600; }
+.pista__pie a { color: var(--brand-dark); font-weight: 700; }
 
 /* ---------- Panel de coincidencias / denuncia ---------- */
 .matches-overlay {
@@ -703,6 +721,35 @@ textarea.input { resize: vertical; }
   margin-top: 14px; line-height: 1.35;
 }
 .leyenda__pie i { font-size: 1.1rem; flex: 0 0 auto; }
+
+/* Listado de reportes recientes (dentro del botón Información) */
+.listado { display: grid; gap: 8px; margin-bottom: 6px; }
+.listado__cargando { color: var(--muted); font-weight: 600; text-align: center; padding: 20px 0; }
+.listado__item {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 8px; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--surface); text-align: left; cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.listado__item:hover { background: var(--warm-bg); border-color: var(--brand); }
+.listado__foto {
+  flex: 0 0 56px; width: 56px; height: 56px; object-fit: cover;
+  border-radius: 10px; background: var(--warm-bg);
+}
+.listado__info { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+.listado__linea { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.listado__punto { flex: 0 0 9px; width: 9px; height: 9px; border-radius: 50%; }
+.listado__titulo {
+  font-weight: 800; font-size: .98rem; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.listado__estado { color: var(--brand-dark); font-weight: 700; font-size: .82rem; }
+.listado__fecha { color: var(--muted); font-weight: 600; font-size: .78rem; }
+.listado__flecha { color: var(--muted); font-size: 1.2rem; flex: 0 0 auto; }
+
+/* Separación entre el listado y la guía de colores */
+.leyenda-bloque { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.leyenda-bloque__titulo { font-size: 1rem; font-weight: 800; margin-bottom: 12px; }
 
 .matches__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
 .match {

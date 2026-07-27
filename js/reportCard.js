@@ -11,6 +11,8 @@ import { getUser, ensureSession, isAdminUser } from './auth.js';
 import { hacerAmpliable, cerrarVisor } from './lightbox.js';
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
+import { generarCartel } from './poster.js';
+import { renderPistas } from './sightings.js';
 
 const SIZE_LABEL = { chico: 'Chico', mediano: 'Mediano', grande: 'Grande' };
 
@@ -108,10 +110,16 @@ export function openReportCard(report) {
         <i class="ph ph-whatsapp-logo"></i> Escribir a quien ${k.verboCorto}
       </a>
 
+      <button class="btn btn--outline detail__cartel" data-action="cartel">
+        <i class="ph ph-megaphone"></i> Crear cartel para compartir
+      </button>
+
       <div class="detail__actions">
         <button class="detail__minor" data-action="compartir"><i class="ph ph-share-network"></i> Compartir</button>
         <button class="detail__minor" data-action="denunciar"><i class="ph ph-flag"></i> Reportar</button>
       </div>
+
+      <section class="detail__pistas" id="detail-pistas"></section>
 
       ${accionesDueno}
       ${accionesAdmin}
@@ -120,12 +128,17 @@ export function openReportCard(report) {
   // El sector se resuelve después: la ficha no espera a la red para abrirse.
   mostrarSector(sheet, report);
 
+  // Las pistas de la comunidad también se cargan después de abrir.
+  const contPistas = sheet.querySelector('#detail-pistas');
+  if (contPistas) renderPistas(contPistas, report);
+
   // La foto se puede tocar para verla en grande
   hacerAmpliable(sheet.querySelector('.detail__photo img'), `Foto de ${tituloReporte(report)}`);
 
   // Cableado de botones
   sheet.querySelector('[data-close]').addEventListener('click', closeReportCard);
   sheet.querySelector('[data-action="compartir"]').addEventListener('click', () => compartir(report));
+  sheet.querySelector('[data-action="cartel"]').addEventListener('click', () => generarCartel(report));
   sheet.querySelector('[data-action="denunciar"]').addEventListener('click', () => abrirDenuncia(report));
   sheet.querySelector('[data-action="resolver"]')?.addEventListener('click', () => resolver(report));
   sheet.querySelector('[data-action="reactivar"]')?.addEventListener('click', () => reactivar(report));
