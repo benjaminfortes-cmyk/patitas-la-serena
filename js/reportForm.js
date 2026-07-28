@@ -284,8 +284,8 @@ function initFormMap() {
   if (formMap) { formMap.invalidateSize(); return; }
 
   formMap = L.map('form-map', { zoomControl: true }).setView(MAP_CENTER, MAP_ZOOM);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, attribution: '&copy; OpenStreetMap',
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO',
   }).addTo(formMap);
 
   // Marcador arrastrable que define el punto del reporte

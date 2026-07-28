@@ -50,8 +50,8 @@ async function abrir() {
   // Mini-mapa para elegir el centro
   setTimeout(() => {
     mapa = L.map('alert-map').setView(MAP_CENTER, MAP_ZOOM);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '&copy; OpenStreetMap',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO',
     }).addTo(mapa);
     marcador = L.marker(MAP_CENTER, { draggable: true }).addTo(mapa);
     circulo = L.circle(MAP_CENTER, { radius: seleccion.radius, color: '#1f95b8', fillOpacity: 0.12 }).addTo(mapa);

@@ -34,9 +34,14 @@ export function initMap() {
 
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // Fondo gris claro de CARTO (mismos datos de OpenStreetMap, otro dibujo).
+  // Se eligió por dos razones: el servidor público de openstreetmap.org no
+  // admite el uso de una app con tráfico —su política lo prohíbe y puede
+  // bloquearlo—, y sobre un mapa sin color los pines de colores se ven mucho
+  // mejor. El {r} carga la versión nítida en pantallas de celular.
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
-    attribution: '&copy; OpenStreetMap',
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
   }).addTo(map);
 
   // Capa simple: cada reporte se ve siempre como su propio marcador,
