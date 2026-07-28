@@ -12,14 +12,34 @@ import { hacerAmpliable, cerrarVisor } from './lightbox.js';
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 import { generarCartel } from './poster.js';
+import { fetchContacto } from './data.js';
 
 const SIZE_LABEL = { chico: 'Chico', mediano: 'Mediano', grande: 'Grande' };
 
 // Link de WhatsApp con mensaje pre-redactado.
 function whatsappLink(report) {
-  const num = report.contact_whatsapp.replace(/[^0-9]/g, ''); // 569XXXXXXXX
+  const num = String(report.contact_whatsapp ?? '').replace(/[^0-9]/g, ''); // 569XXXXXXXX
   const msg = `Hola, vi tu publicación en Busca Huellitas sobre ${tituloReporte(report)}. ¿Sigue activa la búsqueda?`;
   return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+}
+
+// El teléfono no viene con la lista de reportes (si viniera, se podrían bajar
+// todos de una vez). Se pide al abrir esta ficha y ahí se activa el botón.
+async function activarWhatsapp(sheet, report) {
+  const boton = sheet.querySelector('.btn--whatsapp');
+  if (!boton) return;
+
+  const numero = await fetchContacto(report);
+  // Si la ficha ya se cerró o se abrió otra mientras llegaba, no tocamos nada.
+  if (!sheet.contains(boton)) return;
+
+  if (!numero) {
+    boton.textContent = 'No se pudo cargar el contacto';
+    boton.classList.add('is-cargando');
+    return;
+  }
+  boton.href = whatsappLink(report);
+  boton.classList.remove('is-cargando');
 }
 
 export function openReportCard(report) {
@@ -80,9 +100,9 @@ export function openReportCard(report) {
 
     <div class="detail__head">
       <button class="sheet__close" aria-label="Cerrar" data-close>&times;</button>
-      <h2 class="detail__title">${report.pet_name ? escapeHtml(report.pet_name) : nombreAnimal(report)}</h2>
+      <h2 class="detail__title">${escapeHtml(report.pet_name || nombreAnimal(report))}</h2>
       <p class="detail__meta">
-        ${report.pet_name ? `<span>${nombreAnimal(report)}</span>` : ''}
+        ${report.pet_name ? `<span>${escapeHtml(nombreAnimal(report))}</span>` : ''}
         <span class="detail__sector" hidden></span>
       </p>
       ${report.created_at ? `<p class="detail__posted"><i class="ph ph-clock" aria-hidden="true"></i> ${fechaPublicacion(report.created_at)}</p>` : ''}
@@ -105,7 +125,8 @@ export function openReportCard(report) {
 
       ${report.description ? `<p class="detail__quote">${escapeHtml(report.description)}</p>` : ''}
 
-      <a class="btn btn--whatsapp" href="${whatsappLink(report)}" target="_blank" rel="noopener">
+      <a class="btn btn--whatsapp is-cargando" href="${report.contact_whatsapp ? whatsappLink(report) : '#'}"
+         target="_blank" rel="noopener">
         <i class="ph ph-whatsapp-logo"></i> Escribir a quien ${k.verboCorto}
       </a>
 
@@ -122,8 +143,10 @@ export function openReportCard(report) {
       ${accionesAdmin}
     </div>`;
 
-  // El sector se resuelve después: la ficha no espera a la red para abrirse.
+  // El sector y el teléfono se resuelven después: la ficha no espera a la red
+  // para abrirse.
   mostrarSector(sheet, report);
+  activarWhatsapp(sheet, report);
 
   // La foto se puede tocar para verla en grande
   hacerAmpliable(sheet.querySelector('.detail__photo img'), `Foto de ${tituloReporte(report)}`);

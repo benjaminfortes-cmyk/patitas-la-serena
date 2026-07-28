@@ -115,6 +115,30 @@ export async function fetchHappyStories(limite = 20) {
 }
 
 // Trae un único reporte por id (para abrir una coincidencia o un enlace compartido).
+// ---- Teléfono de contacto -------------------------------------------------
+// El WhatsApp ya no viene en la lista de reportes: si viniera, cualquiera con
+// la clave anónima (que va en el JavaScript) podría bajarse todos los números
+// de una vez. Se pide de a uno, al abrir la ficha.
+const contactosVistos = new Map();
+
+export async function fetchContacto(report) {
+  // Ya lo teníamos (o el backend viejo todavía lo manda en la lista).
+  if (report.contact_whatsapp) return report.contact_whatsapp;
+  if (contactosVistos.has(report.id)) return contactosVistos.get(report.id);
+
+  if (!isConfigured) {
+    const demo = DEMO_REPORTS.find((r) => r.id === report.id);
+    return demo?.contact_whatsapp ?? null;
+  }
+
+  const { data, error } = await supabase.rpc('get_report_contact', { p_report_id: report.id });
+  if (error) { console.error('No se pudo obtener el contacto:', error.message); return null; }
+
+  contactosVistos.set(report.id, data);
+  report.contact_whatsapp = data;   // queda en memoria para el cartel
+  return data;
+}
+
 export async function fetchReportById(id) {
   if (!isConfigured) {
     return DEMO_REPORTS.find((r) => r.id === id) ?? null;

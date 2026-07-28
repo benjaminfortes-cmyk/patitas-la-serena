@@ -6,7 +6,8 @@
 // descargar o compartir. Pensado para pegar en postes o subir a estados.
 // ============================================================================
 import { KIND_META, nombreAnimal, fechaCorta } from './constants.js';
-import { toast } from './ui.js';
+import { toast, escapeHtml } from './ui.js';
+import { fetchContacto } from './data.js';
 
 const ANCHO = 1080;
 const ALTO = 1350;
@@ -25,7 +26,8 @@ export function formatearMonto(digitos) {
 
 // +56994869261 -> +56 9 9486 9261
 function formatearTelefono(num) {
-  const s = String(num || '').replace(/[^0-9]/g, '');
+  if (!num) return '';
+  const s = String(num).replace(/[^0-9]/g, '');
   const m = s.match(/^56(9)(\d{4})(\d{4})$/);
   if (m) return `+56 ${m[1]} ${m[2]} ${m[3]}`;
   return num;
@@ -436,7 +438,7 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
   capa.innerHTML = `
     <button class="cartel__cerrar" type="button" aria-label="Cerrar">&times;</button>
     <div class="cartel__caja">
-      <img class="cartel__img" alt="${titulo}" />
+      <img class="cartel__img" alt="${escapeHtml(titulo)}" />
 
       <div class="cartel__mover">
         <span class="cartel__mover-titulo">¿La foto salió corrida? Muévela</span>
@@ -597,6 +599,9 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
 // Arma el cartel y abre la vista previa para acomodarlo, guardarlo o compartirlo.
 export async function generarCartel(report) {
   toast('Preparando el cartel…', 'info');
+
+  // El teléfono no viene con la lista de reportes; el cartel lo necesita.
+  await fetchContacto(report);
 
   const canvas = await construirCartel(report);
   const nombre = report.pet_name || nombreAnimal(report);

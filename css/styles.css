@@ -77,6 +77,8 @@ body {
   text-decoration: none;
 }
 .btn--whatsapp:hover { background: #dcf5e6; color: #12833c; box-shadow: inset 0 0 0 1.5px #8fd8ab; }
+/* Mientras se pide el teléfono (no viaja con la lista de reportes) */
+.btn--whatsapp.is-cargando { opacity: .55; pointer-events: none; }
 .btn i { font-size: 1.2em; }
 
 /* ---------- Filtros ---------- */

@@ -93,10 +93,40 @@ function init() {
     toast('Modo demo: configura Supabase para usar datos reales.', 'info');
   }
 
+  // Va al final: necesita que ya existan mostrarVista y openReportForm.
+  entradaDesdeAliado();
+
   recargar();
 
   // Ajusta el mapa cuando la pantalla cambia de tamaño (orientación móvil).
   window.addEventListener('resize', () => getMap()?.invalidateSize());
+}
+
+// ---- Entradas desde sitios aliados ---------------------------------------
+// Un aliado (por ejemplo el botón SOS de marigen.cl) manda a su gente para acá.
+// Para que el salto no se sienta un desvío raro, el enlace puede pedir dónde
+// caer y de parte de quién viene:
+//   ?ir=reportar   abre el formulario al tiro (el caso del botón SOS)
+//   ?ir=mapa       entra directo al mapa
+//   ?ref=marigen   saluda nombrando a quien lo mandó
+const ALIADOS = {
+  marigen: 'Fundación Marigen',
+};
+
+function entradaDesdeAliado() {
+  const params = new URLSearchParams(location.search);
+  // El ref viene de fuera: lo dejamos en letras y números, sin sorpresas.
+  const ref = (params.get('ref') || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 24);
+
+  if (ref) {
+    try { localStorage.setItem('bh_ref', ref); } catch { /* modo incógnito */ }
+    const aliado = ALIADOS[ref];
+    if (aliado) toast(`Llegaste desde ${aliado}. Aquí puedes publicar tu reporte.`, 'info');
+  }
+
+  const ir = params.get('ir');
+  if (ir === 'reportar') window.openReportForm?.();
+  else if (ir === 'mapa') window.mostrarVista?.('mapa');
 }
 
 // Abre una ficha directamente si la URL trae ?reporte=ID (enlace compartido).

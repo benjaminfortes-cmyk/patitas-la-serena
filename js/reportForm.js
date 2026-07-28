@@ -14,6 +14,7 @@ import { toast, escapeHtml } from './ui.js';
 import { flyTo } from './map.js';
 import { MAP_CENTER, MAP_ZOOM } from './config.js';
 import { DEMO_REPORTS } from './demo.js';
+import { fetchContacto } from './data.js';
 
 // Estado del formulario en curso
 const estado = { kind: null, animal: null, size: null, lat: null, lng: null, fotoBlob: null, fotoPreview: null };
@@ -228,7 +229,10 @@ function prefill(r) {
     document.getElementById('description').value = r.description;
     document.getElementById('desc-count').textContent = r.description.length;
   }
-  document.getElementById('whatsapp').value = formatearWhatsapp(r.contact_whatsapp);
+  // El teléfono ya no viene con el reporte: se pide aparte para editarlo.
+  fetchContacto(r).then((num) => {
+    if (num) document.getElementById('whatsapp').value = formatearWhatsapp(num);
+  });
 
   const dt = new Date(r.event_at);
   dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
