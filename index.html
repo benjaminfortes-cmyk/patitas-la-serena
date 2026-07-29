@@ -66,6 +66,11 @@
         <i class="ph ph-bell" aria-hidden="true"></i>
         <span class="hide-mobile">Alertas</span>
       </button>
+      <!-- Se muestra desde js/pwa.js: solo si aún no está instalada -->
+      <button id="btn-instalar" class="btn btn--primary btn--sm" aria-label="Instalar la app" hidden>
+        <i class="ph ph-download-simple" aria-hidden="true"></i>
+        <span class="hide-mobile">Instalar</span>
+      </button>
     </div>
   </header>
 
@@ -180,6 +185,18 @@
           <span class="infobar__chip"><img src="assets/img/uls.png" alt="Universidad de La Serena" loading="lazy" /></span>
         </div>
         <p class="infobar__cita">«Cada mascota merece volver a casa. Y cada familia, el alivio de reencontrarla o el amor de una nueva.»</p>
+
+        <!-- Instalar como app: mucha gente no sabe que se puede, así que se lo
+             ofrecemos aquí con todas sus letras. Lo muestra js/pwa.js. -->
+        <button class="social social--instalar" id="card-instalar" type="button" hidden
+                aria-label="Instalar Busca Huellitas como aplicación">
+          <span class="social__ico social__ico--instalar" aria-hidden="true"><i class="ph-fill ph-download-simple"></i></span>
+          <span class="social__txt">
+            <b>Instálala como app</b>
+            <small>Queda con su ícono en tu teléfono o computador · se abre al tiro y funciona sin señal</small>
+          </span>
+          <i class="ph ph-caret-right social__flecha" aria-hidden="true"></i>
+        </button>
 
         <!-- Instagram: acá llega la gente que quiere seguirnos o etiquetarnos -->
         <a class="social" href="https://www.instagram.com/buscahuellitas/" target="_blank" rel="noopener"

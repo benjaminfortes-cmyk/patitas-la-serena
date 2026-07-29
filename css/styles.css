@@ -63,6 +63,8 @@ body {
   border-radius: 999px; padding: 12px 20px; transition: transform .12s, box-shadow .2s, background .2s;
 }
 .btn:active { transform: scale(.97); }
+/* display:inline-flex le gana al hidden del navegador: hay que repetirlo. */
+.btn[hidden] { display: none; }
 .btn--sm { padding: 8px 14px; font-size: .9rem; }
 .btn--primary { background: var(--brand); color: #fff; box-shadow: var(--shadow-sm); }
 .btn--primary:hover { background: var(--brand-dark); }
@@ -915,6 +917,33 @@ textarea.input { resize: vertical; }
 .social__txt b { display: block; font-weight: 800; font-size: .95rem; }
 .social__txt small { display: block; font-size: .8rem; font-weight: 500; line-height: 1.35; opacity: .9; margin-top: 2px; }
 .social__flecha { font-size: 1rem; opacity: .7; flex: 0 0 auto; }
+
+/* ---------- Instalar la app ---------- */
+/* Misma tarjeta que la de Instagram, pero es un <button>: hay que devolverle la
+   tipografía y quitarle el fondo propio que le pone el navegador. */
+.social--instalar { font: inherit; cursor: pointer; -webkit-appearance: none; }
+.social--instalar[hidden] { display: none; }
+.social__ico--instalar { background: linear-gradient(45deg, #0e5f7a, #1f95b8 60%, #57c4e0); }
+
+/* Es el cuarto botón del encabezado: en pantallas chicas se queda solo con el
+   ícono para no apretar al resto. La versión con texto está en la portada. */
+@media (max-width: 620px) { #btn-instalar span { display: none; } }
+
+/* Modal con el paso a paso, para los navegadores que no permiten instalar
+   con un botón (Safari, Firefox). */
+.instalar-pasos {
+  display: grid; gap: 10px; margin: 0 0 14px; padding-left: 24px;
+  font-size: .92rem; font-weight: 600; line-height: 1.4;
+}
+.instalar-pasos li { padding-left: 2px; }
+.instalar-pasos li::marker { color: var(--brand); font-weight: 800; }
+.instalar-pasos i { vertical-align: -2px; color: var(--brand-dark); }
+.instalar-nota {
+  display: flex; align-items: flex-start; gap: 8px; margin: 0 0 14px;
+  background: var(--warm-bg); border-radius: var(--radius-sm); padding: 10px 12px;
+  color: var(--muted); font-size: .85rem; font-weight: 600; line-height: 1.35;
+}
+.instalar-nota i { color: var(--brand); font-size: 1.1rem; flex: 0 0 auto; }
 
 /* ---------- Estadísticas (solo administradores) ---------- */
 /* Con la sesión de admin la barra pasa de tres botones a cinco. Antes de que
