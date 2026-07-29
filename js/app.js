@@ -16,6 +16,7 @@ import { initAlertas } from './alerts.js';
 import { initSoporte } from './support.js';
 import { initGuia } from './guia.js';
 import { initEstadisticas } from './stats.js';
+import { initNovedades } from './novedades.js';
 
 // Recarga reportes según los filtros actuales y los pinta en el mapa.
 async function recargar() {
@@ -41,6 +42,7 @@ function init() {
   initSoporte();
   initGuia();
   initPWA();
+  initNovedades();   // globito rojo con los reportes nuevos del día
 
   // Si se abrió con ?reporte=ID (enlace compartido), abre esa ficha.
   abrirDesdeEnlace();

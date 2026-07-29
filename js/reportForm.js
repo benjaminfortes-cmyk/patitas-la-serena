@@ -515,6 +515,8 @@ async function onSubmit(e) {
       window.mostrarVista?.('mapa');
       flyTo(datos.lat, datos.lng, 16);
       onPublished?.();
+      // Su propio reporte no le tiene que aparecer como novedad sin ver.
+      window.marcarNovedadesVistas?.();
       // Matching inteligente: busca coincidencias cercanas del tipo opuesto.
       window.buscarCoincidencias?.(nuevo);
     }

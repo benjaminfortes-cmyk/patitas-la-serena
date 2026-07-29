@@ -329,7 +329,7 @@ body[data-vista="home"] .view--map  { display: none; }
 }
 /* Respeta a quien prefiere menos movimiento */
 @media (prefers-reduced-motion: reduce) {
-  .fab { animation: none; }
+  .fab, .tabbar__badge { animation: none; }
 }
 
 /* ---------- Barra de navegación inferior (móvil) ---------- */
@@ -349,6 +349,20 @@ body[data-vista="home"] .view--map  { display: none; }
   color: var(--muted); font-size: .66rem; font-weight: 700;
 }
 .tabbar__item i { font-size: 1.45rem; }
+/* Globito rojo de novedades: va anclado a la esquina del ícono. */
+.tabbar__item { position: relative; }
+.tabbar__badge {
+  position: absolute; top: 5px; left: calc(50% + 3px);
+  min-width: 17px; height: 17px; padding: 0 5px;
+  display: grid; place-items: center;
+  background: #E5352B; color: #fff; border-radius: 999px;
+  font-size: .63rem; font-weight: 800; line-height: 1;
+  /* El aro del color de la barra lo despega del ícono, como en las apps. */
+  box-shadow: 0 0 0 2px var(--surface);
+  animation: badge-pop .28s cubic-bezier(.22,.61,.36,1);
+}
+.tabbar__badge[hidden] { display: none; }
+@keyframes badge-pop { from { transform: scale(0); } to { transform: scale(1); } }
 .tabbar__item:active { color: var(--brand-dark); transform: scale(.94); }
 .tabbar__item--active { color: var(--brand-dark); }
 .tabbar__item--active i { color: var(--brand-dark); }

@@ -97,6 +97,28 @@ export async function fetchReports(filtros = {}) {
   return data.filter((r) => visibleEnMapa(r) && coincideTexto(r, query));
 }
 
+// Cuántos reportes se publicaron desde tal momento. Es solo un número (head:
+// true no trae ninguna fila), así que el globito de novedades puede preguntar
+// cada tanto sin pesar en la conexión de nadie.
+export async function contarReportesDesde(desde) {
+  const corte = new Date(desde).getTime();
+
+  if (!isConfigured) {
+    return DEMO_REPORTS.filter((r) =>
+      visibleEnMapa(r) && new Date(r.created_at ?? r.event_at).getTime() >= corte
+    ).length;
+  }
+
+  const { count, error } = await supabase
+    .from('reports_public')
+    .select('id', { count: 'exact', head: true })
+    .in('lifecycle', ['activo', 'resuelto'])
+    .gte('created_at', new Date(corte).toISOString());
+
+  if (error) { console.error('No se pudieron contar los reportes nuevos:', error.message); return 0; }
+  return count ?? 0;
+}
+
 // Trae los últimos reencuentros para la sección "Historias felices".
 export async function fetchHappyStories(limite = 20) {
   if (!isConfigured) {
