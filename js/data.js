@@ -153,6 +153,9 @@ export async function fetchContacto(report) {
     return demo?.contact_whatsapp ?? null;
   }
 
+  // No hace falta sesión: get_report_contact() atiende a cualquiera (ver
+  // migración 0009). El número sigue pidiéndose de a uno para que no se pueda
+  // descargar la lista completa en una sola consulta.
   const { data, error } = await supabase.rpc('get_report_contact', { p_report_id: report.id });
   if (error) { console.error('No se pudo obtener el contacto:', error.message); return null; }
 
