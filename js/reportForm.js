@@ -17,9 +17,8 @@ import { DEMO_REPORTS } from './demo.js';
 import { fetchContacto } from './data.js';
 
 // Estado del formulario en curso
-// `puntoTocado` distingue el pin inicial (que cae en el centro de la región)
-// del punto que la persona eligió de verdad. Solo el segundo completa la
-// parada "¿Dónde?" del rastro.
+// `puntoTocado` separa el pin de partida (cae en el centro de la región) del
+// punto que alguien eligió. Solo el segundo completa la parada "¿Dónde?".
 const estado = { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null };
 
 let formMap, formMarker;
@@ -79,7 +78,7 @@ function wire() {
     document.getElementById('desc-count').textContent = desc.value.length;
   });
 
-  // Cualquier tecla en cualquier campo puede hacer avanzar el rastro.
+  // Un solo listener en el formulario en vez de uno por campo.
   document.getElementById('report-form').addEventListener('input', actualizarRuta);
 
   // Cerrar
@@ -161,23 +160,16 @@ function aplicarTextos(kind) {
 }
 
 // ---------------------------------------------------------------------------
-// El rastro: el formulario es un sendero y cada campo una parada.
-//
-// La línea punteada une la primera parada con el destino (el botón de publicar)
-// y se va pintando de color a medida que se completan. La parte pintada llega
-// hasta la última parada completada SIN saltarse ninguna: si alguien deja un
-// campo a medias, el rastro se corta ahí, que es justo lo que hay que mostrar.
-//
-// Los largos se calculan aquí y no en el CSS porque dependen de qué paradas
-// están a la vista: el nombre solo aparece en "perdí a mi mascota", y la
-// ubicación desaparece al editar.
+// El rastro: cada campo es una parada de un sendero y la línea se pinta hasta
+// donde se llegó. Los largos se calculan acá y no en el CSS porque dependen de
+// qué paradas están a la vista: el nombre solo sale en "perdí a mi mascota" y
+// la ubicación desaparece al editar.
 // ---------------------------------------------------------------------------
-// ¿Esta parada ya tiene algo? Cada tipo se sabe distinto.
 function paradaCompleta(parada) {
   switch (parada.dataset.parada) {
-    // El punto se puede marcar tocando el mapa, sin escribir nada.
+    // El punto se marca tocando el mapa, sin escribir nada.
     case 'donde': return estado.puntoTocado;
-    // En edición la foto ya existe aunque no se haya elegido una nueva.
+    // Al editar, la foto ya existe aunque no se elija una nueva.
     case 'foto':  return !!estado.fotoBlob || !document.getElementById('photo-preview').hidden;
     default:
       if (parada.querySelector('.seg__btn--active')) return true;
@@ -194,8 +186,10 @@ function actualizarRuta() {
 
   const visibles = [...ruta.querySelectorAll('[data-parada]')].filter((p) => !p.hidden);
 
+  // La línea se corta en la primera parada vacía, aunque más abajo haya otras
+  // completas: muestra hasta dónde se llegó, no cuántas van.
   let finPintado = null;
-  let cortado = false;          // ya apareció una parada vacía: el rastro se corta
+  let cortado = false;
   visibles.forEach((parada) => {
     const lista = paradaCompleta(parada);
     parada.classList.toggle('parada--lista', lista);
@@ -203,7 +197,7 @@ function actualizarRuta() {
     else if (!lista) cortado = true;
   });
 
-  // El destino se enciende cuando ya se puede publicar de verdad.
+  // El destino se enciende con lo mínimo para publicar, no con todo lleno.
   const listoParaPublicar = !!estado.kind && !!estado.animal
     && paradaCompleta(ruta.querySelector('[data-parada="foto"]'))
     && (document.getElementById('field-location').hidden || estado.puntoTocado)
@@ -211,7 +205,6 @@ function actualizarRuta() {
   meta.classList.toggle('parada--lista', listoParaPublicar);
 
   // .ruta es position:relative, así que offsetTop ya viene medido desde ella.
-  // La línea nace en el centro de la primera marca: esa es la distancia cero.
   const origen = visibles[0]?.offsetTop ?? 0;
   const hasta = (el) => Math.max(0, el.offsetTop - origen);
   ruta.style.setProperty('--ruta-largo', hasta(meta) + 'px');

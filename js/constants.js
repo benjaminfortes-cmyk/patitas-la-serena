@@ -28,13 +28,6 @@ export const ANIMAL_META = {
   otro:  { label: 'Otro',  icon: 'ph-paw-print' },
 };
 
-export const AGE_OPTIONS = [
-  { value: 'all',   label: 'Todo' },
-  { value: '24h',   label: 'Últimas 24h' },
-  { value: 'week',  label: 'Semana' },
-  { value: 'month', label: 'Mes' },
-];
-
 // Nombre legible del animal (considera el campo libre "otro").
 export function nombreAnimal(r) {
   if (r.animal_type === 'otro' && r.animal_type_other) return r.animal_type_other;

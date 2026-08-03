@@ -307,14 +307,13 @@
 
       <p class="ruta__intro">Cada dato que completas deja una huella en el rastro. Mientras más huellas, más fácil es reconocerlo.</p>
 
-      <!-- El rastro: cada campo es una parada del sendero. La línea punteada se
-           pinta de color hasta donde llegaste (js/reportForm.js). -->
+      <!-- El rastro: cada campo es una parada. Ver js/reportForm.js -->
       <div class="ruta" id="ruta">
         <span class="ruta__avance" id="ruta-avance" aria-hidden="true"></span>
 
       <!-- Tipo de reporte -->
-      <!-- La marca va fuera del <fieldset>: dentro, el <legend> corre la caja
-           de posicionamiento y el círculo queda descolgado. -->
+      <!-- La marca va fuera del fieldset: adentro, el legend corre la caja de
+           posicionamiento y el círculo queda descolgado. -->
       <div class="parada" data-parada="kind">
       <span class="parada__marca" aria-hidden="true"><i class="ph ph-question"></i></span>
       <fieldset class="form__group">
@@ -440,7 +439,7 @@
         <small class="counter"><span id="desc-count">0</span>/500</small>
       </div>
 
-        <!-- Última parada del rastro: el destino -->
+        <!-- Última parada: el destino -->
         <div class="parada parada--meta">
           <span class="parada__marca" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
           <button type="submit" class="btn btn--primary form__submit" id="form-submit">

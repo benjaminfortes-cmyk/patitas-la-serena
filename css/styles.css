@@ -102,29 +102,6 @@ body {
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .chips::-webkit-scrollbar { display: none; }
-.chips__sep { flex: 0 0 1px; background: var(--line); margin: 4px 2px; align-self: stretch; }
-
-.chip {
-  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
-  font: inherit; font-weight: 600; font-size: .88rem;
-  white-space: nowrap; cursor: pointer; border: 1.5px solid var(--line);
-  background: var(--surface); color: var(--ink);
-  border-radius: 999px; padding: 7px 14px; transition: all .15s;
-}
-.chip i { font-size: 1.05rem; color: var(--muted); }
-.chip--active i { color: #fff; }
-
-/* Punto de estado: el color reemplaza a los emojis 🔴🟢🔵 */
-.chip__dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
-.chip__dot--perdido    { background: var(--perdido); }
-.chip__dot--encontrado { background: var(--encontrado); }
-.chip__dot--avistado   { background: var(--avistado); }
-.chip--active .chip__dot { background: #fff; }
-.chip:hover { border-color: var(--brand); }
-.chip--active { background: var(--ink); color: #fff; border-color: var(--ink); }
-.chip--perdido.chip--active    { background: var(--perdido);    border-color: var(--perdido); }
-.chip--encontrado.chip--active { background: var(--encontrado); border-color: var(--encontrado); }
-.chip--avistado.chip--active   { background: var(--avistado);   border-color: var(--avistado); }
 
 /* Filtros desplegables (Estado / Tiempo) */
 .select { position: relative; display: inline-flex; flex: 0 0 auto; }
@@ -623,19 +600,6 @@ body[data-vista="home"] .fab { display: none; }
   .fab { bottom: 32px; right: 32px; }
 }
 
-/* ---------- Menú de usuario ---------- */
-.user-menu {
-  position: fixed; z-index: 2100; background: var(--surface);
-  border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
-  padding: 6px; min-width: 180px; animation: toast-in .18s ease;
-}
-.user-menu__item {
-  width: 100%; display: flex; align-items: center; gap: 10px;
-  background: none; border: none; font: inherit; font-weight: 700; cursor: pointer;
-  padding: 10px 12px; border-radius: 8px; color: var(--ink); text-align: left;
-}
-.user-menu__item:hover { background: var(--brand-soft); color: var(--brand-dark); }
-
 /* ---------- Modal de publicación ---------- */
 .modal {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 1600;
@@ -656,21 +620,17 @@ body[data-vista="home"] .fab { display: none; }
 /* ---------- Formulario ---------- */
 .form { padding: 16px 18px calc(28px + env(safe-area-inset-bottom)); display: grid; gap: 18px; }
 .form__group { display: grid; gap: 8px; border: none; min-width: 0; }
-/* El atributo hidden tiene que ganarle al display:grid de arriba: si no, los
-   campos que se ocultan por caso (nombre, ubicación al editar) siguen a la vista. */
+/* Sin esto el display:grid de arriba le gana al atributo hidden y los campos
+   que se ocultan por caso (nombre, ubicación al editar) quedan a la vista. */
 .form__group[hidden], .parada[hidden] { display: none; }
 .form__group legend, .form__group > label { font-weight: 800; font-size: .95rem; }
 .form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
 /* ---------- El rastro ----------
-   Cada campo es una parada de un sendero. La línea punteada une todas las
-   paradas y se va pintando de color hasta donde llegó quien está reportando.
-   El largo exacto de la línea lo calcula js/reportForm.js: depende de qué
-   paradas están a la vista (el nombre solo aparece en "perdí a mi mascota"). */
+   Los largos de las dos líneas los pone js/reportForm.js. */
 .ruta__intro { color: var(--muted); font-weight: 600; font-size: .88rem; line-height: 1.5; }
 .ruta { position: relative; display: grid; gap: 20px; }
-/* top: 14px = centro del círculo, que sube 3px para quedar a la altura del
-   texto de su parada. */
+/* 14px = centro del círculo, que sube 3px para quedar a la altura del texto. */
 .ruta::before,
 .ruta__avance { content: ''; position: absolute; left: 16px; top: 14px; width: 3px; }
 .ruta::before {
