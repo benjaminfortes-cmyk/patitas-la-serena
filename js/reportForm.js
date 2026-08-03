@@ -17,7 +17,10 @@ import { DEMO_REPORTS } from './demo.js';
 import { fetchContacto } from './data.js';
 
 // Estado del formulario en curso
-const estado = { kind: null, animal: null, size: null, lat: null, lng: null, fotoBlob: null, fotoPreview: null };
+// `puntoTocado` distingue el pin inicial (que cae en el centro de la región)
+// del punto que la persona eligió de verdad. Solo el segundo completa la
+// parada "¿Dónde?" del rastro.
+const estado = { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null };
 
 let formMap, formMarker;
 let onPublished = () => {};
@@ -75,6 +78,9 @@ function wire() {
   desc.addEventListener('input', () => {
     document.getElementById('desc-count').textContent = desc.value.length;
   });
+
+  // Cualquier tecla en cualquier campo puede hacer avanzar el rastro.
+  document.getElementById('report-form').addEventListener('input', actualizarRuta);
 
   // Cerrar
   document.querySelector('[data-close-form]').addEventListener('click', cerrar);
@@ -154,6 +160,64 @@ function aplicarTextos(kind) {
   poner('legend-donde', 'innerHTML', `${t.donde} <span class="req">*</span>`);
 }
 
+// ---------------------------------------------------------------------------
+// El rastro: el formulario es un sendero y cada campo una parada.
+//
+// La línea punteada une la primera parada con el destino (el botón de publicar)
+// y se va pintando de color a medida que se completan. La parte pintada llega
+// hasta la última parada completada SIN saltarse ninguna: si alguien deja un
+// campo a medias, el rastro se corta ahí, que es justo lo que hay que mostrar.
+//
+// Los largos se calculan aquí y no en el CSS porque dependen de qué paradas
+// están a la vista: el nombre solo aparece en "perdí a mi mascota", y la
+// ubicación desaparece al editar.
+// ---------------------------------------------------------------------------
+// ¿Esta parada ya tiene algo? Cada tipo se sabe distinto.
+function paradaCompleta(parada) {
+  switch (parada.dataset.parada) {
+    // El punto se puede marcar tocando el mapa, sin escribir nada.
+    case 'donde': return estado.puntoTocado;
+    // En edición la foto ya existe aunque no se haya elegido una nueva.
+    case 'foto':  return !!estado.fotoBlob || !document.getElementById('photo-preview').hidden;
+    default:
+      if (parada.querySelector('.seg__btn--active')) return true;
+      return [...parada.querySelectorAll('input, textarea')]
+        .some((campo) => campo.type !== 'file' && campo.value.trim());
+  }
+}
+
+function actualizarRuta() {
+  const ruta = document.getElementById('ruta');
+  const avance = document.getElementById('ruta-avance');
+  const meta = ruta?.querySelector('.parada--meta');
+  if (!ruta || !avance || !meta) return;
+
+  const visibles = [...ruta.querySelectorAll('[data-parada]')].filter((p) => !p.hidden);
+
+  let finPintado = null;
+  let cortado = false;          // ya apareció una parada vacía: el rastro se corta
+  visibles.forEach((parada) => {
+    const lista = paradaCompleta(parada);
+    parada.classList.toggle('parada--lista', lista);
+    if (lista && !cortado) finPintado = parada;
+    else if (!lista) cortado = true;
+  });
+
+  // El destino se enciende cuando ya se puede publicar de verdad.
+  const listoParaPublicar = !!estado.kind && !!estado.animal
+    && paradaCompleta(ruta.querySelector('[data-parada="foto"]'))
+    && (document.getElementById('field-location').hidden || estado.puntoTocado)
+    && !!document.getElementById('whatsapp').value.trim();
+  meta.classList.toggle('parada--lista', listoParaPublicar);
+
+  // .ruta es position:relative, así que offsetTop ya viene medido desde ella.
+  // La línea nace en el centro de la primera marca: esa es la distancia cero.
+  const origen = visibles[0]?.offsetTop ?? 0;
+  const hasta = (el) => Math.max(0, el.offsetTop - origen);
+  ruta.style.setProperty('--ruta-largo', hasta(meta) + 'px');
+  avance.style.height = (listoParaPublicar ? hasta(meta) : finPintado ? hasta(finPintado) : 0) + 'px';
+}
+
 // Helper genérico para botones segmentados (radio visual).
 function segmented(group, onSet) {
   document.querySelectorAll(`[data-seg="${group}"]`).forEach((btn) => {
@@ -166,6 +230,7 @@ function segmented(group, onSet) {
       btn.setAttribute('aria-pressed', 'true');
       estado[group] = btn.dataset.value;
       onSet?.(btn.dataset.value);
+      actualizarRuta();   // va después de onSet: ahí se muestra u oculta el nombre
     });
   });
 }
@@ -186,6 +251,9 @@ async function abrir(report) {
 
   document.getElementById('report-modal').classList.add('modal--open');
   document.getElementById('form-backdrop').classList.add('backdrop--show');
+
+  // El rastro se mide con el modal ya visible: antes las alturas son cero.
+  actualizarRuta();
 
   // El mini-mapa se inicializa la primera vez; si ya existe, solo se refresca.
   if (!editId) setTimeout(initFormMap, 50);
@@ -246,6 +314,7 @@ function prefill(r) {
   // La ubicación no se edita, pero seteamos valores para que la validación pase.
   estado.lat = r.lat ?? 0;
   estado.lng = r.lng ?? 0;
+  estado.puntoTocado = true;   // el reporte ya tiene su punto de antes
 }
 
 function cerrar() {
@@ -256,7 +325,7 @@ function cerrar() {
 function reset() {
   const form = document.getElementById('report-form');
   form.reset();
-  Object.assign(estado, { kind: null, animal: null, size: null, lat: null, lng: null, fotoBlob: null, fotoPreview: null });
+  Object.assign(estado, { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null });
 
   // Limpia selecciones visuales
   document.querySelectorAll('.seg__btn--active').forEach((b) => {
@@ -290,7 +359,7 @@ function initFormMap() {
 
   // Marcador arrastrable que define el punto del reporte
   formMarker = L.marker(MAP_CENTER, { draggable: true }).addTo(formMap);
-  fijarPunto(MAP_CENTER[0], MAP_CENTER[1]);
+  fijarPunto(MAP_CENTER[0], MAP_CENTER[1], false);   // pin de partida, no elección
 
   formMarker.on('dragend', () => {
     const { lat, lng } = formMarker.getLatLng();
@@ -302,9 +371,11 @@ function initFormMap() {
   });
 }
 
-function fijarPunto(lat, lng) {
+function fijarPunto(lat, lng, porElUsuario = true) {
   estado.lat = lat;
   estado.lng = lng;
+  if (porElUsuario) estado.puntoTocado = true;
+  actualizarRuta();   // elegir el punto completa la parada "¿Dónde?"
 }
 
 // ---------------------------------------------------------------------------
@@ -452,6 +523,7 @@ async function onFoto(e) {
     img.src = estado.fotoPreview;
     img.hidden = false;
     placeholder.hidden = true;
+    actualizarRuta();
   } catch (err) {
     e.target.value = '';
     toast(err.message, 'error');

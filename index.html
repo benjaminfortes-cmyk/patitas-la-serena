@@ -305,7 +305,18 @@
 
     <form id="report-form" class="form" novalidate>
 
+      <p class="ruta__intro">Cada dato que completas deja una huella en el rastro. Mientras más huellas, más fácil es reconocerlo.</p>
+
+      <!-- El rastro: cada campo es una parada del sendero. La línea punteada se
+           pinta de color hasta donde llegaste (js/reportForm.js). -->
+      <div class="ruta" id="ruta">
+        <span class="ruta__avance" id="ruta-avance" aria-hidden="true"></span>
+
       <!-- Tipo de reporte -->
+      <!-- La marca va fuera del <fieldset>: dentro, el <legend> corre la caja
+           de posicionamiento y el círculo queda descolgado. -->
+      <div class="parada" data-parada="kind">
+      <span class="parada__marca" aria-hidden="true"><i class="ph ph-question"></i></span>
       <fieldset class="form__group">
         <legend>¿Qué pasó? <span class="req">*</span></legend>
         <div class="seg seg--cards" role="group" aria-label="Tipo de reporte">
@@ -320,8 +331,11 @@
           </button>
         </div>
       </fieldset>
+      </div>
 
       <!-- Tipo de animal -->
+      <div class="parada" data-parada="animal">
+      <span class="parada__marca" aria-hidden="true"><i class="ph ph-paw-print"></i></span>
       <fieldset class="form__group">
         <legend>¿Qué animal? <span class="req">*</span></legend>
         <div class="seg" role="group" aria-label="Tipo de animal">
@@ -331,8 +345,11 @@
         </div>
         <input type="text" id="animal-other" class="input" placeholder="¿Qué animal? (ej: conejo)" maxlength="40" hidden />
       </fieldset>
+      </div>
 
       <!-- Foto -->
+      <div class="parada" data-parada="foto">
+      <span class="parada__marca" aria-hidden="true"><i class="ph ph-camera"></i></span>
       <fieldset class="form__group">
         <legend>Foto <span class="req">*</span></legend>
         <label class="photo-drop" for="photo">
@@ -345,15 +362,18 @@
         </label>
         <input type="file" id="photo" accept="image/*" hidden />
       </fieldset>
+      </div>
 
       <!-- Nombre (solo perdido) -->
-      <div class="form__group" id="field-name" hidden>
+      <div class="form__group parada" data-parada="nombre" id="field-name" hidden>
+        <span class="parada__marca" aria-hidden="true"><i class="ph ph-textbox"></i></span>
         <label for="pet-name">Nombre de la mascota</label>
         <input type="text" id="pet-name" class="input" placeholder="Ej: Rocco" maxlength="60" />
       </div>
 
       <!-- Raza --- tamaño -->
-      <div class="form__row">
+      <div class="form__row parada" data-parada="rasgos">
+        <span class="parada__marca" aria-hidden="true"><i class="ph ph-dog"></i></span>
         <div class="form__group">
           <label for="breed" id="label-breed">Raza aproximada</label>
           <input type="text" id="breed" class="input" placeholder="Ej: Quiltro, Labrador…" maxlength="60" />
@@ -368,19 +388,23 @@
         </div>
       </div>
 
-      <div class="form__group">
+      <div class="form__group parada" data-parada="senas">
+        <span class="parada__marca" aria-hidden="true"><i class="ph ph-palette"></i></span>
         <label for="color" id="label-color">Color / señas particulares</label>
         <input type="text" id="color" class="input" placeholder="Ej: café con pecho blanco, cojea de una pata…" maxlength="120" />
       </div>
 
       <!-- Fecha del evento -->
-      <div class="form__group">
+      <div class="form__group parada" data-parada="cuando">
+        <span class="parada__marca" aria-hidden="true"><i class="ph ph-clock"></i></span>
         <label for="event-at" id="label-fecha">¿Cuándo fue?</label>
         <input type="datetime-local" id="event-at" class="input" />
       </div>
 
       <!-- Ubicación -->
-      <fieldset class="form__group" id="field-location">
+      <div class="parada" data-parada="donde" id="field-location">
+      <span class="parada__marca" aria-hidden="true"><i class="ph ph-map-pin"></i></span>
+      <fieldset class="form__group">
         <legend id="legend-donde">¿Dónde? <span class="req">*</span></legend>
         <p class="form__hint" id="hint-donde">Busca la dirección, marca el punto en el mapa o usa tu ubicación actual.</p>
 
@@ -398,24 +422,32 @@
           <i class="ph ph-crosshair" aria-hidden="true"></i> Usar mi ubicación actual
         </button>
       </fieldset>
+      </div>
 
       <!-- WhatsApp -->
-      <div class="form__group">
+      <div class="form__group parada" data-parada="fono">
+        <span class="parada__marca" aria-hidden="true"><i class="ph ph-whatsapp-logo"></i></span>
         <label for="whatsapp">WhatsApp de contacto <span class="req">*</span></label>
         <input type="tel" id="whatsapp" class="input" placeholder="+56 9 1234 5678" inputmode="tel" />
       </div>
 
       <!-- Descripción -->
-      <div class="form__group">
+      <div class="form__group parada" data-parada="desc">
+        <span class="parada__marca" aria-hidden="true"><i class="ph ph-note-pencil"></i></span>
         <label for="description">Descripción (opcional)</label>
         <textarea id="description" class="input" rows="3" maxlength="500"
                   placeholder="Cuenta detalles que ayuden a identificarla…"></textarea>
         <small class="counter"><span id="desc-count">0</span>/500</small>
       </div>
 
-      <button type="submit" class="btn btn--primary form__submit" id="form-submit">
-        <i class="ph ph-paper-plane-tilt" aria-hidden="true"></i> Publicar reporte
-      </button>
+        <!-- Última parada del rastro: el destino -->
+        <div class="parada parada--meta">
+          <span class="parada__marca" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
+          <button type="submit" class="btn btn--primary form__submit" id="form-submit">
+            <i class="ph ph-paper-plane-tilt" aria-hidden="true"></i> Publicar reporte
+          </button>
+        </div>
+      </div><!-- /.ruta -->
     </form>
   </div>
 

@@ -655,9 +655,52 @@ body[data-vista="home"] .fab { display: none; }
 
 /* ---------- Formulario ---------- */
 .form { padding: 16px 18px calc(28px + env(safe-area-inset-bottom)); display: grid; gap: 18px; }
-.form__group { display: grid; gap: 8px; border: none; }
+.form__group { display: grid; gap: 8px; border: none; min-width: 0; }
+/* El atributo hidden tiene que ganarle al display:grid de arriba: si no, los
+   campos que se ocultan por caso (nombre, ubicación al editar) siguen a la vista. */
+.form__group[hidden], .parada[hidden] { display: none; }
 .form__group legend, .form__group > label { font-weight: 800; font-size: .95rem; }
 .form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* ---------- El rastro ----------
+   Cada campo es una parada de un sendero. La línea punteada une todas las
+   paradas y se va pintando de color hasta donde llegó quien está reportando.
+   El largo exacto de la línea lo calcula js/reportForm.js: depende de qué
+   paradas están a la vista (el nombre solo aparece en "perdí a mi mascota"). */
+.ruta__intro { color: var(--muted); font-weight: 600; font-size: .88rem; line-height: 1.5; }
+.ruta { position: relative; display: grid; gap: 20px; }
+/* top: 14px = centro del círculo, que sube 3px para quedar a la altura del
+   texto de su parada. */
+.ruta::before,
+.ruta__avance { content: ''; position: absolute; left: 16px; top: 14px; width: 3px; }
+.ruta::before {
+  height: var(--ruta-largo, 0);
+  background-image: linear-gradient(var(--line) 55%, transparent 0);
+  background-size: 3px 13px;
+}
+.ruta__avance {
+  height: 0; background: var(--brand); border-radius: 999px;
+  transition: height .45s cubic-bezier(.3, .9, .4, 1);
+}
+
+.parada { position: relative; padding-left: 48px; min-width: 0; }
+.parada__marca {
+  position: absolute; left: 0; top: -3px; z-index: 1;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--surface); border: 2.5px solid var(--line);
+  color: #A6C0CA; font-size: 1.05rem;
+  transition: background .25s, border-color .25s, color .25s;
+}
+.parada--lista .parada__marca { background: var(--brand); border-color: var(--brand); color: #fff; }
+/* El destino: se enciende cuando ya se puede publicar. */
+.parada--meta .parada__marca { border-style: dashed; }
+.parada--meta.parada--lista .parada__marca { border-style: solid; }
+
+/* En pantallas angostas el sendero se come el ancho: raza y tamaño se apilan. */
+@media (max-width: 480px) {
+  .form__row.parada { grid-template-columns: 1fr; }
+}
 .form__hint { color: var(--muted); font-size: .85rem; font-weight: 600; }
 .req { color: var(--brand); }
 
