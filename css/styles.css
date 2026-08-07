@@ -286,18 +286,21 @@ body[data-vista="home"] .view--map  { display: none; }
 .pin--mini .pin__icon { font-size: .78rem; }
 @keyframes pin-pop { from { transform: rotate(-45deg) scale(0); } to { transform: rotate(-45deg) scale(1); } }
 
-/* ---------- Botón flotante ---------- */
+/* ---------- Botón flotante ----------
+   Un círculo con un "+", el mismo gesto que el botón del centro de la barra
+   inferior del celular. Sin texto: el menú lateral ya dice "Reportar". */
 .fab {
   position: fixed; right: 18px; bottom: 24px; z-index: 1100;
-  display: inline-flex; align-items: center; gap: 10px;
-  background: var(--brand); color: #fff; font: inherit; font-weight: 800; font-size: 1.05rem;
-  border: none; border-radius: 999px; padding: 18px 28px; cursor: pointer;
+  display: grid; place-items: center;
+  width: 62px; height: 62px; border-radius: 50%;
+  background: var(--brand); color: #fff; font: inherit;
+  border: none; padding: 0; cursor: pointer;
   box-shadow: var(--shadow-lg); transition: transform .15s, background .2s;
   animation: fab-in .45s cubic-bezier(.22,.61,.36,1);
 }
-.fab:hover { background: var(--brand-dark); transform: scale(1.03); }
-.fab:active { transform: scale(.97); }
-.fab i { font-size: 1.6rem; }
+.fab:hover { background: var(--brand-dark); transform: scale(1.06); }
+.fab:active { transform: scale(.94); }
+.fab i { font-size: 2.1rem; }
 
 /* Entrada sutil al cargar la página */
 @keyframes fab-in {
@@ -365,6 +368,154 @@ body[data-vista="home"] .view--map  { display: none; }
 
 /* El botón flotante Reportar (escritorio) solo en la vista Mapa */
 body[data-vista="home"] .fab { display: none; }
+
+/* ---------- Menú lateral (escritorio) ----------
+   En el celular la navegación va abajo; de 641px para arriba se pasa a la
+   izquierda, como en Instagram, y las vistas se corren para dejarle su franja.
+   Es una columna angosta de puros íconos: el nombre aparece al pasar el mouse,
+   para no robarle ancho al mapa. La excepción es Reportar, que lleva su nombre
+   siempre: es a lo que la gente viene. */
+.sidenav, .filtros-panel { display: none; }
+
+@media (min-width: 641px) {
+  :root { --topbar-h: 0px; --nav-w: 78px; --panel-w: 0px; }
+
+  .sidenav {
+    position: fixed; left: 0; top: 0; bottom: 0; z-index: 1200;
+    width: var(--nav-w);
+    display: flex; flex-direction: column;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+    background: var(--surface); border-right: 1px solid var(--line);
+    /* Sin recorte: los nombres al pasar el mouse se salen de la columna. */
+    overflow: visible;
+  }
+  /* Las vistas empiezan donde termina el menú (y su panel de filtros, si está) */
+  .views { left: calc(var(--nav-w) + var(--panel-w)); }
+
+  /* La barra de arriba ya no hace falta: el menú toma su lugar. Queda solo de
+     percha para los botones que aparecen solos (Admin, Estadística), flotando
+     arriba a la derecha. Si no hay ninguno, no se ve nada. */
+  .topbar {
+    inset: 14px 18px auto auto; height: auto; width: auto;
+    padding: 0; background: none; box-shadow: none; z-index: 1300;
+  }
+  .topbar .brand, .topbar__tagline,
+  #btn-historias, #btn-soporte, #btn-alertas, #btn-instalar { display: none; }
+  .topbar__actions .btn { box-shadow: var(--shadow-sm); }
+
+  /* Marca: el logo hace de botón de inicio, como el de Instagram. */
+  .sidenav__brand {
+    display: grid; place-items: center;
+    padding: 6px 0; margin-bottom: 10px;
+    background: none; border: none; font: inherit; cursor: pointer;
+  }
+  .sidenav__logo {
+    width: 42px; height: 42px; display: grid; place-items: center;
+    background: var(--brand); color: #fff; border-radius: 13px; font-size: 1.4rem;
+    transition: transform .15s;
+  }
+  .sidenav__brand:hover .sidenav__logo { transform: scale(1.06); }
+
+  .sidenav__lista { list-style: none; display: grid; gap: 4px; }
+
+  .sidenav__item {
+    position: relative; width: 100%;
+    display: grid; place-items: center;
+    padding: 7px 0; border: none; border-radius: 14px;
+    background: none; font: inherit; color: var(--ink);
+    cursor: pointer; text-decoration: none;
+    transition: background .15s, transform .12s;
+  }
+  /* display:grid le gana al hidden del navegador: hay que repetirlo. */
+  .sidenav__item[hidden] { display: none; }
+  .sidenav__item > i {
+    width: 34px; height: 34px; display: grid; place-items: center; font-size: 1.6rem;
+  }
+  .sidenav__item:hover { background: var(--warm-bg); }
+  .sidenav__item:active { transform: scale(.94); }
+  .sidenav__item--active { background: var(--brand-soft); color: var(--brand-dark); }
+
+  /* El nombre, escondido hasta que el mouse (o el tabulador) pasa por encima.
+     Sale al costado, como los globitos del menú de Instagram. */
+  .sidenav__txt {
+    position: absolute; left: calc(100% + 2px); top: 50%; z-index: 5;
+    transform: translate(-8px, -50%);
+    padding: 7px 12px; border-radius: 10px;
+    background: var(--ink); color: #fff; font-size: .85rem; font-weight: 700;
+    white-space: nowrap; pointer-events: none; box-shadow: var(--shadow-md);
+    opacity: 0; visibility: hidden;
+    transition: opacity .15s, transform .15s, visibility .15s;
+  }
+  .sidenav__item:hover > .sidenav__txt,
+  .sidenav__item:focus-visible > .sidenav__txt {
+    opacity: 1; visibility: visible; transform: translate(0, -50%);
+  }
+
+  /* Reportar: el "+" en su círculo celeste, igual que el botón del centro de la
+     barra del celular, y con su nombre debajo — este no se esconde. */
+  .sidenav__item--crear { padding: 8px 0 9px; gap: 4px; }
+  .sidenav__item--crear > i {
+    background: var(--brand); color: #fff; border-radius: 50%;
+    font-size: 1.5rem; box-shadow: 0 5px 14px rgba(31, 149, 184, .4);
+    transition: background .2s;
+  }
+  .sidenav__item--crear:hover > i { background: var(--brand-dark); }
+  .sidenav__item--crear > .sidenav__txt {
+    position: static; transform: none; opacity: 1; visibility: visible;
+    padding: 0; background: none; box-shadow: none; border-radius: 0;
+    color: var(--brand-dark); font-size: .68rem; font-weight: 800;
+  }
+
+  /* Globito rojo de novedades: se posa en la esquina del ícono */
+  .sidenav__badge {
+    position: absolute; top: 4px; left: calc(50% + 6px);
+    min-width: 18px; height: 18px; padding: 0 5px;
+    display: grid; place-items: center;
+    background: #E5352B; color: #fff; border-radius: 999px;
+    font-size: .66rem; font-weight: 800; line-height: 1;
+    box-shadow: 0 0 0 2px var(--surface);
+  }
+  .sidenav__badge[hidden] { display: none; }
+
+  /* Instagram, abajo del todo y discreto */
+  .sidenav__pie { margin-top: auto; color: var(--muted); }
+  .sidenav__pie:hover { color: var(--brand-dark); }
+
+  /* El "+" flotante se queda con esa esquina, así que el zoom del mapa se corre
+     para arriba y deja de quedar debajo del botón. */
+  .leaflet-bottom.leaflet-right { margin-bottom: 92px; }
+}
+
+/* ---------- Panel de filtros (pantalla ancha) ----------
+   Se apoya en el costado del menú y solo existe en la vista Mapa: es de ahí,
+   no de la portada. Los filtros son el mismo elemento que en el celular va
+   arriba del mapa; los muda js/app.js. */
+@media (min-width: 1100px) {
+  body[data-vista="mapa"] { --panel-w: 246px; }
+  body[data-vista="mapa"] .filtros-panel { display: flex; }
+
+  .filtros-panel {
+    position: fixed; left: var(--nav-w); top: 0; bottom: 0; width: var(--panel-w);
+    z-index: 1150; flex-direction: column; gap: 14px;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+    background: var(--surface); border-right: 1px solid var(--line);
+    overflow-y: auto;
+  }
+  .filtros-panel__titulo { font-size: 1.08rem; font-weight: 800; letter-spacing: -.01em; }
+  .filtros-panel .filters {
+    display: grid; gap: 10px; padding: 0;
+    background: none; border-bottom: none; box-shadow: none;
+  }
+  .filtros-panel .search { width: auto; margin: 0; }
+  .filtros-panel .chips { display: grid; gap: 8px; padding: 0; overflow: visible; }
+  .filtros-panel .select, .filtros-panel .dropdown { display: flex; width: 100%; }
+  .filtros-panel .select select, .filtros-panel .dropdown__trigger { width: 100%; }
+  /* Sin esto el ancho mínimo del <input> (20 caracteres) empuja la caja fuera
+     del panel: en una cuadrícula, min-width parte en auto, no en cero. */
+  .filtros-panel .filters *, .filtros-panel .search input { min-width: 0; }
+  .filtros-panel .dropdown__trigger { justify-content: flex-start; }
+  .filtros-panel .dropdown__caret { margin-left: auto; }
+}
 
 /* ---------- Ilustración de estado vacío (Historias) ---------- */
 .empty__art { font-size: 3rem; color: var(--brand); opacity: .5; }

@@ -61,6 +61,10 @@ function init() {
     document.body.dataset.vista = v;
     document.querySelectorAll('.tabbar__item').forEach((t) =>
       t.classList.toggle('tabbar__item--active', t.dataset.tab === 'inicio' && v === 'home'));
+    // Menú lateral (escritorio): Inicio y Mapa son las dos vistas; se marca la actual.
+    document.querySelectorAll('.sidenav__item').forEach((t) =>
+      t.classList.toggle('sidenav__item--active',
+        (t.dataset.nav === 'inicio' && v === 'home') || (t.dataset.nav === 'mapa' && v === 'mapa')));
     // Síncrono a propósito: medir el contenedor ya fuerza el recálculo, y un
     // requestAnimationFrame no se ejecuta si la pestaña está en segundo plano.
     if (v === 'mapa') getMap()?.invalidateSize();
@@ -90,6 +94,26 @@ function init() {
   document.querySelector('[data-tab="soporte"]')?.addEventListener('click', () => document.getElementById('btn-soporte')?.click());
   document.querySelector('[data-tab="guia"]')?.addEventListener('click', () => window.openGuia?.());
 
+  // Menú lateral (escritorio): las mismas acciones que la barra inferior, para
+  // que sea la misma app y no dos navegaciones que se van separando con el tiempo.
+  document.querySelectorAll('[data-nav]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      switch (btn.dataset.nav) {
+        case 'inicio':    return mostrarVista('home');
+        case 'mapa':      return mostrarVista('mapa');
+        case 'reportar':  return window.openReportForm?.();
+        case 'guia':      return window.openGuia?.();
+        case 'historias': return document.getElementById('btn-historias')?.click();
+        case 'alertas':   return document.getElementById('btn-alertas')?.click();
+        case 'soporte':   return document.getElementById('btn-soporte')?.click();
+        case 'instalar':  return document.getElementById('btn-instalar')?.click();
+      }
+    });
+  });
+  // Arranca con Inicio marcado en el menú.
+  mostrarVista(document.body.dataset.vista === 'mapa' ? 'mapa' : 'home');
+  acomodarFiltros();
+
   // Aviso de modo demo
   if (!isConfigured) {
     toast('Modo demo: configura Supabase para usar datos reales.', 'info');
@@ -101,7 +125,28 @@ function init() {
   recargar();
 
   // Ajusta el mapa cuando la pantalla cambia de tamaño (orientación móvil).
-  window.addEventListener('resize', () => getMap()?.invalidateSize());
+  window.addEventListener('resize', () => { acomodarFiltros(); getMap()?.invalidateSize(); });
+}
+
+// ---- Dónde viven los filtros ----------------------------------------------
+// En el celular van arriba del mapa, que es donde caben. En pantalla ancha se
+// mudan a la columna de la izquierda, debajo del menú: el mapa se queda con
+// todo el ancho y el alto, y los filtros quedan a mano igual que en Instagram.
+// Se mueve el mismo elemento, no una copia: así no hay dos buscadores que
+// mantener sincronizados y los eventos ya enganchados viajan con él.
+const ANCHA = window.matchMedia('(min-width: 1100px)');
+
+function acomodarFiltros() {
+  const filtros = document.querySelector('.filters');
+  const ranura = document.getElementById('sidenav-filtros');
+  const vistaMapa = document.getElementById('view-map');
+  if (!filtros || !ranura || !vistaMapa) return;
+
+  if (ANCHA.matches) {
+    if (filtros.parentElement !== ranura) ranura.appendChild(filtros);
+  } else if (filtros.parentElement !== vistaMapa) {
+    vistaMapa.prepend(filtros);
+  }
 }
 
 // ---- Entradas desde sitios aliados ---------------------------------------

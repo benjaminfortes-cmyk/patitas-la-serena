@@ -74,6 +74,76 @@
     </div>
   </header>
 
+  <!-- MENÚ LATERAL (escritorio) -->
+  <!-- En el celular la navegación vive abajo; en el computador se pasa a la
+       izquierda, como en Instagram, y el mapa se queda con el resto del ancho.
+       Son los mismos botones de la barra inferior: así la app se ve y se usa
+       igual en las dos pantallas. Ver js/app.js. -->
+  <nav class="sidenav" aria-label="Navegación principal">
+    <button class="sidenav__brand" type="button" data-nav="inicio" aria-label="Busca Huellitas, ir al inicio">
+      <span class="sidenav__logo" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
+    </button>
+
+    <ul class="sidenav__lista">
+      <li>
+        <button class="sidenav__item" type="button" data-nav="inicio">
+          <i class="ph ph-house" aria-hidden="true"></i><span class="sidenav__txt">Inicio</span>
+        </button>
+      </li>
+      <li>
+        <button class="sidenav__item" type="button" data-nav="mapa">
+          <i class="ph ph-map-trifold" aria-hidden="true"></i><span class="sidenav__txt">Mapa</span>
+        </button>
+      </li>
+      <li>
+        <button class="sidenav__item" type="button" data-nav="guia">
+          <i class="ph ph-list-bullets" aria-hidden="true"></i><span class="sidenav__txt">Reportes</span>
+          <!-- Cuántos reportes se publicaron hoy sin que los haya visto (js/novedades.js) -->
+          <span class="sidenav__badge js-badge-nuevos" aria-hidden="true" hidden></span>
+        </button>
+      </li>
+      <!-- Reportar es la acción de la casa: el "+" lleva su nombre puesto, no
+           escondido bajo el mouse como el resto. -->
+      <li>
+        <button class="sidenav__item sidenav__item--crear" type="button" data-nav="reportar">
+          <i class="ph ph-plus" aria-hidden="true"></i><span class="sidenav__txt">Reportar</span>
+        </button>
+      </li>
+      <li>
+        <button class="sidenav__item" type="button" data-nav="historias">
+          <i class="ph ph-heart" aria-hidden="true"></i><span class="sidenav__txt">Historias</span>
+        </button>
+      </li>
+      <li>
+        <button class="sidenav__item" type="button" data-nav="alertas">
+          <i class="ph ph-bell" aria-hidden="true"></i><span class="sidenav__txt">Alertas</span>
+        </button>
+      </li>
+      <li>
+        <button class="sidenav__item" type="button" data-nav="soporte">
+          <i class="ph ph-lifebuoy" aria-hidden="true"></i><span class="sidenav__txt">Soporte</span>
+        </button>
+      </li>
+      <!-- Se muestra desde js/pwa.js: solo si aún no está instalada -->
+      <li>
+        <button class="sidenav__item" type="button" data-nav="instalar" id="nav-instalar" hidden>
+          <i class="ph ph-download-simple" aria-hidden="true"></i><span class="sidenav__txt">Instalar la app</span>
+        </button>
+      </li>
+    </ul>
+
+    <a class="sidenav__item sidenav__pie" href="https://www.instagram.com/buscahuellitas/" target="_blank" rel="noopener">
+      <i class="ph ph-instagram-logo" aria-hidden="true"></i><span class="sidenav__txt">@buscahuellitas</span>
+    </a>
+  </nav>
+
+  <!-- Panel de filtros del mapa (pantalla ancha): se apoya en el costado del
+       menú, y ahí se mudan los filtros que en el celular van arriba del mapa.
+       Lo llena js/app.js. -->
+  <aside class="filtros-panel" id="sidenav-filtros" aria-label="Filtros del mapa">
+    <p class="filtros-panel__titulo">Filtrar el mapa</p>
+  </aside>
+
   <!-- VISTAS: Inicio (hero) y Mapa -->
   <main class="views">
 
@@ -261,9 +331,10 @@
   </main>
 
   <!-- BOTÓN FLOTANTE REPORTAR (escritorio) -->
-  <button id="btn-report" class="fab" aria-label="Publicar un reporte">
+  <!-- Redondo y con un "+", igual que el botón del centro de la barra del
+       celular: quien usa la app en los dos lados busca lo mismo. -->
+  <button id="btn-report" class="fab" title="Publicar un reporte" aria-label="Publicar un reporte">
     <i class="ph ph-plus" aria-hidden="true"></i>
-    <span>Reportar</span>
   </button>
 
   <!-- BARRA DE NAVEGACIÓN INFERIOR (móvil) -->
@@ -283,7 +354,7 @@
       <button class="tabbar__item" type="button" data-tab="guia">
         <i class="ph ph-list-bullets" aria-hidden="true"></i><span>Reportes</span>
         <!-- Cuántos reportes se publicaron hoy sin que los haya visto (js/novedades.js) -->
-        <span class="tabbar__badge" id="badge-nuevos" aria-hidden="true" hidden></span>
+        <span class="tabbar__badge js-badge-nuevos" id="badge-nuevos" aria-hidden="true" hidden></span>
       </button>
       <button class="tabbar__item" type="button" data-tab="soporte">
         <i class="ph ph-lifebuoy" aria-hidden="true"></i><span>Soporte</span>

@@ -1,5 +1,6 @@
 // ============================================================================
-// Globito rojo de novedades (barra inferior, móvil).
+// Globito rojo de novedades (barra inferior en el celular, menú lateral en el
+// computador: los dos llevan la pestaña "Reportes" y los dos lo muestran).
 //
 // Igual que en Instagram: si hoy se publicaron reportes que esta persona
 // todavía no mira, la pestaña "Reportes" lleva un círculo rojo con cuántos son.
@@ -13,11 +14,14 @@ import { contarReportesDesde } from './data.js';
 const CLAVE = 'bh_novedades_vistas';   // en localStorage, ISO de la última mirada
 const CADA = 3 * 60 * 1000;            // cada cuánto vuelve a preguntar
 
-export function initNovedades() {
-  const boton = document.querySelector('.tabbar__item[data-tab="guia"]');
-  if (!boton) return;
+// Las dos pestañas "Reportes": la de la barra de abajo y la del menú lateral.
+const BOTONES = '.tabbar__item[data-tab="guia"], .sidenav__item[data-nav="guia"]';
 
-  boton.addEventListener('click', marcarVistas);
+export function initNovedades() {
+  const botones = document.querySelectorAll(BOTONES);
+  if (!botones.length) return;
+
+  botones.forEach((b) => b.addEventListener('click', marcarVistas));
   // Para que el formulario apague el globito al publicar: el reporte propio no
   // es una novedad para quien acaba de escribirlo.
   window.marcarNovedadesVistas = marcarVistas;
@@ -52,19 +56,22 @@ function marcarVistas() {
 }
 
 function pintar(cuantos) {
-  const globito = document.getElementById('badge-nuevos');
-  const boton = document.querySelector('.tabbar__item[data-tab="guia"]');
-  if (!globito) return;
+  const globitos = document.querySelectorAll('.js-badge-nuevos');
+  const botones = document.querySelectorAll(BOTONES);
+  if (!globitos.length) return;
 
-  if (cuantos > 0) {
-    globito.textContent = cuantos > 9 ? '9+' : String(cuantos);
-    globito.hidden = false;
-    // El número está en un span decorativo: quien use lector de pantalla lo
-    // escucha aquí, dicho con palabras.
-    boton?.setAttribute('aria-label',
-      cuantos === 1 ? 'Reportes · 1 nuevo hoy' : `Reportes · ${cuantos} nuevos hoy`);
-  } else {
-    globito.hidden = true;
-    boton?.removeAttribute('aria-label');
-  }
+  const texto = cuantos > 9 ? '9+' : String(cuantos);
+  globitos.forEach((g) => {
+    if (cuantos > 0) { g.textContent = texto; g.hidden = false; }
+    else g.hidden = true;
+  });
+
+  // El número está en un span decorativo: quien use lector de pantalla lo
+  // escucha aquí, dicho con palabras.
+  botones.forEach((b) => {
+    if (cuantos > 0) {
+      b.setAttribute('aria-label',
+        cuantos === 1 ? 'Reportes · 1 nuevo hoy' : `Reportes · ${cuantos} nuevos hoy`);
+    } else b.removeAttribute('aria-label');
+  });
 }

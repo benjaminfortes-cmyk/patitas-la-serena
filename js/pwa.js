@@ -51,15 +51,17 @@ function yaInstalada() {
       || window.navigator.standalone === true;   // Safari iOS
 }
 
+// El de la barra de arriba (celular), el del menú lateral (computador) y la
+// tarjeta de la portada: los tres ofrecen lo mismo y aparecen juntos.
+const BOTONES = ['btn-instalar', 'nav-instalar', 'card-instalar'];
+
 function mostrarBotones() {
   if (yaInstalada()) return;
-  document.getElementById('btn-instalar')?.removeAttribute('hidden');
-  document.getElementById('card-instalar')?.removeAttribute('hidden');
+  BOTONES.forEach((id) => document.getElementById(id)?.removeAttribute('hidden'));
 }
 
 function ocultarBotones() {
-  document.getElementById('btn-instalar')?.setAttribute('hidden', '');
-  document.getElementById('card-instalar')?.setAttribute('hidden', '');
+  BOTONES.forEach((id) => document.getElementById(id)?.setAttribute('hidden', ''));
 }
 
 // ---- Instalación -----------------------------------------------------------
