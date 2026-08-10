@@ -144,25 +144,52 @@ function panelRedondeado(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+const ZOOM_MAX = 3;   // hasta 3 veces más cerca; alejar llega hasta ver la foto entera
+
+// Rellena el recuadro con la misma foto borrosa. Se usa cuando el usuario aleja
+// tanto que la foto ya no llena el marco: en vez de un parche vacío queda un
+// fondo del mismo color de la imagen, como en las historias de Instagram.
+function rellenarBorroso(ctx, img, x, y, w, h) {
+  // Un poco más grande que el marco: el desenfoque come los bordes.
+  const escala = Math.max(w / img.width, h / img.height) * 1.2;
+  const nw = img.width * escala;
+  const nh = img.height * escala;
+  ctx.save();
+  ctx.filter = 'blur(30px)';   // si el navegador no lo soporta, queda la foto ampliada de fondo
+  ctx.drawImage(img, x + (w - nw) / 2, y + (h - nh) / 2, nw, nh);
+  ctx.restore();
+  // Velo blanco para que el fondo no le compita a la foto de adelante.
+  ctx.fillStyle = 'rgba(255,255,255,.4)';
+  ctx.fillRect(x, y, w, h);
+}
+
 // Dibuja la foto recortada tipo "cover" dentro de un recuadro.
 //
 // `foco` dice qué parte de la foto queda a la vista: 0.5 y 0.5 es el centro
 // (lo normal), 0 es pegada arriba/izquierda y 1 abajo/derecha. Sirve para que
 // el usuario corra la foto si le quedó cortada la carita del animal.
-// Devuelve hacia qué lados todavía se puede mover, para apagar las flechas que
-// no harían nada.
-function dibujarFotoCover(ctx, img, x, y, w, h, foco = { x: .5, y: .5 }) {
-  const escala = Math.max(w / img.width, h / img.height);
+// `zoom` multiplica ese tamaño: 1 es el encuadre normal (la foto llena todo el
+// recuadro), más de 1 la acerca y menos de 1 la aleja, hasta que se ve entera.
+// Devuelve hacia qué lados todavía se puede mover y hasta dónde llega el zoom,
+// para apagar los botones que no harían nada.
+function dibujarFotoCover(ctx, img, x, y, w, h, foco = { x: .5, y: .5 }, zoom = 1) {
+  const cubrir = Math.max(w / img.width, h / img.height);   // llena el marco (recorta)
+  const entera = Math.min(w / img.width, h / img.height);   // cabe completa (deja aire)
+  const zoomMin = entera / cubrir;
+  const escala = cubrir * Math.min(ZOOM_MAX, Math.max(zoomMin, zoom));
   const nw = img.width * escala;
   const nh = img.height * escala;
-  const nx = x + (w - nw) * foco.x;
-  const ny = y + (h - nh) * foco.y;
+  // Si por ese lado la foto ya no llena el recuadro va centrada: correrla solo
+  // dejaría todo el hueco de un lado.
+  const nx = x + (nw > w ? (w - nw) * foco.x : (w - nw) / 2);
+  const ny = y + (nh > h ? (h - nh) * foco.y : (h - nh) / 2);
   ctx.save();
   panelRedondeado(ctx, x, y, w, h, 24);
   ctx.clip();
+  if (nw < w - 1 || nh < h - 1) rellenarBorroso(ctx, img, x, y, w, h);
   ctx.drawImage(img, nx, ny, nw, nh);
   ctx.restore();
-  return { moverX: nw - w > 2, moverY: nh - h > 2 };
+  return { moverX: nw - w > 2, moverY: nh - h > 2, zoomMin, zoomMax: ZOOM_MAX };
 }
 
 // Parte un texto en líneas que quepan en maxAncho, sin cortar palabras. Si no
@@ -214,12 +241,14 @@ function textoQueEntra(ctx, texto, maxAncho, tamInicial, fuente) {
 //
 // `opciones` es lo que el usuario puede acomodar en la vista previa:
 //   foco          hacia dónde corre la foto dentro del recuadro
+//   zoom          qué tan cerca se ve la foto (1 = como llega)
 //   verSenas      mostrar u ocultar la línea de señas
 //   verDescripcion mostrar u ocultar lo que escribió la familia
 //   recompensa    monto en pesos (solo números); vacío = sin franja
 export async function construirCartel(report, opciones = {}) {
   const {
     foco = { x: .5, y: .5 },
+    zoom = 1,
     verSenas = true,
     verDescripcion = true,
     recompensa = '',
@@ -312,9 +341,9 @@ export async function construirCartel(report, opciones = {}) {
   try {
     const foto = await cargarFotoCacheada(report.photo_url);
     // Se guarda en el canvas para saber qué flechas de "mover la foto" sirven.
-    canvas.encuadre = dibujarFotoCover(ctx, foto, 40, fotoY, ANCHO - 80, fotoAlto, foco);
+    canvas.encuadre = dibujarFotoCover(ctx, foto, 40, fotoY, ANCHO - 80, fotoAlto, foco, zoom);
   } catch {
-    canvas.encuadre = { moverX: false, moverY: false };
+    canvas.encuadre = { moverX: false, moverY: false, zoomMin: 1, zoomMax: 1 };
     // Sin foto (o bloqueada por CORS): recuadro gris con una patita.
     ctx.fillStyle = '#eef3f5';
     panelRedondeado(ctx, 40, fotoY, ANCHO - 80, fotoAlto, 24);
@@ -420,15 +449,19 @@ function guardarCartel(url, nombreArchivo) {
 }
 
 const PASO_ENCUADRE = 0.1;   // cuánto se corre la foto en cada toque
+const PASO_ZOOM = 1.2;       // cuánto se acerca o aleja en cada toque
 
 // Ventana previa del cartel: se ve cómo quedó, se puede correr la foto si salió
 // cortada y recién ahí se guarda o se comparte.
 function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompartir }) {
   // Todo lo que el usuario puede acomodar antes de guardar. Lo único que se
   // escribe a mano es el monto de la recompensa; el resto es marcar o no.
-  const opciones = { foco: { x: .5, y: .5 }, verSenas: true, verDescripcion: true, recompensa: '' };
+  const opciones = { foco: { x: .5, y: .5 }, zoom: 1, verSenas: true, verDescripcion: true, recompensa: '' };
   let url = '';
   let archivo = null;
+  // Hasta dónde deja alejar esta foto en particular: depende de qué tan
+  // alargada sea comparada con el recuadro del cartel.
+  let limites = { zoomMin: 1, zoomMax: ZOOM_MAX };
 
   const capa = document.createElement('div');
   capa.className = 'cartel';
@@ -441,13 +474,16 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
       <img class="cartel__img" alt="${escapeHtml(titulo)}" />
 
       <div class="cartel__mover">
-        <span class="cartel__mover-titulo">¿La foto salió corrida? Muévela</span>
+        <span class="cartel__mover-titulo">¿La foto salió corrida? Muévela o acércala</span>
         <div class="cartel__flechas">
           <button type="button" data-mover="arriba" aria-label="Subir la foto"><i class="ph ph-arrow-up"></i></button>
           <button type="button" data-mover="abajo" aria-label="Bajar la foto"><i class="ph ph-arrow-down"></i></button>
           <button type="button" data-mover="izquierda" aria-label="Correr la foto a la izquierda"><i class="ph ph-arrow-left"></i></button>
           <button type="button" data-mover="derecha" aria-label="Correr la foto a la derecha"><i class="ph ph-arrow-right"></i></button>
-          <button type="button" data-mover="centrar" class="cartel__centrar">Centrar</button>
+          <button type="button" data-mover="alejar" aria-label="Alejar la foto"><i class="ph ph-magnifying-glass-minus"></i></button>
+          <button type="button" data-mover="acercar" aria-label="Acercar la foto"><i class="ph ph-magnifying-glass-plus"></i></button>
+          <button type="button" data-mover="centrar" class="cartel__centrar"
+                  aria-label="Volver la foto al encuadre original">Centrar</button>
         </div>
       </div>
 
@@ -499,12 +535,16 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     archivo = new File([blob], nombreArchivo, { type: 'image/png' });
     btnCompartir.hidden = !(navigator.canShare && navigator.canShare({ files: [archivo] }));
 
-    // Las flechas que no moverían nada (la foto ya calza justo por ese lado)
-    // quedan apagadas para no confundir.
-    const { moverX = false, moverY = false } = cv.encuadre ?? {};
+    // Los botones que no harían nada (la foto ya calza justo por ese lado, o el
+    // zoom llegó al tope) quedan apagados para no confundir.
+    const { moverX = false, moverY = false, zoomMin = 1, zoomMax = ZOOM_MAX } = cv.encuadre ?? {};
+    limites = { zoomMin, zoomMax };
+    opciones.zoom = Math.min(zoomMax, Math.max(zoomMin, opciones.zoom));
     flechas.forEach((b) => {
       const eje = b.dataset.mover;
-      if (eje === 'centrar') b.disabled = !(moverX || moverY);
+      if (eje === 'centrar') b.disabled = !(moverX || moverY || opciones.zoom !== 1);
+      else if (eje === 'acercar') b.disabled = opciones.zoom >= zoomMax - .001;
+      else if (eje === 'alejar') b.disabled = opciones.zoom <= zoomMin + .001;
       else if (eje === 'arriba' || eje === 'abajo') b.disabled = !moverY;
       else b.disabled = !moverX;
     });
@@ -521,7 +561,7 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     if (pendiente) { pendiente = false; redibujar(); }
   }
 
-  // Corre la foto dentro del recuadro.
+  // Corre o acerca la foto dentro del recuadro.
   function mover(hacia) {
     const foco = opciones.foco;
     const tope = (v) => Math.min(1, Math.max(0, v));
@@ -529,7 +569,10 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     if (hacia === 'abajo')      foco.y = tope(foco.y - PASO_ENCUADRE);
     if (hacia === 'izquierda')  foco.x = tope(foco.x + PASO_ENCUADRE);
     if (hacia === 'derecha')    foco.x = tope(foco.x - PASO_ENCUADRE);
-    if (hacia === 'centrar')  { foco.x = .5; foco.y = .5; }
+    if (hacia === 'alejar')     opciones.zoom = Math.max(limites.zoomMin, opciones.zoom / PASO_ZOOM);
+    if (hacia === 'acercar')    opciones.zoom = Math.min(limites.zoomMax, opciones.zoom * PASO_ZOOM);
+    // "Centrar" es el volver a empezar: deja la foto como llegó.
+    if (hacia === 'centrar')  { foco.x = .5; foco.y = .5; opciones.zoom = 1; }
     redibujar();
   }
 
