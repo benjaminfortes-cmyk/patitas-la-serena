@@ -112,7 +112,6 @@ function init() {
   });
   // Arranca con Inicio marcado en el menú.
   mostrarVista(document.body.dataset.vista === 'mapa' ? 'mapa' : 'home');
-  acomodarFiltros();
 
   // Aviso de modo demo
   if (!isConfigured) {
@@ -125,28 +124,7 @@ function init() {
   recargar();
 
   // Ajusta el mapa cuando la pantalla cambia de tamaño (orientación móvil).
-  window.addEventListener('resize', () => { acomodarFiltros(); getMap()?.invalidateSize(); });
-}
-
-// ---- Dónde viven los filtros ----------------------------------------------
-// En el celular van arriba del mapa, que es donde caben. En pantalla ancha se
-// mudan a la columna de la izquierda, debajo del menú: el mapa se queda con
-// todo el ancho y el alto, y los filtros quedan a mano igual que en Instagram.
-// Se mueve el mismo elemento, no una copia: así no hay dos buscadores que
-// mantener sincronizados y los eventos ya enganchados viajan con él.
-const ANCHA = window.matchMedia('(min-width: 1100px)');
-
-function acomodarFiltros() {
-  const filtros = document.querySelector('.filters');
-  const ranura = document.getElementById('sidenav-filtros');
-  const vistaMapa = document.getElementById('view-map');
-  if (!filtros || !ranura || !vistaMapa) return;
-
-  if (ANCHA.matches) {
-    if (filtros.parentElement !== ranura) ranura.appendChild(filtros);
-  } else if (filtros.parentElement !== vistaMapa) {
-    vistaMapa.prepend(filtros);
-  }
+  window.addEventListener('resize', () => getMap()?.invalidateSize());
 }
 
 // ---- Entradas desde sitios aliados ---------------------------------------

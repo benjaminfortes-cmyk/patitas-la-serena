@@ -137,13 +137,6 @@
     </a>
   </nav>
 
-  <!-- Panel de filtros del mapa (pantalla ancha): se apoya en el costado del
-       menú, y ahí se mudan los filtros que en el celular van arriba del mapa.
-       Lo llena js/app.js. -->
-  <aside class="filtros-panel" id="sidenav-filtros" aria-label="Filtros del mapa">
-    <p class="filtros-panel__titulo">Filtrar el mapa</p>
-  </aside>
-
   <!-- VISTAS: Inicio (hero) y Mapa -->
   <main class="views">
 
@@ -283,50 +276,68 @@
       </div>
     </section>
 
-    <!-- Vista MAPA: filtros + mapa -->
+    <!-- Vista MAPA: el mapa ocupa todo y los filtros flotan encima -->
     <section class="view view--map" id="view-map">
-      <section class="filters" aria-label="Filtros">
-        <div class="search">
-          <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-          <input id="search" type="search" placeholder="Buscar por nombre, raza o color…"
-                 aria-label="Buscar reportes" />
-        </div>
-
-        <div class="chips" role="group" aria-label="Filtros">
-          <div class="dropdown" id="dd-animal">
-            <button class="dropdown__trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-              <i class="ph ph-paw-print" aria-hidden="true"></i>
-              <span class="dropdown__label">Animal</span>
-              <i class="ph ph-caret-down dropdown__caret" aria-hidden="true"></i>
-            </button>
-            <div class="dropdown__panel" role="listbox" hidden>
-              <button class="dropdown__opt dropdown__opt--active" type="button" data-animal="" role="option"><i class="ph ph-list-dashes" aria-hidden="true"></i> Todos</button>
-              <button class="dropdown__opt" type="button" data-animal="perro" role="option"><i class="ph ph-dog" aria-hidden="true"></i> Perro</button>
-              <button class="dropdown__opt" type="button" data-animal="gato"  role="option"><i class="ph ph-cat" aria-hidden="true"></i> Gato</button>
-              <button class="dropdown__opt" type="button" data-animal="otro"  role="option"><i class="ph ph-paw-print" aria-hidden="true"></i> Otro</button>
-            </div>
-          </div>
-          <span class="select">
-            <select id="filter-estado" aria-label="Estado del reporte">
-              <option value="">Estado: todos</option>
-              <option value="perdido">Perdidos</option>
-              <option value="encontrado">Rescatados, buscan familia</option>
-              <option value="avistado">Avistados</option>
-            </select>
-          </span>
-          <span class="select">
-            <select id="filter-tiempo" aria-label="Tiempo">
-              <option value="all">Tiempo: todo</option>
-              <option value="24h">Últimas 24h</option>
-              <option value="week">Última semana</option>
-              <option value="month">Último mes</option>
-            </select>
-          </span>
-        </div>
-      </section>
-
       <div class="map-wrap">
         <div id="map" role="application" aria-label="Mapa de reportes de mascotas"></div>
+
+        <!-- Filtros: flotan sobre el mapa, así no le quitan alto ni ancho.
+             Los estados van siempre a la vista con el color de su pin; animal y
+             tiempo se guardan en "Más filtros" (hoja abajo en el celular,
+             tarjetita al costado en el computador). -->
+        <section class="filters" aria-label="Filtros del mapa">
+          <div class="search">
+            <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+            <input id="search" type="search" placeholder="Buscar por nombre, raza o color…"
+                   aria-label="Buscar reportes" />
+          </div>
+
+          <div class="estados" role="group" aria-label="Estado del reporte">
+            <button class="estado estado--activo" type="button" data-estado="" aria-pressed="true">
+              <span class="estado__punto" aria-hidden="true"></span>Todos
+            </button>
+            <button class="estado" type="button" data-estado="perdido" aria-pressed="false">
+              <span class="estado__punto" style="--punto: var(--perdido)" aria-hidden="true"></span>Perdidos
+            </button>
+            <button class="estado" type="button" data-estado="encontrado" aria-pressed="false">
+              <span class="estado__punto" style="--punto: var(--encontrado)" aria-hidden="true"></span>Rescatados
+            </button>
+            <button class="estado" type="button" data-estado="avistado" aria-pressed="false">
+              <span class="estado__punto" style="--punto: var(--avistado)" aria-hidden="true"></span>Avistados
+            </button>
+          </div>
+
+          <button class="mas-filtros" id="btn-mas-filtros" type="button"
+                  aria-expanded="false" aria-controls="mas-filtros-panel">
+            <i class="ph ph-sliders-horizontal" aria-hidden="true"></i>
+            <span class="mas-filtros__txt">Más filtros</span>
+            <span class="mas-filtros__cuenta" id="mas-filtros-cuenta" hidden>0</span>
+          </button>
+
+          <div class="mas-velo" id="mas-filtros-velo"></div>
+          <div class="mas-panel" id="mas-filtros-panel" role="dialog" aria-label="Más filtros">
+            <span class="mas-panel__asa" aria-hidden="true"></span>
+            <div class="grupo">
+              <p class="grupo__titulo" id="grupo-animal">Animal</p>
+              <div class="grupo__opciones" role="group" aria-labelledby="grupo-animal">
+                <button class="opcion opcion--activa" type="button" data-animal="" aria-pressed="true"><i class="ph ph-list-dashes" aria-hidden="true"></i> Todos</button>
+                <button class="opcion" type="button" data-animal="perro" aria-pressed="false"><i class="ph ph-dog" aria-hidden="true"></i> Perro</button>
+                <button class="opcion" type="button" data-animal="gato"  aria-pressed="false"><i class="ph ph-cat" aria-hidden="true"></i> Gato</button>
+                <button class="opcion" type="button" data-animal="otro"  aria-pressed="false"><i class="ph ph-paw-print" aria-hidden="true"></i> Otro</button>
+              </div>
+            </div>
+            <div class="grupo">
+              <p class="grupo__titulo" id="grupo-tiempo">Cuándo se publicó</p>
+              <div class="grupo__opciones" role="group" aria-labelledby="grupo-tiempo">
+                <button class="opcion opcion--activa" type="button" data-tiempo="all" aria-pressed="true">Siempre</button>
+                <button class="opcion" type="button" data-tiempo="24h" aria-pressed="false">Últimas 24 h</button>
+                <button class="opcion" type="button" data-tiempo="week" aria-pressed="false">Última semana</button>
+                <button class="opcion" type="button" data-tiempo="month" aria-pressed="false">Último mes</button>
+              </div>
+            </div>
+            <button class="mas-panel__listo" type="button" id="btn-mas-filtros-listo">Ver el mapa</button>
+          </div>
+        </section>
       </div>
     </section>
 

@@ -27,7 +27,6 @@
   --radius-sm: 12px;
 
   --topbar-h: 56px;
-  --filters-h: 104px;
   --tabbar-h: 62px;
 }
 
@@ -83,71 +82,103 @@ body {
 .btn--whatsapp.is-cargando { opacity: .55; pointer-events: none; }
 .btn i { font-size: 1.2em; }
 
-/* ---------- Filtros ---------- */
+/* ---------- Filtros ----------
+   Flotan sobre el mapa en vez de ocupar una barra propia: el mapa se queda con
+   toda la pantalla. En el celular van pegados arriba (buscador + los cuatro
+   estados); en el computador se apilan en el borde izquierdo, al lado del menú.
+   Animal y tiempo viven en "Más filtros". */
 .filters {
-  position: relative; z-index: 900;
-  background: var(--surface); border-bottom: 1px solid var(--line);
-  padding: 10px 0 12px; box-shadow: var(--shadow-sm);
+  position: absolute; z-index: 600; top: 10px; left: 10px; right: 10px;
+  display: grid; grid-template-columns: 1fr auto; gap: 8px;
+  grid-template-areas:
+    "buscador mas"
+    "estados  estados";
 }
 .search {
-  display: flex; align-items: center; gap: 8px; margin: 0 14px 10px;
-  background: var(--warm-bg); border: 1px solid var(--line);
-  border-radius: 999px; padding: 9px 16px;
+  grid-area: buscador; min-width: 0;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid transparent;
+  border-radius: 999px; padding: 9px 16px; box-shadow: var(--shadow-md);
 }
 .search i { color: var(--muted); font-size: 1.1rem; }
-.search input { flex: 1; border: none; background: none; font: inherit; outline: none; color: var(--ink); }
+.search input { flex: 1; min-width: 0; border: none; background: none; font: inherit; outline: none; color: var(--ink); }
+.search:focus-within { border-color: var(--brand); }
 
-.chips {
-  display: flex; gap: 8px; overflow-x: auto; padding: 0 14px 2px;
-  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+/* Los cuatro estados, con el color de su pin: es el filtro que más se usa */
+.estados {
+  grid-area: estados;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+  background: var(--surface); border-radius: 14px; padding: 4px;
+  box-shadow: var(--shadow-md);
 }
-.chips::-webkit-scrollbar { display: none; }
+.estado {
+  display: grid; justify-items: center; gap: 4px;
+  font: inherit; font-weight: 800; font-size: .68rem; line-height: 1.1;
+  color: var(--muted); background: none; border: none; border-radius: 10px;
+  padding: 7px 2px 6px; cursor: pointer; transition: background .15s, color .15s;
+}
+.estado__punto { width: 7px; height: 7px; border-radius: 50%; background: var(--punto, var(--muted)); }
+.estado--activo { background: var(--brand-soft); color: var(--brand-dark); }
+.estado[data-estado="perdido"].estado--activo    { background: #FEECEC; color: #B02020; }
+.estado[data-estado="encontrado"].estado--activo { background: #E8EFFE; color: #1B47B0; }
+.estado[data-estado="avistado"].estado--activo   { background: #FBF2DC; color: #8A5D02; }
 
-/* Filtros desplegables (Estado / Tiempo) */
-.select { position: relative; display: inline-flex; flex: 0 0 auto; }
-.select select {
-  appearance: none; -webkit-appearance: none; -moz-appearance: none;
-  font: inherit; font-weight: 600; font-size: .88rem; color: var(--ink);
-  background: var(--surface); border: 1.5px solid var(--line);
-  border-radius: 999px; padding: 7px 30px 7px 14px; cursor: pointer;
-  white-space: nowrap; transition: border-color .15s;
+/* Botón de "Más filtros": redondo en el celular, con su nombre en el computador */
+.mas-filtros {
+  grid-area: mas; position: relative;
+  display: grid; place-items: center; width: 42px; height: 42px;
+  background: var(--surface); color: var(--brand-dark); border: none; border-radius: 50%;
+  font: inherit; cursor: pointer; box-shadow: var(--shadow-md); transition: background .15s;
 }
-.select select:hover { border-color: var(--brand); }
-.select select:focus { outline: none; border-color: var(--brand); }
-.select::after {
-  content: '\25BE'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  pointer-events: none; color: var(--muted); font-size: .85rem;
+.mas-filtros:hover { background: var(--brand-soft); }
+.mas-filtros i { font-size: 1.3rem; }
+.mas-filtros__txt { display: none; }
+.mas-filtros__cuenta {
+  position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px; padding: 0 5px;
+  display: grid; place-items: center;
+  background: var(--perdido); color: #fff; border-radius: 999px;
+  font-size: .66rem; font-weight: 800; line-height: 1;
+  box-shadow: 0 0 0 2px var(--surface);
 }
+.mas-filtros__cuenta[hidden] { display: none; }
 
-/* Desplegable con íconos (filtro Animal) */
-.dropdown { position: relative; display: inline-flex; flex: 0 0 auto; }
-.dropdown__trigger {
-  display: inline-flex; align-items: center; gap: 6px;
-  font: inherit; font-weight: 600; font-size: .88rem; color: var(--ink);
-  background: var(--surface); border: 1.5px solid var(--line);
-  border-radius: 999px; padding: 7px 12px; cursor: pointer; white-space: nowrap;
-  transition: border-color .15s;
+/* Más filtros: en el celular sube como hoja desde abajo */
+.mas-velo {
+  position: fixed; inset: 0; z-index: 1450; background: rgba(42,35,32,.5);
+  opacity: 0; visibility: hidden; transition: opacity .25s;
 }
-.dropdown__trigger:hover { border-color: var(--brand); }
-.dropdown__trigger > i:first-child { color: var(--muted); font-size: 1.05rem; }
-.dropdown__caret { font-size: .8rem; color: var(--muted); }
-.dropdown__panel {
-  position: fixed; z-index: 1300;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-  box-shadow: var(--shadow-md); padding: 6px; min-width: 168px;
-  display: grid; gap: 2px; animation: toast-in .15s ease;
+.mas-velo--visible { opacity: 1; visibility: visible; }
+.mas-panel {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1550;
+  background: var(--surface); border-radius: 22px 22px 0 0;
+  padding: 8px 18px calc(18px + env(safe-area-inset-bottom));
+  box-shadow: var(--shadow-lg); display: grid; gap: 16px;
+  max-height: 86vh; overflow-y: auto;
+  transform: translateY(101%); transition: transform .3s cubic-bezier(.22,.61,.36,1);
 }
-.dropdown__panel[hidden] { display: none; }
-.dropdown__opt {
-  display: flex; align-items: center; gap: 10px;
-  font: inherit; font-weight: 700; font-size: .9rem; color: var(--ink);
-  background: none; border: none; cursor: pointer; text-align: left;
-  padding: 9px 12px; border-radius: 9px;
+.mas-panel--abierto { transform: translateY(0); }
+.mas-panel__asa { width: 42px; height: 4px; border-radius: 4px; background: var(--line); margin: 2px auto 0; }
+.grupo { display: grid; gap: 9px; }
+.grupo__titulo {
+  font-size: .72rem; font-weight: 800; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted);
 }
-.dropdown__opt i { font-size: 1.2rem; color: var(--muted); }
-.dropdown__opt:hover { background: var(--warm-bg); }
-.dropdown__opt--active { background: var(--brand-soft); color: var(--brand-dark); }
-.dropdown__opt--active i { color: var(--brand-dark); }
+.grupo__opciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.opcion {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: inherit; font-weight: 700; font-size: .88rem; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 999px;
+  padding: 9px 15px; cursor: pointer; white-space: nowrap; transition: border-color .15s, background .15s;
+}
+.opcion i { font-size: 1.15rem; color: var(--muted); }
+.opcion:hover { border-color: var(--brand); }
+.opcion--activa { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-dark); }
+.opcion--activa i { color: var(--brand-dark); }
+.mas-panel__listo {
+  font: inherit; font-weight: 800; font-size: .95rem; color: #fff;
+  background: var(--brand); border: none; border-radius: 14px; padding: 13px; cursor: pointer;
+}
+.mas-panel__listo:hover { background: var(--brand-dark); }
 
 /* ---------- Vistas: Inicio (hero) y Mapa ---------- */
 .views { position: fixed; left: 0; right: 0; top: var(--topbar-h); bottom: 0; }
@@ -375,10 +406,10 @@ body[data-vista="home"] .fab { display: none; }
    Es una columna angosta de puros íconos: el nombre aparece al pasar el mouse,
    para no robarle ancho al mapa. La excepción es Reportar, que lleva su nombre
    siempre: es a lo que la gente viene. */
-.sidenav, .filtros-panel { display: none; }
+.sidenav { display: none; }
 
 @media (min-width: 641px) {
-  :root { --topbar-h: 0px; --nav-w: 78px; --panel-w: 0px; }
+  :root { --topbar-h: 0px; --nav-w: 78px; }
 
   .sidenav {
     position: fixed; left: 0; top: 0; bottom: 0; z-index: 1200;
@@ -389,8 +420,8 @@ body[data-vista="home"] .fab { display: none; }
     /* Sin recorte: los nombres al pasar el mouse se salen de la columna. */
     overflow: visible;
   }
-  /* Las vistas empiezan donde termina el menú (y su panel de filtros, si está) */
-  .views { left: calc(var(--nav-w) + var(--panel-w)); }
+  /* Las vistas empiezan donde termina el menú */
+  .views { left: var(--nav-w); }
 
   /* La barra de arriba ya no hace falta: el menú toma su lugar. Queda solo de
      percha para los botones que aparecen solos (Admin, Estadística), flotando
@@ -486,35 +517,54 @@ body[data-vista="home"] .fab { display: none; }
   .leaflet-bottom.leaflet-right { margin-bottom: 92px; }
 }
 
-/* ---------- Panel de filtros (pantalla ancha) ----------
-   Se apoya en el costado del menú y solo existe en la vista Mapa: es de ahí,
-   no de la portada. Los filtros son el mismo elemento que en el celular va
-   arriba del mapa; los muda js/app.js. */
-@media (min-width: 1100px) {
-  body[data-vista="mapa"] { --panel-w: 246px; }
-  body[data-vista="mapa"] .filtros-panel { display: flex; }
+/* ---------- Filtros en el computador ----------
+   Sin columna ni panel: las mismas pastillas del celular, pero apiladas contra
+   el borde izquierdo del mapa, al lado del menú de íconos (que no se toca). El
+   mapa queda de pared a pared. */
+@media (min-width: 641px) {
+  .filters {
+    top: 16px; left: 16px; right: auto; width: 218px;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "buscador"
+      "estados"
+      "mas";
+    justify-items: start;
+  }
 
-  .filtros-panel {
-    position: fixed; left: var(--nav-w); top: 0; bottom: 0; width: var(--panel-w);
-    z-index: 1150; flex-direction: column; gap: 14px;
-    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
-    background: var(--surface); border-right: 1px solid var(--line);
-    overflow-y: auto;
+  /* Los estados se leen como una lista, uno por línea */
+  .estados {
+    width: 100%; grid-template-columns: 1fr; gap: 3px;
+    padding: 5px; border-radius: 16px;
   }
-  .filtros-panel__titulo { font-size: 1.08rem; font-weight: 800; letter-spacing: -.01em; }
-  .filtros-panel .filters {
-    display: grid; gap: 10px; padding: 0;
-    background: none; border-bottom: none; box-shadow: none;
+  .estado {
+    grid-template-columns: auto 1fr; justify-items: start; align-items: center;
+    gap: 9px; font-size: .82rem; padding: 9px 11px; text-align: left;
   }
-  .filtros-panel .search { width: auto; margin: 0; }
-  .filtros-panel .chips { display: grid; gap: 8px; padding: 0; overflow: visible; }
-  .filtros-panel .select, .filtros-panel .dropdown { display: flex; width: 100%; }
-  .filtros-panel .select select, .filtros-panel .dropdown__trigger { width: 100%; }
-  /* Sin esto el ancho mínimo del <input> (20 caracteres) empuja la caja fuera
-     del panel: en una cuadrícula, min-width parte en auto, no en cero. */
-  .filtros-panel .filters *, .filtros-panel .search input { min-width: 0; }
-  .filtros-panel .dropdown__trigger { justify-content: flex-start; }
-  .filtros-panel .dropdown__caret { margin-left: auto; }
+
+  .mas-filtros {
+    width: auto; height: auto; border-radius: 999px;
+    grid-auto-flow: column; align-items: center; gap: 8px; padding: 9px 15px;
+    font-weight: 700; font-size: .86rem;
+  }
+  .mas-filtros__txt { display: inline; }
+  .mas-filtros i { font-size: 1.15rem; }
+  .mas-filtros__cuenta { top: -5px; right: -5px; }
+
+  /* "Más filtros" deja de ser una hoja: es una tarjetita colgada del botón.
+     El punto exacto lo pone js/filters.js, que sabe dónde quedó el botón. */
+  .mas-velo { display: none; }
+  .mas-panel {
+    right: auto; bottom: auto; top: 0;
+    width: 260px; max-height: none; border-radius: 18px;
+    padding: 16px; box-shadow: var(--shadow-md);
+    transform: scale(.96); transform-origin: top left;
+    opacity: 0; visibility: hidden;
+    transition: opacity .16s, transform .16s, visibility .16s;
+  }
+  .mas-panel--abierto { transform: scale(1); opacity: 1; visibility: visible; }
+  .mas-panel__asa { display: none; }
+  .mas-panel .opcion { font-size: .84rem; padding: 8px 13px; }
 }
 
 /* ---------- Ilustración de estado vacío (Historias) ---------- */
@@ -737,10 +787,6 @@ body[data-vista="home"] .fab { display: none; }
 
 /* ---------- Adaptación a escritorio ---------- */
 @media (min-width: 768px) {
-  :root { --filters-h: 64px; }
-  .filters { display: flex; align-items: center; gap: 14px; padding: 12px 16px; }
-  .search { margin: 0; width: 320px; }
-  .chips { flex-wrap: wrap; overflow: visible; }
   .sheet {
     left: auto; right: 20px; bottom: 20px; width: 400px;
     border-radius: 22px; max-height: calc(100vh - 40px);

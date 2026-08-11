@@ -1,6 +1,9 @@
 // ============================================================================
 // Filtros y buscador. Mantiene el estado y avisa con un callback cada vez
 // que cambia, para que app.js recargue los reportes.
+//
+// Los controles flotan sobre el mapa: los cuatro estados siempre a la vista
+// (con el color de su pin) y, en "Más filtros", el animal y el tiempo.
 // ============================================================================
 
 export const filterState = {
@@ -13,13 +16,23 @@ export const filterState = {
 let onChange = () => {};
 export function onFiltersChange(cb) { onChange = cb; }
 
+// Marca una sola opción del grupo (los filtros son de una opción a la vez).
+function marcar(botones, elegido, claseActiva) {
+  botones.forEach((b) => {
+    const activo = b === elegido;
+    b.classList.toggle(claseActiva, activo);
+    b.setAttribute('aria-pressed', String(activo));
+  });
+}
+
 // Deja el mapa mostrando un solo tipo de reporte (lo usa "Quiero adoptar", que
-// entra directo a los rescatados que buscan familia). Mueve también el select
+// entra directo a los rescatados que buscan familia). Mueve también la pastilla
 // para que se vea qué filtro quedó puesto.
 export function filtrarPorTipo(kind) {
   filterState.kinds = kind ? [kind] : [];
-  const estado = document.getElementById('filter-estado');
-  if (estado) estado.value = kind ?? '';
+  const estados = [...document.querySelectorAll('.estado')];
+  const elegido = estados.find((b) => b.dataset.estado === (kind ?? ''));
+  if (elegido) marcar(estados, elegido, 'estado--activo');
   onChange();
 }
 
@@ -29,70 +42,38 @@ function debounce(fn, ms = 300) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
-// Alterna un valor dentro de un arreglo del estado (chips multi-selección).
-function toggle(arr, value) {
-  const i = arr.indexOf(value);
-  if (i >= 0) arr.splice(i, 1);
-  else arr.push(value);
-}
-
 export function initFilters() {
-  // Animal (desplegable con íconos, una opción; vacío = todos)
-  const ddAnimal = document.getElementById('dd-animal');
-  if (ddAnimal) {
-    const trigger = ddAnimal.querySelector('.dropdown__trigger');
-    const panel = ddAnimal.querySelector('.dropdown__panel');
-    const label = ddAnimal.querySelector('.dropdown__label');
-    const triggerIcon = trigger.querySelector('i');
-
-    // El panel se "porta" al body al abrir, así ningún overflow (el scroll de
-    // filtros en el celular) lo recorta ni lo esconde.
-    const abrir = (v) => {
-      trigger.setAttribute('aria-expanded', String(v));
-      if (v) {
-        document.body.appendChild(panel);
-        panel.hidden = false;
-        const r = trigger.getBoundingClientRect();
-        const w = panel.offsetWidth || 176;
-        panel.style.top = `${r.bottom + 6}px`;
-        panel.style.left = `${Math.min(Math.max(8, r.left), window.innerWidth - w - 8)}px`;
-      } else {
-        panel.hidden = true;
-      }
-    };
-
-    trigger.addEventListener('click', (e) => { e.stopPropagation(); abrir(panel.hidden); });
-    panel.addEventListener('click', (e) => e.stopPropagation());
-    document.addEventListener('click', () => abrir(false));
-    window.addEventListener('resize', () => abrir(false));
-
-    panel.querySelectorAll('.dropdown__opt').forEach((opt) => {
-      opt.addEventListener('click', () => {
-        const val = opt.dataset.animal;
-        filterState.animals = val ? [val] : [];
-        panel.querySelectorAll('.dropdown__opt').forEach((o) =>
-          o.classList.toggle('dropdown__opt--active', o === opt));
-        // el trigger refleja lo elegido (ícono + nombre)
-        label.textContent = val ? opt.textContent.trim() : 'Animal';
-        triggerIcon.className = val ? (opt.querySelector('i').className) : 'ph ph-paw-print';
-        abrir(false);
-        onChange();
-      });
+  // Estado: las cuatro pastillas de color, siempre a la vista
+  const estados = [...document.querySelectorAll('.estado')];
+  estados.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.estado;
+      filterState.kinds = val ? [val] : [];
+      marcar(estados, btn, 'estado--activo');
+      onChange();
     });
-  }
-
-  // Estado (desplegable: una opción; vacío = todos)
-  const estado = document.getElementById('filter-estado');
-  estado?.addEventListener('change', () => {
-    filterState.kinds = estado.value ? [estado.value] : [];
-    onChange();
   });
 
-  // Tiempo (desplegable: una opción)
-  const tiempo = document.getElementById('filter-tiempo');
-  tiempo?.addEventListener('change', () => {
-    filterState.age = tiempo.value;
-    onChange();
+  // Animal y tiempo: viven dentro de "Más filtros"
+  const animales = [...document.querySelectorAll('[data-animal]')];
+  animales.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.animal;
+      filterState.animals = val ? [val] : [];
+      marcar(animales, btn, 'opcion--activa');
+      contarPuestos();
+      onChange();
+    });
+  });
+
+  const tiempos = [...document.querySelectorAll('[data-tiempo]')];
+  tiempos.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filterState.age = btn.dataset.tiempo;
+      marcar(tiempos, btn, 'opcion--activa');
+      contarPuestos();
+      onChange();
+    });
   });
 
   // Buscador
@@ -101,4 +82,62 @@ export function initFilters() {
     filterState.query = input.value.trim();
     onChange();
   }));
+
+  initMasFiltros();
+}
+
+// ---- "Más filtros": hoja abajo en el celular, tarjetita al lado en el PC ----
+const ANCHA = window.matchMedia('(min-width: 641px)');
+
+function initMasFiltros() {
+  const boton = document.getElementById('btn-mas-filtros');
+  const panel = document.getElementById('mas-filtros-panel');
+  const velo = document.getElementById('mas-filtros-velo');
+  if (!boton || !panel || !velo) return;
+
+  const abrir = (v) => {
+    if (v) {
+      // Al abrirse se muda al <body>: dentro de los filtros quedaba encerrado
+      // en la capa del mapa y la barra de abajo del celular le tapaba el botón.
+      if (panel.parentElement !== document.body) document.body.append(velo, panel);
+      // En el computador es una tarjetita colgada del botón, así que hay que
+      // decirle dónde: en el celular ocupa todo el ancho y lo pone el CSS.
+      if (ANCHA.matches) {
+        const r = boton.getBoundingClientRect();
+        panel.style.left = `${r.left}px`;
+        panel.style.top = `${r.bottom + 8}px`;
+      } else {
+        panel.style.left = '';
+        panel.style.top = '';
+      }
+    }
+    panel.classList.toggle('mas-panel--abierto', v);
+    velo.classList.toggle('mas-velo--visible', v);
+    boton.setAttribute('aria-expanded', String(v));
+  };
+
+  // Si cambia el tamaño de la ventana, la tarjetita quedaría colgada en el aire.
+  window.addEventListener('resize', () => abrir(false));
+
+  boton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    abrir(!panel.classList.contains('mas-panel--abierto'));
+  });
+  velo.addEventListener('click', () => abrir(false));
+  document.getElementById('btn-mas-filtros-listo')?.addEventListener('click', () => abrir(false));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') abrir(false); });
+
+  // En el computador es una tarjetita flotante: se cierra al tocar el mapa.
+  panel.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', () => abrir(false));
+}
+
+// El globito rojo del botón dice cuántos filtros escondidos quedaron puestos:
+// si no, se olvidan y el mapa parece vacío sin motivo.
+function contarPuestos() {
+  const n = (filterState.animals.length ? 1 : 0) + (filterState.age !== 'all' ? 1 : 0);
+  const globo = document.getElementById('mas-filtros-cuenta');
+  if (!globo) return;
+  globo.textContent = String(n);
+  globo.hidden = n === 0;
 }
