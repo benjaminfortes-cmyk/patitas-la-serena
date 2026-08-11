@@ -1,8 +1,9 @@
 // ============================================================================
 // Alertas por cercanía (Web Push).
 //
-// El usuario elige un punto (ej: su casa) y un radio (1/3/5 km). Cuando se
-// publique un reporte nuevo dentro de ese radio, recibe una notificación push.
+// El usuario elige un punto (ej: su casa) y un radio (1/3/5 km). Recibe una
+// notificación cuando dentro de ese radio se publica un reporte nuevo, y
+// también cuando uno de esos reportes vuelve a casa (la historia feliz).
 //
 // El envío real lo hace la Edge Function `send-push` en el servidor; aquí solo
 // guardamos la suscripción del navegador y la zona elegida.
@@ -30,7 +31,7 @@ async function abrir() {
         <h3>Avísame de reportes en mi zona</h3>
         <button class="sheet__close" data-close aria-label="Cerrar">&times;</button>
       </div>
-      <p class="matches__sub">Marca tu punto (ej: tu casa) y elige el radio. Te avisaremos de reportes nuevos ahí.</p>
+      <p class="matches__sub">Marca tu punto (ej: tu casa) y elige el radio. Te avisaremos de los reportes nuevos de esa zona y de los que vuelvan a casa.</p>
       <div id="alert-map" class="form-map"></div>
       <div class="seg seg--sm" role="group" aria-label="Radio" style="margin:12px 0">
         <button type="button" class="seg__btn" data-radio="1000">1 km</button>

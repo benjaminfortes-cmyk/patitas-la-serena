@@ -1,9 +1,15 @@
 // ============================================================================
 // Edge Function: send-push
 //
-// Se dispara con un "Database Webhook" de Supabase ante un INSERT en
-// public.reports. Busca las suscripciones cercanas (subscribers_for_report)
+// Se dispara con un "Database Webhook" de Supabase ante un INSERT o un UPDATE
+// en public.reports. Busca las suscripciones cercanas (subscribers_for_report)
 // y les envía una notificación Web Push con las claves VAPID.
+//
+// Avisa de dos cosas, y de nada más:
+//   - Reporte nuevo en la zona (INSERT).
+//   - Un reporte de la zona que volvió a casa (UPDATE a lifecycle='resuelto'),
+//     que es lo mismo que aparece en "Historias felices".
+// Cualquier otra edición de un reporte se descarta sin enviar nada.
 //
 // Variables de entorno (Supabase → Edge Functions → Secrets):
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
@@ -28,8 +34,23 @@ Deno.serve(async (req) => {
       return new Response('no autorizado', { status: 401 });
     }
 
-    const { record } = await req.json();          // fila insertada (payload del webhook)
+    // El webhook manda el tipo de evento y la fila antes y después del cambio.
+    const { type, record, old_record } = await req.json();
     if (!record?.id) return new Response('sin record', { status: 400 });
+
+    const esNuevo = type === 'INSERT';
+    const esReencuentro = type === 'UPDATE'
+      && record.lifecycle === 'resuelto'
+      && old_record?.lifecycle !== 'resuelto';
+
+    // El resto de las ediciones (una corrección del dueño, una denuncia que
+    // sube flags_count, el latido de last_active_at) no le importan a nadie:
+    // se cortan acá, antes de gastar una consulta y un envío.
+    if (!esNuevo && !esReencuentro) {
+      return new Response(JSON.stringify({ enviados: 0, motivo: 'sin novedad' }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     webpush.setVapidDetails(
       Deno.env.get('VAPID_SUBJECT')!,
@@ -50,11 +71,20 @@ Deno.serve(async (req) => {
 
     const animal = ANIMAL[record.animal_type] ?? 'animal';
     const kind = KIND[record.kind] ?? 'reportado';
-    const payload = JSON.stringify({
-      title: 'Nuevo reporte cerca 🐾',
-      body: `Alguien reportó un ${animal} ${kind} en tu zona.`,
-      url: `./?reporte=${record.id}`,
-    });
+    // Muchos rescatados no tienen nombre: ahí se lo nombra por su especie.
+    const nombre = String(record.pet_name ?? '').trim() || `Un ${animal}`;
+
+    const payload = esReencuentro
+      ? JSON.stringify({
+          title: '¡Volvió a casa! 💚',
+          body: `${nombre} se reencontró con su familia. Gracias por estar atento.`,
+          url: `./?reporte=${record.id}`,
+        })
+      : JSON.stringify({
+          title: 'Nuevo reporte cerca 🐾',
+          body: `Alguien reportó un ${animal} ${kind} en tu zona.`,
+          url: `./?reporte=${record.id}`,
+        });
 
     // Envía a cada suscripción; ignora errores individuales (endpoints caducados).
     const envios = (subs ?? []).map((s: { endpoint: string; p256dh: string; auth: string }) =>

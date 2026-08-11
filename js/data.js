@@ -102,10 +102,18 @@ export async function fetchReports(filtros = {}) {
 // cada tanto sin pesar en la conexión de nadie.
 export async function contarReportesDesde(desde) {
   const corte = new Date(desde).getTime();
+  const iso = new Date(corte).toISOString();
 
+  // Es novedad tanto un reporte recién publicado como uno que acaba de volver
+  // a casa: las dos cosas son noticia para quien mira el mapa. Se cuenta con
+  // un OR y no con dos consultas para que el que se publicó y se resolvió el
+  // mismo día no cuente dos veces.
   if (!isConfigured) {
     return DEMO_REPORTS.filter((r) =>
-      visibleEnMapa(r) && new Date(r.created_at ?? r.event_at).getTime() >= corte
+      visibleEnMapa(r) && (
+        new Date(r.created_at ?? r.event_at).getTime() >= corte ||
+        (r.resolved_at && new Date(r.resolved_at).getTime() >= corte)
+      )
     ).length;
   }
 
@@ -113,7 +121,7 @@ export async function contarReportesDesde(desde) {
     .from('reports_public')
     .select('id', { count: 'exact', head: true })
     .in('lifecycle', ['activo', 'resuelto'])
-    .gte('created_at', new Date(corte).toISOString());
+    .or(`created_at.gte.${iso},resolved_at.gte.${iso}`);
 
   if (error) { console.error('No se pudieron contar los reportes nuevos:', error.message); return 0; }
   return count ?? 0;
