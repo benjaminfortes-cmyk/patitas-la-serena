@@ -2,9 +2,10 @@
 // Globito rojo de novedades (barra inferior en el celular, menú lateral en el
 // computador: los dos llevan la pestaña "Reportes" y los dos lo muestran).
 //
-// Igual que en Instagram: si hoy se publicaron reportes que esta persona
-// todavía no mira, la pestaña "Reportes" lleva un círculo rojo con cuántos son.
-// Al tocarla se apaga, y vuelve a encenderse cuando llegue otro reporte nuevo.
+// Igual que en Instagram: si hoy hubo novedades que esta persona todavía no
+// mira, la pestaña "Reportes" lleva un círculo rojo con cuántas son. Cuentan
+// como novedad tanto un reporte nuevo como uno que volvió a casa (la historia
+// feliz). Al tocarla se apaga, y vuelve a encenderse con la próxima.
 //
 // "Nuevo" se mide desde la última vez que tocó la pestaña, y nunca más atrás de
 // las 00:00 de hoy: al día siguiente el globito parte limpio.
@@ -71,7 +72,7 @@ function pintar(cuantos) {
   botones.forEach((b) => {
     if (cuantos > 0) {
       b.setAttribute('aria-label',
-        cuantos === 1 ? 'Reportes · 1 nuevo hoy' : `Reportes · ${cuantos} nuevos hoy`);
+        cuantos === 1 ? 'Reportes · 1 novedad hoy' : `Reportes · ${cuantos} novedades hoy`);
     } else b.removeAttribute('aria-label');
   });
 }
