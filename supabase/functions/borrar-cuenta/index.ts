@@ -51,7 +51,8 @@ Deno.serve(async (req) => {
       console.error('Fallo al limpiar las fotos:', e);
     }
 
-    /
+    // Borra la cuenta. El cascade arrastra perfil, reportes, denuncias,
+    // alertas, avistamientos y suscripciones push (ver 0001_init_1.sql).
     const { error: errBorrar } = await admin.auth.admin.deleteUser(user.id);
     if (errBorrar) {
       console.error('No se pudo borrar la cuenta:', errBorrar.message);
