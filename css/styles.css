@@ -1357,6 +1357,35 @@ textarea.input { resize: vertical; }
 }
 .gate__legal a { color: var(--brand-dark); font-weight: 700; }
 
+/* ---------- Borrar cuenta ----------
+   Rojo de verdad, no el celeste de la marca: es la única acción de la app que
+   no se puede deshacer y tiene que verse distinta a todo lo demás. */
+.btn--peligro { background: var(--perdido); color: #fff; }
+.btn--peligro:hover { background: #d93030; }
+.btn--peligro:disabled { background: #e9b4b4; cursor: not-allowed; }
+
+.borrar-lista { list-style: none; padding: 0; margin: 0 0 14px; }
+.borrar-lista li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: .9rem; font-weight: 600; color: var(--ink); padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+.borrar-lista li i { color: var(--perdido); font-size: 1.1rem; flex-shrink: 0; }
+
+.borrar-aviso {
+  display: flex; gap: 8px; align-items: flex-start;
+  background: #fdecec; color: #a12525; border-radius: var(--radius-sm);
+  padding: 10px 12px; font-size: .85rem; font-weight: 600; margin-bottom: 16px;
+}
+
+/* Entrada al borrado, al final de la hoja de Soporte: tiene que poder
+   encontrarse (Google lo exige) sin competir con el botón de enviar. */
+.soporte__cuenta { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.soporte__borrar {
+  background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+  font-size: .82rem; font-weight: 700; color: var(--perdido); text-decoration: underline;
+}
+
 /* Respeta usuarios que prefieren menos movimiento */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f95b8" />
+  <title>Borrar tu cuenta · Busca Huellitas</title>
+  <meta name="description" content="Cómo eliminar tu cuenta de Busca Huellitas y todos los datos asociados." />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --brand: #1f95b8; --brand-dark: #12667f; --brand-soft: #eaf9ff;
+      --warm-bg: #F6FBFD; --surface: #FFFFFF; --ink: #1B2A31;
+      --muted: #6B8189; --line: #DCEAF0; --peligro: #EF4444;
+      --shadow-sm: 0 2px 8px rgba(16, 42, 52, .08); --radius: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: var(--ink); background: var(--warm-bg); line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 700px; margin: 0 auto; padding: 24px 18px 64px; }
+    .back {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--brand-dark); font-weight: 800; text-decoration: none; margin-bottom: 20px;
+    }
+    .back:hover { text-decoration: underline; }
+    .card {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow-sm); padding: 28px 24px;
+    }
+    h1 { font-size: 1.6rem; font-weight: 800; color: var(--brand-dark); margin-bottom: 4px; }
+    .updated { color: var(--muted); font-size: .85rem; margin-bottom: 20px; }
+    h2 {
+      font-size: 1.1rem; font-weight: 800; margin: 26px 0 8px;
+      padding-top: 16px; border-top: 1px solid var(--line);
+    }
+    h2:first-of-type { border-top: none; padding-top: 0; margin-top: 18px; }
+    p, li { margin-bottom: 8px; }
+    ol, ul { padding-left: 22px; }
+    a { color: var(--brand-dark); }
+    .aviso {
+      background: #fdecec; color: #a12525; border-radius: 12px;
+      padding: 12px 14px; font-weight: 600; font-size: .92rem; margin: 14px 0;
+    }
+    .pill {
+      display: inline-block; background: var(--brand-soft); color: var(--brand-dark);
+      border-radius: 999px; padding: 2px 10px; font-weight: 700; font-size: .85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back" href="index.html">← Volver a Busca Huellitas</a>
+
+    <div class="card">
+      <h1>Borrar tu cuenta</h1>
+      <p class="updated">Busca Huellitas · buscahuellitas.cl</p>
+
+      <p>Si tienes una cuenta en Busca Huellitas puedes eliminarla cuando quieras, junto con todo lo que publicaste. Acá te explicamos cómo.</p>
+
+      <h2>Desde la aplicación</h2>
+      <ol>
+        <li>Abre <b>Busca Huellitas</b>.</li>
+        <li>Entra a <b>Soporte</b> (el ícono del salvavidas).</li>
+        <li>Al final de esa pantalla, toca <b>«Borrar mi cuenta y mis reportes»</b>.</li>
+        <li>Escribe la palabra <b>BORRAR</b> para confirmar.</li>
+      </ol>
+      <p>El borrado es inmediato y no se puede deshacer.</p>
+
+      <h2>Si no puedes acceder a la aplicación</h2>
+      <p>Escríbenos a <a href="mailto:benjaminfortes88@gmail.com">benjaminfortes88@gmail.com</a> desde el correo con el que te registraste, pidiendo la eliminación de tu cuenta. Respondemos dentro de <b>30 días</b>.</p>
+
+      <h2>Qué se elimina</h2>
+      <ul>
+        <li><span class="pill">Tu cuenta</span> el vínculo con tu cuenta de Google, tu nombre y tu correo.</li>
+        <li><span class="pill">Tus reportes</span> todas las publicaciones que hiciste, con sus fotos.</li>
+        <li><span class="pill">Tu actividad</span> tus alertas por zona, tus avistamientos y las notificaciones de tus dispositivos.</li>
+      </ul>
+      <p>No conservamos copias ni respaldos de estos datos después del borrado.</p>
+
+      <div class="aviso">
+        Si tienes una búsqueda activa, al borrar tu cuenta el reporte de tu mascota desaparece del mapa y nadie podrá avisarte si la encuentra. Si tu mascota todavía no aparece, considera esperar.
+      </div>
+
+      <h2>Si publicaste sin cuenta</h2>
+      <p>En el sitio web se puede publicar sin registrarse. En ese caso no existe ninguna cuenta que borrar: para eliminar un reporte, ábrelo desde el mismo teléfono y navegador con el que lo publicaste y usa la opción de eliminar. Si perdiste el acceso, escríbenos al correo de arriba indicando cuál es el reporte y lo eliminamos nosotros.</p>
+
+      <h2>Más información</h2>
+      <p>Puedes revisar qué datos recopilamos y para qué en nuestra <a href="privacidad.html">Política de Privacidad</a>.</p>
+    </div>
+  </div>
+</body>
+</html>

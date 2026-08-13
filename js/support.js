@@ -12,6 +12,7 @@
 // ============================================================================
 import { getUser, displayName } from './auth.js';
 import { toast, escapeHtml } from './ui.js';
+import { tieneCuenta, abrirBorrarCuenta } from './cuenta.js';
 
 const SUPPORT_ENDPOINT = 'https://formsubmit.co/ajax/benjaminfortes88@gmail.com';
 
@@ -49,6 +50,10 @@ function abrir() {
       <button class="btn btn--primary" id="support-send" style="width:100%">
         <i class="ph ph-paper-plane-tilt"></i> Enviar mensaje
       </button>
+      ${tieneCuenta() ? `
+      <div class="soporte__cuenta">
+        <button class="soporte__borrar" id="support-borrar">Borrar mi cuenta y mis reportes</button>
+      </div>` : ''}
     </div>`;
   document.body.appendChild(overlay);
 
@@ -57,6 +62,14 @@ function abrir() {
   overlay.querySelector('[data-close]').addEventListener('click', cerrar);
 
   overlay.querySelector('#support-send').addEventListener('click', () => enviar(overlay, cerrar));
+
+  // Google Play exige que el borrado de cuenta se pueda encontrar dentro de la
+  // app. Vive acá, en Soporte, porque es donde la gente busca "cómo doy de baja
+  // esto" — y no en la barra principal, para no invitar a apretarlo sin querer.
+  overlay.querySelector('#support-borrar')?.addEventListener('click', () => {
+    cerrar();
+    abrirBorrarCuenta();
+  });
 }
 
 async function enviar(overlay, cerrar) {
