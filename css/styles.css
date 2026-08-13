@@ -1324,6 +1324,32 @@ textarea.input { resize: vertical; }
 .est-tabla tbody th { font-weight: 700; color: var(--ink); }
 .est-tabla td { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
 
+/* ---------- Puerta de la app de Google Play ----------
+   Solo aparece dentro del TWA (ver appMode.js): en la web nadie la ve.
+   Tapa la app entera y no se puede cerrar: entrar con Google es el requisito.
+   z-index sobre todo lo demás, incluido el overlay de fichas (1700). */
+.gate {
+  position: fixed; inset: 0; z-index: 3000;
+  background: var(--warm-bg);
+  display: grid; place-items: center;
+  padding: 24px calc(20px + env(safe-area-inset-right))
+           calc(24px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
+  overflow-y: auto;
+}
+.gate__card {
+  background: var(--surface); width: 100%; max-width: 380px;
+  border-radius: 22px; box-shadow: var(--shadow-lg);
+  padding: 32px 24px 24px; text-align: center;
+}
+.gate__logo { border-radius: 20px; margin-bottom: 18px; }
+.gate__title { font-size: 1.35rem; font-weight: 800; color: var(--brand-dark); margin-bottom: 8px; }
+.gate__sub { color: var(--muted); font-size: .94rem; font-weight: 600; margin-bottom: 24px; }
+.gate__btn { width: 100%; justify-content: center; font-size: 1.02rem; padding: 14px; }
+.gate__legal {
+  color: var(--muted); font-size: .78rem; line-height: 1.5; margin-top: 18px;
+}
+.gate__legal a { color: var(--brand-dark); font-weight: 700; }
+
 /* Respeta usuarios que prefieren menos movimiento */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }

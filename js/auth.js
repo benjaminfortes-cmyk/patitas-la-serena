@@ -98,7 +98,41 @@ export async function signInWithGoogle() {
   await supabase.auth.signInWithOAuth({
     provider: 'google',
     // Conserva el ?admin=1 al volver, para que el botón siga visible.
-    options: { redirectTo: window.location.href.split('#')[0] },
+    options: { redirectTo: volverA() },
+  });
+}
+
+// A dónde vuelve Google después del login: la misma URL, sin el #.
+function volverA() { return window.location.href.split('#')[0]; }
+
+/**
+ * Entra con Google para el PÚBLICO. Lo usa la puerta de la app de Android
+ * (ver appGate.js); en la web nadie pasa por acá.
+ *
+ * Al revés que signInWithGoogle(), acá NO cerramos la sesión antes. Si la
+ * persona ya publicó como invitada —incluso desde el navegador del mismo
+ * teléfono, porque la app comparte el almacenamiento de Chrome— queremos
+ * enganchar Google a ESE usuario y que sus reportes sigan siendo suyos.
+ */
+export async function signInPublicoConGoogle() {
+  if (!isConfigured) return;
+
+  if (currentUser?.is_anonymous) {
+    // linkIdentity conserva el user_id. Necesita "Manual linking" activado en
+    // Supabase (Authentication → Sign In / Providers); si está apagado devuelve
+    // error y caemos al login normal, que con sesión anónima viva también
+    // vincula. El fallback existe para no dejar a nadie afuera por un ajuste.
+    const { error } = await supabase.auth.linkIdentity({
+      provider: 'google',
+      options: { redirectTo: volverA() },
+    });
+    if (!error) return;
+    console.warn('No se pudo vincular Google a la sesión de invitado:', error.message);
+  }
+
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: volverA() },
   });
 }
 

@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "cl.buscahuellitas.app",
+      "sha256_cert_fingerprints": [
+        "REEMPLAZAR_CON_LA_HUELLA_DE_PLAY_APP_SIGNING",
+        "REEMPLAZAR_CON_LA_HUELLA_DE_TU_LLAVE_DE_SUBIDA"
+      ]
+    }
+  }
+]

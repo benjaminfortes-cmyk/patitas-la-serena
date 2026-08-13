@@ -1,0 +1,23 @@
+# Archivos que viven en el repositorio pero NO deben publicarse en el sitio.
+#
+# Vercel sirve TODO lo que sube. Sin este archivo, cualquiera puede abrir
+# buscahuellitas.cl/supabase/migrations/0001_init_1.sql y leer el esquema
+# completo de la base de datos —tablas, políticas RLS, funciones—, que es
+# justo el mapa que necesita alguien para buscarle una grieta.
+#
+# Ojo: esto NO los borra de GitHub ni de tu carpeta. Solo evita que viajen
+# al servidor. Las migraciones siguen versionadas, que es donde sirven.
+
+supabase/
+
+# play-store/ ya está en .gitignore, así que nunca llega hasta acá. Se deja
+# igual por si algún día se decide versionarla: seguiría sin publicarse.
+play-store/
+
+# Logos sueltos que ya no usa nadie (5 MB que se subían en cada despliegue).
+# Se quedan en la carpeta por si los necesitas para redes o impresión.
+logo ayuda.png
+logo ayuda 2.png
+logo ayuda 3.png
+logo ayuda 4.png
+logo-512.png

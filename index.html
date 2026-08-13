@@ -27,7 +27,8 @@
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="assets/icon.svg" />
+  <!-- Safari ignora los SVG acá: el icono de "pantalla de inicio" tiene que ser PNG. -->
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
 
   <!-- Tipografía -->
@@ -156,7 +157,9 @@
           <span class="infobar__chip"><img src="assets/img/uls.png" alt="" loading="lazy" /></span>
         </div>
         <h1 class="infobar__titulo">Ayudémoslos a volver a casa</h1>
-        <p class="infobar__desc">Mapa comunitario y gratuito de mascotas perdidas, rescatadas y avistadas en la Región de Coquimbo. <b>Sin registro:</b> entras y publicas.</p>
+        <!-- El cierre "Sin registro" lo reescribe appGate.js dentro de la app de
+             Android, donde sí hay registro. Ver id="infobar-cierre". -->
+        <p class="infobar__desc">Mapa comunitario y gratuito de mascotas perdidas, rescatadas y avistadas en la Región de Coquimbo. <span id="infobar-cierre"><b>Sin registro:</b> entras y publicas.</span></p>
 
         <!-- 2. Qué significa el color de cada pin (la versión larga está en la Guía) -->
         <p class="infobar__howtitle">¿Qué significa cada pin del mapa?</p>
@@ -538,5 +541,10 @@
   <div id="toasts" class="toasts" aria-live="polite"></div>
 
   <script type="module" src="js/app.js"></script>
+
+  <!-- Vercel Web Analytics: cuenta visitantes y de dónde llegan. Sin cookies y
+       sin identificar a nadie, por eso no necesita banner de consentimiento.
+       Solo funciona en el sitio desplegado en Vercel; en local no hace nada. -->
+  <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

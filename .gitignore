@@ -15,6 +15,12 @@ desktop.ini
 # Documentación local (no se sube)
 ARCHIVOS.txt
 
+# Material de trabajo para publicar en Google Play: guía, textos de la ficha,
+# el icono y el gráfico destacado. Nada de esto lo usa el sitio — son archivos
+# para leer y para subir a mano en Play Console. Se quedan en la carpeta
+# (OneDrive los respalda) pero no tienen para qué estar en GitHub.
+play-store/
+
 # Logs
 *.log
 npm-debug.log*
@@ -24,6 +30,12 @@ npm-debug.log*
 *.bak
 supabase/.temp/
 
-# Credenciales JSON 
+# Credenciales JSON
 client_secret*.json
 README.md
+
+# Llave de firma de Android: si se pierde o se filtra, no se puede volver a
+# publicar la app. Va guardada aparte, nunca en el repositorio.
+*.keystore
+*.jks
+play-store/*.zip

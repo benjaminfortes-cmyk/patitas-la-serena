@@ -8,6 +8,7 @@ import { openReportCard, closeReportCard } from './reportCard.js';
 import { toast } from './ui.js';
 import { isConfigured } from './supabase.js';
 import { initAuth, initAdminAccess } from './auth.js';
+import { initAppGate } from './appGate.js';
 import { initReportForm } from './reportForm.js';
 import { initMatching } from './matching.js';
 import { initHistorias } from './historias.js';
@@ -33,6 +34,7 @@ function init() {
 
   // Sesión anónima (invisible: nadie tiene que registrarse) y formulario
   initAuth();
+  initAppGate();       // en la app de Google Play (y solo ahí): registro obligatorio
   initAdminAccess();   // botón de admin, solo si se entró con ?admin=1
   initEstadisticas();  // botón "Estadística", al lado del de admin y solo para admins
   initReportForm(recargar);

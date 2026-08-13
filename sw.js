@@ -8,7 +8,7 @@
 //   - CDNs, fuentes y tiles del mapa: cache-first (se guardan al usarse).
 // ============================================================================
 
-const VERSION = 'patitas-v23';
+const VERSION = 'patitas-v25';
 
 // Archivos propios que se precachean al instalar.
 const SHELL = [
@@ -19,8 +19,9 @@ const SHELL = [
   './js/auth.js', './js/imageCompress.js', './js/storage.js', './js/validation.js',
   './js/reportForm.js', './js/matching.js', './js/historias.js', './js/pwa.js', './js/alerts.js',
   './js/support.js', './js/guia.js', './js/lightbox.js', './js/stats.js', './js/novedades.js',
-  './js/poster.js',
+  './js/poster.js', './js/appMode.js', './js/appGate.js',
   './assets/icon.svg',
+  './assets/icons/icon-192.png', './assets/icons/badge-96.png',
 ];
 
 self.addEventListener('install', (e) => {
@@ -103,8 +104,11 @@ self.addEventListener('push', (e) => {
   const title = d.title || 'Busca Huellitas';
   const opciones = {
     body: d.body || 'Hay un nuevo reporte cerca de tu zona.',
-    icon: 'assets/icon.svg',
-    badge: 'assets/icon.svg',
+    // Android no dibuja SVG en las notificaciones: ambos tienen que ser PNG.
+    // El badge (el iconito chico de la barra de estado) se pinta como silueta,
+    // así que es la huella blanca sobre fondo transparente.
+    icon: 'assets/icons/icon-192.png',
+    badge: 'assets/icons/badge-96.png',
     data: { url: d.url || './' },
     vibrate: [80, 40, 80],
   };

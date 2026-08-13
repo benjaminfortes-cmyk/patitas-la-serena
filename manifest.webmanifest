@@ -1,18 +1,23 @@
 {
+  "id": "/",
   "name": "Busca Huellitas",
   "short_name": "Huellitas",
   "description": "Mapa colaborativo de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo.",
   "lang": "es-CL",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#F6FBFD",
   "theme_color": "#1f95b8",
+  "categories": ["social", "lifestyle", "utilities"],
   "icons": [
-    { "src": "assets/icon.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "assets/icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "assets/icon-maskable.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }
