@@ -197,6 +197,12 @@ body[data-vista="home"] .view--map  { display: none; }
   font-size: 1.55rem; font-weight: 800; line-height: 1.15; margin: 0;
   text-shadow: 0 1px 3px rgba(0,0,0,.16);
 }
+/* El lema quedó bajo el nombre: sigue siendo lo que emociona, pero el título
+   lo ocupa la marca porque Google verifica que coincida con la app. */
+.infobar__lema {
+  font-size: 1.12rem; font-weight: 700; line-height: 1.2; margin: 6px 0 0;
+  color: rgba(255,255,255,.96); text-shadow: 0 1px 3px rgba(0,0,0,.16);
+}
 /* Separa los bloques de la portada para que se lean como secciones */
 .infobar__sep {
   border: none; height: 1px; background: rgba(255,255,255,.22);
@@ -288,6 +294,7 @@ body[data-vista="home"] .view--map  { display: none; }
 }
 @media (min-width: 768px) {
   .infobar__titulo { font-size: 1.9rem; }
+  .infobar__lema { font-size: 1.3rem; }
   .infobar__lead { font-size: .95rem; }
   .infobar__desc { font-size: .86rem; }
   .infobar__pasos li, .infobar__cita { font-size: .86rem; }

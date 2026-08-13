@@ -51,7 +51,10 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand__logo" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
-      <span class="brand__name">Busca Huellitas<strong>Región Coquimbo</strong></span>
+      <!-- El espacio antes de <strong> importa: sin él, quien lee el texto plano
+           de la página (como el verificador de marca de Google) ve
+           "Busca HuellitasRegión Coquimbo" y no reconoce el nombre. -->
+      <span class="brand__name">Busca Huellitas <strong>Región Coquimbo</strong></span>
     </div>
     <p class="topbar__tagline hide-mobile">Mapa comunitario y gratuito para reportar y encontrar mascotas perdidas en la Región de Coquimbo, Chile</p>
     <div class="topbar__actions">
@@ -156,10 +159,15 @@
           <span class="infobar__chip"><img src="assets/img/proyectoarca.png" alt="" loading="lazy" /></span>
           <span class="infobar__chip"><img src="assets/img/uls.png" alt="" loading="lazy" /></span>
         </div>
-        <h1 class="infobar__titulo">Ayudémoslos a volver a casa</h1>
+        <!-- El <h1> lleva el nombre exacto de la app, y la descripción dice qué
+             hace en la primera frase. Las dos cosas las exige la verificación de
+             marca de Google: el nombre debe coincidir con el de la pantalla de
+             consentimiento, y la portada debe explicar el propósito. -->
+        <h1 class="infobar__titulo">Busca Huellitas</h1>
+        <p class="infobar__lema">Ayudémoslos a volver a casa</p>
         <!-- El cierre "Sin registro" lo reescribe appGate.js dentro de la app de
              Android, donde sí hay registro. Ver id="infobar-cierre". -->
-        <p class="infobar__desc">Mapa comunitario y gratuito de mascotas perdidas, rescatadas y avistadas en la Región de Coquimbo. <span id="infobar-cierre"><b>Sin registro:</b> entras y publicas.</span></p>
+        <p class="infobar__desc">Mapa comunitario y gratuito para reportar y encontrar mascotas perdidas, rescatadas y avistadas en la Región de Coquimbo, Chile. <span id="infobar-cierre"><b>Sin registro:</b> entras y publicas.</span></p>
 
         <!-- 2. Qué significa el color de cada pin (la versión larga está en la Guía) -->
         <p class="infobar__howtitle">¿Qué significa cada pin del mapa?</p>
