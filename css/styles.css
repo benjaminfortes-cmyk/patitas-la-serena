@@ -985,6 +985,22 @@ textarea.input { resize: vertical; }
 }
 .detail__owner .btn { flex: 1; font-size: .92rem; padding: 11px; }
 
+/* "Ya volvió con su familia": el aviso que puede dejar cualquiera. */
+.detail__reunion { padding-top: 14px; border-top: 1px solid var(--line); }
+.detail__reunion .btn { width: 100%; font-size: .92rem; padding: 11px; }
+.detail__hint {
+  color: var(--muted); font-size: .82rem; font-weight: 600;
+  line-height: 1.45; margin-top: 8px;
+}
+
+/* Letra chica bajo la franja verde: avisado pero sin confirmar. */
+.detail__revision {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(22, 163, 74, .1);   /* var(--reunidos) al 10% */
+  color: var(--reunidos); font-size: .78rem; font-weight: 700;
+  padding: 7px 18px; line-height: 1.35;
+}
+
 /* Zona de administrador (archivar / borrar cualquier reporte) */
 .detail__admin { padding-top: 12px; border-top: 1px dashed var(--line); }
 .detail__adminbtns { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
@@ -1116,6 +1132,29 @@ textarea.input { resize: vertical; }
 .historia__when { color: var(--muted); font-weight: 700; }
 .historias__empty { text-align: center; padding: 30px 10px; color: var(--muted); }
 .historias__empty .empty__art { font-size: 3rem; }
+
+/* ---------- Avisos por verificar (admin) ---------- */
+/* Globito con el número, sobre el botón de la barra superior. */
+.btn__badge {
+  display: inline-grid; place-items: center; min-width: 19px; height: 19px;
+  margin-left: 2px; padding: 0 5px; border-radius: 999px;
+  background: var(--reunidos); color: #fff; font-size: .72rem; font-weight: 800;
+}
+
+.revisiones { display: grid; gap: 12px; }
+.revision {
+  display: flex; gap: 12px; align-items: flex-start;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px;
+}
+.revision__img {
+  width: 74px; height: 74px; object-fit: cover; flex: none;
+  border-radius: var(--radius-sm); background: var(--brand-soft);
+}
+.revision__info { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.revision__info small { color: var(--muted); font-weight: 700; }
+/* En el celular los cuatro botones no caben en una línea. */
+.revision__btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.revision__btns .btn { flex: 1 1 auto; white-space: nowrap; }
 
 /* ---------- Instagram (portada) ---------- */
 .social {

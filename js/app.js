@@ -17,6 +17,7 @@ import { initAlertas } from './alerts.js';
 import { initSoporte } from './support.js';
 import { initGuia } from './guia.js';
 import { initEstadisticas } from './stats.js';
+import { initRevisiones } from './revisiones.js';
 import { initNovedades } from './novedades.js';
 
 // Recarga reportes según los filtros actuales y los pinta en el mapa.
@@ -37,6 +38,7 @@ function init() {
   initAppGate();       // en la app de Google Play (y solo ahí): registro obligatorio
   initAdminAccess();   // botón de admin, solo si se entró con ?admin=1
   initEstadisticas();  // botón "Estadística", al lado del de admin y solo para admins
+  initRevisiones();    // botón "Avisos", los reencuentros por verificar
   initReportForm(recargar);
   initMatching();
   initHistorias();

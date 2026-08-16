@@ -144,6 +144,22 @@ export async function fetchHappyStories(limite = 20) {
   return data;
 }
 
+// Avisos pendientes de verificar (panel de administrador).
+export async function fetchAvisosPendientes() {
+  if (!isConfigured) {
+    return DEMO_REPORTS
+      .filter((r) => r.resolution_review)
+      .sort((a, b) => new Date(b.resolved_at) - new Date(a.resolved_at));
+  }
+  const { data, error } = await supabase
+    .from('reports_public').select('*')
+    .eq('resolution_review', true)
+    .order('resolved_at', { ascending: false })
+    .limit(100);
+  if (error) { console.error('No se pudieron cargar los avisos:', error.message); return []; }
+  return data;
+}
+
 // Trae un único reporte por id (para abrir una coincidencia o un enlace compartido).
 // ---- Teléfono de contacto -------------------------------------------------
 // El WhatsApp ya no viene en la lista de reportes: si viniera, cualquiera con

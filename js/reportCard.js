@@ -4,6 +4,9 @@
 // Incluye: foto + datos, contacto por WhatsApp, Compartir (Web Share API con
 // fallback a copiar), denuncia de info incorrecta/duplicada, y —si es del
 // usuario logueado— botones "Marcar como resuelto ❤️" y "Editar".
+//
+// El aviso de reencuentro lo puede dejar cualquiera; si no es el dueño queda
+// "en revisión" hasta que el admin lo confirme. Ver la migración 0010.
 // ============================================================================
 import { KIND_META, nombreAnimal, tiempoRelativo, fechaCorta, fechaPublicacion, tituloReporte } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
@@ -46,6 +49,9 @@ export function openReportCard(report) {
   const sheet = document.getElementById('detail');
   const k = KIND_META[report.kind];
   const resuelto = report.lifecycle === 'resuelto';
+  const activo = report.lifecycle === 'activo';
+  // Aviso de la comunidad todavía sin confirmar.
+  const enRevision = resuelto && report.resolution_review === true;
   const user = getUser();
   const esDueno = user && report.user_id && report.user_id === user.id;
   // El administrador puede gestionar cualquier reporte (la base de datos
@@ -63,6 +69,17 @@ export function openReportCard(report) {
       <i class="ph ph-arrow-clockwise"></i> Sigue activo (reiniciar caducidad)
     </button>` : '';
 
+  // Para el resto de la gente: mismo aviso, pero queda en revisión.
+  const accionComunidad = (!puedeGestionar && activo) ? `
+    <div class="detail__reunion">
+      <button class="btn btn--soft" data-action="avisar-reunion">
+        <i class="ph ph-heart"></i> Ya volvió con su familia
+      </button>
+      <p class="detail__hint">
+        ¿Sabes que esta mascota ya apareció? Avísanos para cerrar la búsqueda.
+      </p>
+    </div>` : '';
+
   // Zona de administrador: archivar (ocultar) o borrar CUALQUIER reporte.
   // La base de datos ya lo permite vía RLS (is_admin); aquí solo van los botones.
   const esAdmin = user && isAdminUser();
@@ -70,6 +87,12 @@ export function openReportCard(report) {
   const accionesAdmin = esAdmin ? `
     <div class="detail__admin">
       <p class="detail__adminnote"><i class="ph ph-shield-star"></i> Zona de administrador</p>
+      ${enRevision ? `
+        <p class="detail__adminnote"><i class="ph ph-clock-user"></i> Alguien de la comunidad avisó que volvió a casa. Confirma después de hablar con la familia.</p>
+        <div class="detail__adminbtns">
+          <button class="btn btn--soft" data-action="confirmar-reunion"><i class="ph ph-check"></i> Confirmar</button>
+          <button class="btn btn--outline" data-action="rechazar-reunion"><i class="ph ph-x"></i> No, sigue perdido</button>
+        </div>` : ''}
       <div class="detail__adminbtns">
         ${archivado
           ? '<span class="detail__archivedtag"><i class="ph ph-eye-slash"></i> Archivado (oculto del mapa)</span>'
@@ -97,6 +120,10 @@ export function openReportCard(report) {
       </span>
       <span class="detail__strip-r">${tiempoRelativo(report.event_at)}</span>
     </div>
+    ${enRevision ? `
+      <p class="detail__revision">
+        <i class="ph ph-clock-user" aria-hidden="true"></i> (en revisión)
+      </p>` : ''}
 
     <div class="detail__head">
       <button class="sheet__close" aria-label="Cerrar" data-close>&times;</button>
@@ -140,6 +167,7 @@ export function openReportCard(report) {
       </div>
 
       ${accionesDueno}
+      ${accionComunidad}
       ${accionesAdmin}
     </div>`;
 
@@ -157,6 +185,9 @@ export function openReportCard(report) {
   sheet.querySelector('[data-action="cartel"]').addEventListener('click', () => generarCartel(report));
   sheet.querySelector('[data-action="denunciar"]').addEventListener('click', () => abrirDenuncia(report));
   sheet.querySelector('[data-action="resolver"]')?.addEventListener('click', () => resolver(report));
+  sheet.querySelector('[data-action="avisar-reunion"]')?.addEventListener('click', () => avisarReunion(report));
+  sheet.querySelector('[data-action="confirmar-reunion"]')?.addEventListener('click', () => moderarReunion(report, true));
+  sheet.querySelector('[data-action="rechazar-reunion"]')?.addEventListener('click', () => moderarReunion(report, false));
   sheet.querySelector('[data-action="reactivar"]')?.addEventListener('click', () => reactivar(report));
   sheet.querySelector('[data-action="editar"]')?.addEventListener('click', () => {
     closeReportCard();
@@ -237,6 +268,50 @@ async function resolver(report) {
     if (r) { r.lifecycle = 'resuelto'; r.resolved_at = new Date().toISOString(); }
   }
   toast('¡Reunidos con familia! Gracias por avisar.', 'exito');
+  closeReportCard();
+  window.recargarMapa?.();
+}
+
+// ---- Aviso de la comunidad: "ya volvió con su familia" --------------------
+async function avisarReunion(report) {
+  if (!confirm(
+    `¿Estás seguro de que ${tituloReporte(report)} ya volvió con su familia?\n\n` +
+    'Quedará marcada como reunida en el mapa. Si no estás seguro, mejor no la marques.'
+  )) return;
+
+  if (isConfigured) {
+    await ensureSession();   // la RPC exige sesión (todas son anónimas)
+    const { error } = await supabase.rpc('report_reunion', { p_report_id: report.id });
+    if (error) return toast(error.message, 'error');
+  } else {
+    const r = DEMO_REPORTS.find((x) => x.id === report.id);
+    if (r) {
+      r.lifecycle = 'resuelto';
+      r.resolved_at = new Date().toISOString();
+      r.resolution_review = true;
+    }
+  }
+  toast('¡Gracias por avisar!', 'exito');
+  closeReportCard();
+  window.recargarMapa?.();
+}
+
+// ---- Admin: confirmar o rechazar un aviso de la comunidad -----------------
+async function moderarReunion(report, confirmado) {
+  if (!confirmado && !confirm('¿La mascota sigue perdida? El reporte volverá al mapa como activo.')) return;
+
+  const rpc = confirmado ? 'confirm_resolution' : 'reject_resolution';
+  if (isConfigured) {
+    const { error } = await supabase.rpc(rpc, { p_report_id: report.id });
+    if (error) return toast(error.message, 'error');
+  } else {
+    const r = DEMO_REPORTS.find((x) => x.id === report.id);
+    if (r) {
+      r.resolution_review = false;
+      if (!confirmado) { r.lifecycle = 'activo'; r.resolved_at = null; }
+    }
+  }
+  toast(confirmado ? 'Reencuentro confirmado.' : 'Listo, el reporte vuelve a estar activo.', 'exito');
   closeReportCard();
   window.recargarMapa?.();
 }

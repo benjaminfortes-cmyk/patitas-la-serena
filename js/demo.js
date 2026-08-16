@@ -51,6 +51,17 @@ export const DEMO_REPORTS = [
     photo_url: foto('1552053831-71594a27632d'), contact_whatsapp: '+56955556666',
     description: '¡Reunido con su familia! Gracias a todos por compartir.',
     flags_count: 0, resolved_at: hace(30), created_at: hace(200),
+    resolution_review: false,
+  },
+  {
+    // Aviso todavía sin verificar: se ve verde y la ficha dice "(en revisión)".
+    id: 'demo-7', kind: 'perdido', lifecycle: 'resuelto', animal_type: 'gato',
+    pet_name: 'Pelusa', breed: 'Mestiza', color: 'Gris atigrada',
+    size: 'chico', event_at: hace(72), lat: -29.9105, lng: -71.2490,
+    photo_url: foto('1495360010541-f48722b34f7d'), contact_whatsapp: '+56999990000',
+    description: 'Se perdió cerca de la plaza. Es regalona y responde a su nombre.',
+    flags_count: 0, resolved_at: hace(3), created_at: hace(72),
+    resolution_review: true,
   },
   {
     id: 'demo-6', kind: 'avistado', lifecycle: 'activo', animal_type: 'otro',
