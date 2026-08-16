@@ -4,19 +4,29 @@
 -- buscahuellitas.cl/?equipo=1. El nombre es el que se verá en el mapa.
 -- Necesita la migración 0011 corrida.
 
-update public.profiles p
-set role = 'colaborador',
-    org_name = 'Cachupines UCN'
+-- Antes de dar el perfil, comprueba que la cuenta ya entró alguna vez.
+-- Si no aparece acá, todavía no existe y el update no hará nada.
+select u.email, u.created_at, u.last_sign_in_at
 from auth.users u
-where u.id = p.id
-  and lower(u.email) = 'correo-de-cachupines@gmail.com';
+where lower(u.email) = 'animalba.2022@gmail.com';
 
 update public.profiles p
 set role = 'colaborador',
     org_name = 'Animalba'
 from auth.users u
 where u.id = p.id
-  and lower(u.email) = 'correo-de-animalba@gmail.com';
+  and lower(u.email) = 'animalba.2022@gmail.com';
+
+-- Cachupines (pendiente: falta hablar con ellos y pedirles el correo).
+-- Descomenta y cambia el correo cuando lo tengas. El nombre tiene que quedar
+-- igual que la clave en ORG_LOGOS de js/constants.js, si no, no sale su logo.
+--
+-- update public.profiles p
+-- set role = 'colaborador',
+--     org_name = 'Cachupines UCN'
+-- from auth.users u
+-- where u.id = p.id
+--   and lower(u.email) = 'correo-de-cachupines@gmail.com';
 
 -- Firma los reportes que la organización haya publicado antes de recibir el perfil.
 update public.reports r

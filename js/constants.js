@@ -19,6 +19,7 @@ export const ANIMAL_META = {
 // cuadrado en assets/img/ y pon acá su org_name en minúsculas y sin tildes.
 // Sin logo, su pin usa el sello celeste genérico.
 const ORG_LOGOS = {
+  'animalba':                'assets/img/animalba.png',
   'cachupines ucn':          'assets/img/cachupines.png',
   'cachupines':              'assets/img/cachupines.png',
   'fundacion proyecto arca': 'assets/img/proyectoarca.png',
