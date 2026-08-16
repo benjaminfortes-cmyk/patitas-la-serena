@@ -1,16 +1,7 @@
-// ============================================================================
 // Service Worker — PWA (offline) + notificaciones push
-//
-// Estrategias de caché:
-//   - App shell (HTML/CSS/JS propios): cache-first (carga instantánea y offline).
-//   - Datos de Supabase (/rest/): network-first con respaldo en caché
-//     (offline muestra los últimos reportes vistos).
-//   - CDNs, fuentes y tiles del mapa: cache-first (se guardan al usarse).
-// ============================================================================
 
 const VERSION = 'patitas-v27';
 
-// Archivos propios que se precachean al instalar.
 const SHELL = [
   './', './index.html', './manifest.webmanifest',
   './css/styles.css',
@@ -47,14 +38,11 @@ self.addEventListener('fetch', (e) => {
   const mismoOrigen = url.origin === self.location.origin;
   const datosSupabase = url.hostname.endsWith('supabase.co') && url.pathname.includes('/rest/');
 
-  // Archivos propios y datos de Supabase: RED PRIMERO (siempre lo más fresco),
-  // con la caché solo como respaldo cuando no hay conexión.
   if (mismoOrigen || datosSupabase) {
     e.respondWith(networkFirst(req));
     return;
   }
 
-  // CDNs, fuentes y tiles del mapa: CACHÉ PRIMERO (rara vez cambian).
   e.respondWith(cacheFirst(req));
 });
 
@@ -67,7 +55,6 @@ async function networkFirst(req) {
   } catch {
     const cached = await cache.match(req);
     if (cached) return cached;
-    // Sin conexión y sin caché exacta: si es una navegación, servimos la app.
     if (req.mode === 'navigate') return (await cache.match('./index.html')) || (await cache.match('./'));
     return Response.error();
   }
@@ -76,9 +63,6 @@ async function networkFirst(req) {
 async function cacheFirst(req) {
   const cache = await caches.open(VERSION);
   const cached = await cache.match(req);
-  // Una respuesta "opaca" (guardada cuando la foto se mostró en una tarjeta) no
-  // se puede leer desde JavaScript. Si nos la piden con CORS —el cartel, que
-  // necesita dibujar la foto en un canvas— vamos a la red a buscarla de nuevo.
   if (cached && req.mode === 'cors' && cached.type === 'opaque') {
     try {
       const res = await fetch(req);
@@ -89,25 +73,19 @@ async function cacheFirst(req) {
   if (cached) return cached;
   try {
     const res = await fetch(req);
-    // Guardamos respuestas válidas y opacas (tiles/fuentes) para uso offline
     if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
     return res;
   } catch {
-    // Si es una navegación sin red, devolvemos la app cacheada
     if (req.mode === 'navigate') return cache.match('./index.html');
     return Response.error();
   }
 }
 
-// ---- Notificaciones push --------------------------------------------------
 self.addEventListener('push', (e) => {
   const d = (() => { try { return e.data?.json() ?? {}; } catch { return {}; } })();
   const title = d.title || 'Busca Huellitas';
   const opciones = {
     body: d.body || 'Hay un nuevo reporte cerca de tu zona.',
-    // Android no dibuja SVG en las notificaciones: ambos tienen que ser PNG.
-    // El badge (el iconito chico de la barra de estado) se pinta como silueta,
-    // así que es la huella blanca sobre fondo transparente.
     icon: 'assets/icons/icon-192.png',
     badge: 'assets/icons/badge-96.png',
     data: { url: d.url || './' },
@@ -121,7 +99,6 @@ self.addEventListener('notificationclick', (e) => {
   const url = e.notification.data?.url || './';
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
-      // Si ya hay una ventana abierta, la enfocamos; si no, abrimos una nueva.
       const win = wins.find((w) => 'focus' in w);
       if (win) { win.navigate(url); return win.focus(); }
       return clients.openWindow(url);

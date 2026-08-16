@@ -1,10 +1,5 @@
-// ============================================================================
 // Cartel "Se busca" para imprimir o compartir.
-//
-// Dibuja en un canvas la foto y los datos del reporte con el logo de Busca
-// Huellitas y el Instagram @buscahuellitas, y lo entrega como imagen para
-// descargar o compartir. Pensado para pegar en postes o subir a estados.
-// ============================================================================
+
 import { KIND_META, nombreAnimal, fechaCorta } from './constants.js';
 import { toast, escapeHtml } from './ui.js';
 import { fetchContacto } from './data.js';
@@ -12,19 +7,16 @@ import { fetchContacto } from './data.js';
 const ANCHO = 1080;
 const ALTO = 1350;
 
-// Título grande según el tipo de reporte, con su color.
 const CARTEL = {
   perdido:    { titulo: 'SE BUSCA',          color: '#EF4444' },
   encontrado: { titulo: 'BUSCA A SU FAMILIA', color: '#2563EB' },
   avistado:   { titulo: 'VISTO EN LA CALLE',  color: '#CA8A04' },
 };
 
-// 50000 -> 50.000 (como se escriben los pesos en Chile)
 export function formatearMonto(digitos) {
   return String(digitos).replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-// +56994869261 -> +56 9 9486 9261
 function formatearTelefono(num) {
   if (!num) return '';
   const s = String(num).replace(/[^0-9]/g, '');
@@ -33,8 +25,6 @@ function formatearTelefono(num) {
   return num;
 }
 
-// Carga una imagen y espera a que esté lista. crossOrigin permite dibujar la
-// foto de Supabase en el canvas sin "ensuciarlo" (si el servidor manda CORS).
 function cargarImagen(src, conCors = false) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -45,13 +35,6 @@ function cargarImagen(src, conCors = false) {
   });
 }
 
-// Trae la foto del reporte para poder dibujarla en el canvas.
-//
-// Cargarla con <img crossOrigin> falla seguido: el navegador ya la tiene en
-// caché de cuando se mostró en la tarjeta (sin cabeceras CORS) y reutiliza esa
-// copia, así que la foto salía en blanco. Por eso la bajamos con fetch y la
-// convertimos en imagen local: el canvas nunca queda "sucio" y se puede
-// exportar. Si el fetch falla, probamos igual con la imagen y caché saltada.
 async function cargarFoto(src) {
   if (!src) throw new Error('El reporte no tiene foto');
 
@@ -70,15 +53,11 @@ async function cargarFoto(src) {
   }
 }
 
-// Guardamos la foto ya cargada: mientras el usuario mueve el encuadre el cartel
-// se dibuja de nuevo en cada toque y no tiene sentido bajarla otra vez.
 const fotosCargadas = new Map();
 
 function cargarFotoCacheada(src) {
   if (!fotosCargadas.has(src)) {
-    // Nos quedamos solo con las últimas: cada foto ocupa memoria.
     if (fotosCargadas.size >= 3) fotosCargadas.delete(fotosCargadas.keys().next().value);
-    // Si falla la sacamos, así el siguiente intento vuelve a probar.
     fotosCargadas.set(src, cargarFoto(src).catch((err) => {
       fotosCargadas.delete(src);
       throw err;
@@ -87,8 +66,6 @@ function cargarFotoCacheada(src) {
   return fotosCargadas.get(src);
 }
 
-// Patita blanca del logo. La dibujamos a mano (mismas formas que el SVG) para
-// poder ponerla sobre el color que queramos, sin su fondo.
 function dibujarPatita(ctx, x, y, tam, color) {
   ctx.save();
   ctx.translate(x, y);
@@ -103,8 +80,6 @@ function dibujarPatita(ctx, x, y, tam, color) {
   ctx.restore();
 }
 
-// Logo de WhatsApp (el globito con el teléfono), dibujado del mismo trazo del
-// ícono oficial. Va al lado del número, sin texto, para ganar espacio.
 const TRAZO_WHATSAPP = new Path2D('M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z');
 
 function dibujarWhatsapp(ctx, x, y, tam, color) {
@@ -116,7 +91,6 @@ function dibujarWhatsapp(ctx, x, y, tam, color) {
   ctx.restore();
 }
 
-// Ícono de Instagram (cuadrado redondeado + lente + puntito).
 function dibujarInstagram(ctx, x, y, s, color) {
   ctx.save();
   ctx.strokeStyle = color;
@@ -133,7 +107,6 @@ function dibujarInstagram(ctx, x, y, s, color) {
   ctx.restore();
 }
 
-// Rectángulo con esquinas redondeadas.
 function panelRedondeado(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -146,11 +119,7 @@ function panelRedondeado(ctx, x, y, w, h, r) {
 
 const ZOOM_MAX = 3;   // hasta 3 veces más cerca; alejar llega hasta ver la foto entera
 
-// Rellena el recuadro con la misma foto borrosa. Se usa cuando el usuario aleja
-// tanto que la foto ya no llena el marco: en vez de un parche vacío queda un
-// fondo del mismo color de la imagen, como en las historias de Instagram.
 function rellenarBorroso(ctx, img, x, y, w, h) {
-  // Un poco más grande que el marco: el desenfoque come los bordes.
   const escala = Math.max(w / img.width, h / img.height) * 1.2;
   const nw = img.width * escala;
   const nh = img.height * escala;
@@ -158,20 +127,10 @@ function rellenarBorroso(ctx, img, x, y, w, h) {
   ctx.filter = 'blur(30px)';   // si el navegador no lo soporta, queda la foto ampliada de fondo
   ctx.drawImage(img, x + (w - nw) / 2, y + (h - nh) / 2, nw, nh);
   ctx.restore();
-  // Velo blanco para que el fondo no le compita a la foto de adelante.
   ctx.fillStyle = 'rgba(255,255,255,.4)';
   ctx.fillRect(x, y, w, h);
 }
 
-// Dibuja la foto recortada tipo "cover" dentro de un recuadro.
-//
-// `foco` dice qué parte de la foto queda a la vista: 0.5 y 0.5 es el centro
-// (lo normal), 0 es pegada arriba/izquierda y 1 abajo/derecha. Sirve para que
-// el usuario corra la foto si le quedó cortada la carita del animal.
-// `zoom` multiplica ese tamaño: 1 es el encuadre normal (la foto llena todo el
-// recuadro), más de 1 la acerca y menos de 1 la aleja, hasta que se ve entera.
-// Devuelve hacia qué lados todavía se puede mover y hasta dónde llega el zoom,
-// para apagar los botones que no harían nada.
 function dibujarFotoCover(ctx, img, x, y, w, h, foco = { x: .5, y: .5 }, zoom = 1) {
   const cubrir = Math.max(w / img.width, h / img.height);   // llena el marco (recorta)
   const entera = Math.min(w / img.width, h / img.height);   // cabe completa (deja aire)
@@ -179,8 +138,6 @@ function dibujarFotoCover(ctx, img, x, y, w, h, foco = { x: .5, y: .5 }, zoom = 
   const escala = cubrir * Math.min(ZOOM_MAX, Math.max(zoomMin, zoom));
   const nw = img.width * escala;
   const nh = img.height * escala;
-  // Si por ese lado la foto ya no llena el recuadro va centrada: correrla solo
-  // dejaría todo el hueco de un lado.
   const nx = x + (nw > w ? (w - nw) * foco.x : (w - nw) / 2);
   const ny = y + (nh > h ? (h - nh) * foco.y : (h - nh) / 2);
   ctx.save();
@@ -192,8 +149,6 @@ function dibujarFotoCover(ctx, img, x, y, w, h, foco = { x: .5, y: .5 }, zoom = 
   return { moverX: nw - w > 2, moverY: nh - h > 2, zoomMin, zoomMax: ZOOM_MAX };
 }
 
-// Parte un texto en líneas que quepan en maxAncho, sin cortar palabras. Si no
-// alcanza en maxLineas, termina la última con "…".
 function envolverTexto(ctx, texto, maxAncho, maxLineas) {
   const palabras = String(texto).split(/\s+/).filter(Boolean);
   const lineas = [];
@@ -208,14 +163,12 @@ function envolverTexto(ctx, texto, maxAncho, maxLineas) {
     lineas.push(actual);
     actual = palabras[i];
     if (lineas.length === maxLineas - 1) {
-      // Última línea permitida: mete el resto y recorta con "…" si sobra.
       actual = palabras.slice(i).join(' ');
       break;
     }
   }
   lineas.push(actual);
 
-  // Recorta la última línea si aún se pasa del ancho.
   const ultima = lineas.length - 1;
   if (ctx.measureText(lineas[ultima]).width > maxAncho) {
     let t = lineas[ultima];
@@ -225,7 +178,6 @@ function envolverTexto(ctx, texto, maxAncho, maxLineas) {
   return lineas.slice(0, maxLineas);
 }
 
-// Título grande que se achica solo si el nombre es muy largo.
 function textoQueEntra(ctx, texto, maxAncho, tamInicial, fuente) {
   let tam = tamInicial;
   do {
@@ -236,15 +188,6 @@ function textoQueEntra(ctx, texto, maxAncho, tamInicial, fuente) {
   return tam;
 }
 
-// Dibuja el cartel completo y devuelve el canvas listo. Separado de la
-// exportación para poder previsualizarlo o reutilizarlo.
-//
-// `opciones` es lo que el usuario puede acomodar en la vista previa:
-//   foco          hacia dónde corre la foto dentro del recuadro
-//   zoom          qué tan cerca se ve la foto (1 = como llega)
-//   verSenas      mostrar u ocultar la línea de señas
-//   verDescripcion mostrar u ocultar lo que escribió la familia
-//   recompensa    monto en pesos (solo números); vacío = sin franja
 export async function construirCartel(report, opciones = {}) {
   const {
     foco = { x: .5, y: .5 },
@@ -264,17 +207,13 @@ export async function construirCartel(report, opciones = {}) {
   const acento = resuelto ? '#16A34A' : meta.color;
   const titular = resuelto ? 'VOLVIÓ A CASA' : meta.titulo;
 
-  // Fondo
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, ANCHO, ALTO);
 
-  // ---- Barra de marca (arriba), igual a la del Instagram -----------------
-  // Va compacta a propósito: mientras menos ocupe, más grande sale la foto.
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#1f95b8';
   ctx.fillRect(0, 0, ANCHO, 94);
 
-  // Cuadradito claro con la patita, a la izquierda.
   ctx.fillStyle = 'rgba(255,255,255,.20)';
   panelRedondeado(ctx, 40, 17, 60, 60, 17);
   ctx.fill();
@@ -289,7 +228,6 @@ export async function construirCartel(report, opciones = {}) {
   ctx.fillText('REGIÓN DE COQUIMBO', 116, 68);
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
 
-  // Instagram a la derecha.
   ctx.font = `700 22px ${FUENTE}`;
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'right';
@@ -298,7 +236,6 @@ export async function construirCartel(report, opciones = {}) {
   ctx.textAlign = 'left';
   dibujarInstagram(ctx, ANCHO - 40 - anchoArroba - 36, 36, 24, '#ffffff');
 
-  // ---- Franja del título (SE BUSCA) -------------------------------------
   ctx.fillStyle = acento;
   ctx.fillRect(0, 94, ANCHO, 90);
   ctx.fillStyle = '#ffffff';
@@ -307,10 +244,6 @@ export async function construirCartel(report, opciones = {}) {
   ctx.fillText(titular, ANCHO / 2, 140);
   ctx.textAlign = 'left';
 
-  // ---- Cuentas del espacio ----------------------------------------------
-  // La foto es lo más importante del cartel, así que primero medimos cuánto
-  // texto hay (señas y descripción cambian en cada reporte) y le damos a la
-  // foto todo lo que sobre hasta la caja de WhatsApp.
   const CAJA_ALTO = 104;
   const PIE_ALTO = 58;                             // franja de buscahuellitas.cl
   const cajaY = ALTO - PIE_ALTO - 24 - CAJA_ALTO;  // caja de WhatsApp, sobre el pie
@@ -337,14 +270,11 @@ export async function construirCartel(report, opciones = {}) {
   const espacioFoto = cajaY - RECOMPENSA_ALTO - fotoY - altoTexto;
   const fotoAlto = Math.max(420, Math.min(espacioFoto, 820));
 
-  // ---- Foto -------------------------------------------------------------
   try {
     const foto = await cargarFotoCacheada(report.photo_url);
-    // Se guarda en el canvas para saber qué flechas de "mover la foto" sirven.
     canvas.encuadre = dibujarFotoCover(ctx, foto, 40, fotoY, ANCHO - 80, fotoAlto, foco, zoom);
   } catch {
     canvas.encuadre = { moverX: false, moverY: false, zoomMin: 1, zoomMax: 1 };
-    // Sin foto (o bloqueada por CORS): recuadro gris con una patita.
     ctx.fillStyle = '#eef3f5';
     panelRedondeado(ctx, 40, fotoY, ANCHO - 80, fotoAlto, 24);
     ctx.fill();
@@ -355,7 +285,6 @@ export async function construirCartel(report, opciones = {}) {
     ctx.textAlign = 'left';
   }
 
-  // ---- Nombre y datos ---------------------------------------------------
   let y = fotoY + fotoAlto + 66;
   const nombre = report.pet_name || nombreAnimal(report);
   ctx.fillStyle = '#12303a';
@@ -364,7 +293,6 @@ export async function construirCartel(report, opciones = {}) {
   ctx.font = `800 ${tamNombre}px ${FUENTE}`;
   ctx.fillText(nombre, ANCHO / 2, y);
 
-  // Línea de datos (raza · tamaño · fecha)
   const SIZE = { chico: 'chico', mediano: 'mediano', grande: 'grande' };
   const datos = [
     nombreAnimal(report),
@@ -377,7 +305,6 @@ export async function construirCartel(report, opciones = {}) {
   ctx.font = `600 29px ${FUENTE}`;
   ctx.fillText(datos, ANCHO / 2, y);
 
-  // Señas particulares (si hay), en hasta dos líneas sin cortar palabras.
   if (lineasSenas.length) {
     y += 44;
     ctx.font = `600 27px ${FUENTE}`;
@@ -386,7 +313,6 @@ export async function construirCartel(report, opciones = {}) {
     y += (lineasSenas.length - 1) * 36;
   }
 
-  // La descripción que escribió la familia ("es sociable con todos…").
   if (lineasDesc.length) {
     y += 48;
     ctx.font = `italic 600 28px ${FUENTE}`;
@@ -394,7 +320,6 @@ export async function construirCartel(report, opciones = {}) {
     lineasDesc.forEach((linea, i) => ctx.fillText(linea, ANCHO / 2, y + i * 36));
   }
 
-  // ---- Franja de recompensa (solo si la familia ofrece una) --------------
   if (montoRecompensa) {
     const franjaAlto = 78;
     const franjaY = cajaY - 22 - franjaAlto;
@@ -408,9 +333,6 @@ export async function construirCartel(report, opciones = {}) {
     ctx.textAlign = 'left';
   }
 
-  // ---- Caja de contacto: logo de WhatsApp + número ----------------------
-  // Sin frase que explique: el logo verde ya se entiende solo y así queda más
-  // espacio para la foto.
   ctx.fillStyle = '#25D366';
   panelRedondeado(ctx, 40, cajaY, ANCHO - 80, CAJA_ALTO, 20);
   ctx.fill();
@@ -425,7 +347,6 @@ export async function construirCartel(report, opciones = {}) {
   ctx.textAlign = 'left';
   ctx.fillText(telefono, inicio + LOGO + 26, cajaY + CAJA_ALTO / 2 + 2);
 
-  // ---- Pie: la web, chiquitito ------------------------------------------
   ctx.fillStyle = '#1f95b8';
   ctx.fillRect(0, ALTO - PIE_ALTO, ANCHO, PIE_ALTO);
   ctx.fillStyle = '#ffffff';
@@ -437,7 +358,6 @@ export async function construirCartel(report, opciones = {}) {
   return canvas;
 }
 
-// Descarga el cartel al celular o al computador.
 function guardarCartel(url, nombreArchivo) {
   const a = document.createElement('a');
   a.href = url;
@@ -451,16 +371,10 @@ function guardarCartel(url, nombreArchivo) {
 const PASO_ENCUADRE = 0.1;   // cuánto se corre la foto en cada toque
 const PASO_ZOOM = 1.2;       // cuánto se acerca o aleja en cada toque
 
-// Ventana previa del cartel: se ve cómo quedó, se puede correr la foto si salió
-// cortada y recién ahí se guarda o se comparte.
 function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompartir }) {
-  // Todo lo que el usuario puede acomodar antes de guardar. Lo único que se
-  // escribe a mano es el monto de la recompensa; el resto es marcar o no.
   const opciones = { foco: { x: .5, y: .5 }, zoom: 1, verSenas: true, verDescripcion: true, recompensa: '' };
   let url = '';
   let archivo = null;
-  // Hasta dónde deja alejar esta foto en particular: depende de qué tan
-  // alargada sea comparada con el recuadro del cartel.
   let limites = { zoomMin: 1, zoomMax: ZOOM_MAX };
 
   const capa = document.createElement('div');
@@ -524,7 +438,6 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
   const btnCompartir = capa.querySelector('[data-cartel="compartir"]');
   const flechas = capa.querySelectorAll('[data-mover]');
 
-  // Deja el canvas recién dibujado listo para verlo, guardarlo y compartirlo.
   async function mostrar(cv) {
     const blob = await new Promise((res) => cv.toBlob(res, 'image/png', 0.92));
     if (!blob) return toast('No se pudo crear el cartel.', 'error');
@@ -535,8 +448,6 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     archivo = new File([blob], nombreArchivo, { type: 'image/png' });
     btnCompartir.hidden = !(navigator.canShare && navigator.canShare({ files: [archivo] }));
 
-    // Los botones que no harían nada (la foto ya calza justo por ese lado, o el
-    // zoom llegó al tope) quedan apagados para no confundir.
     const { moverX = false, moverY = false, zoomMin = 1, zoomMax = ZOOM_MAX } = cv.encuadre ?? {};
     limites = { zoomMin, zoomMax };
     opciones.zoom = Math.min(zoomMax, Math.max(zoomMin, opciones.zoom));
@@ -550,7 +461,6 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     });
   }
 
-  // Vuelve a dibujar el cartel con las opciones que haya elegido el usuario.
   let dibujando = false;
   let pendiente = false;
   async function redibujar() {
@@ -561,7 +471,6 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     if (pendiente) { pendiente = false; redibujar(); }
   }
 
-  // Corre o acerca la foto dentro del recuadro.
   function mover(hacia) {
     const foco = opciones.foco;
     const tope = (v) => Math.min(1, Math.max(0, v));
@@ -571,7 +480,6 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     if (hacia === 'derecha')    foco.x = tope(foco.x - PASO_ENCUADRE);
     if (hacia === 'alejar')     opciones.zoom = Math.max(limites.zoomMin, opciones.zoom / PASO_ZOOM);
     if (hacia === 'acercar')    opciones.zoom = Math.min(limites.zoomMax, opciones.zoom * PASO_ZOOM);
-    // "Centrar" es el volver a empezar: deja la foto como llegó.
     if (hacia === 'centrar')  { foco.x = .5; foco.y = .5; opciones.zoom = 1; }
     redibujar();
   }
@@ -582,7 +490,6 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     if (url) URL.revokeObjectURL(url);
     capa.remove();
   };
-  // Escape cierra solo esta ventana, no la ficha del reporte que está detrás.
   function alTeclear(e) {
     if (e.key !== 'Escape') return;
     e.stopPropagation();
@@ -590,14 +497,11 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
   }
 
   capa.addEventListener('click', (e) => {
-    // Tocar el cartel o los botones no cierra; el fondo y la X, sí.
     if (e.target === capa || e.target.closest('.cartel__cerrar')) cerrar();
   });
 
   flechas.forEach((b) => b.addEventListener('click', () => mover(b.dataset.mover)));
 
-  // Marcar/desmarcar qué sale en el cartel. La recompensa además abre el
-  // campito del monto, que es lo único que se escribe a mano.
   const campoMonto = capa.querySelector('.cartel__monto');
   const inputMonto = campoMonto.querySelector('input');
 
@@ -615,7 +519,6 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
     });
   });
 
-  // Solo números: se escribe 50000 y se muestra 50.000.
   let esperando;
   inputMonto.addEventListener('input', () => {
     inputMonto.value = formatearMonto(inputMonto.value);
@@ -639,11 +542,9 @@ function abrirVentanaCartel({ report, canvas, nombreArchivo, titulo, textoCompar
   mostrar(canvas).then(() => capa.querySelector('[data-cartel="guardar"]').focus());
 }
 
-// Arma el cartel y abre la vista previa para acomodarlo, guardarlo o compartirlo.
 export async function generarCartel(report) {
   toast('Preparando el cartel…', 'info');
 
-  // El teléfono no viene con la lista de reportes; el cartel lo necesita.
   await fetchContacto(report);
 
   const canvas = await construirCartel(report);

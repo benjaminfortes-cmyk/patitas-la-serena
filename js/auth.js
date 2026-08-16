@@ -1,35 +1,36 @@
-// ============================================================================
 // Sesión anónima (Supabase Auth).
-//
-// Nadie tiene que registrarse: al abrir la app se crea una sesión anónima
-// invisible. Eso le da a la persona un `user_id` real —y con él sus reportes,
-// sus fotos y sus permisos— sin pedirle nombre, correo ni contraseña.
-//
-// Hay una sola excepción: el acceso de administrador, oculto tras ?admin=1.
-// Ver initAdminAccess() al final del archivo.
-//
-// En MODO DEMO (sin backend) simula un usuario para poder probar el flujo
-// de publicar sin configurar nada.
-// ============================================================================
+
 import { supabase, isConfigured } from './supabase.js';
 import { escapeHtml } from './ui.js';
 
 let currentUser = null;
-let esAdmin = false;
+let rol = 'user';
+let organizacion = null;
 const listeners = new Set();
 
 export function getUser() { return currentUser; }
-export function isAdminUser() { return esAdmin; }
 
-// Consulta al backend si el usuario actual tiene rol de administrador.
-// La función is_admin() vive en la base de datos y usa la tabla profiles.
-async function refreshAdmin() {
-  if (!isConfigured || !currentUser) { esAdmin = false; return; }
-  const { data, error } = await supabase.rpc('is_admin');
-  esAdmin = !error && data === true;
+export function isAdminUser() { return rol === 'admin'; }
+
+export function isStaffUser() { return rol === 'admin' || rol === 'colaborador'; }
+
+export function getOrgName() { return organizacion; }
+
+async function refreshRol() {
+  if (!isConfigured || !currentUser) { rol = 'user'; organizacion = null; return; }
+
+  let { data, error } = await supabase
+    .from('profiles').select('role, org_name').eq('id', currentUser.id).maybeSingle();
+
+  if (error) {
+    ({ data, error } = await supabase
+      .from('profiles').select('role').eq('id', currentUser.id).maybeSingle());
+  }
+
+  rol = (!error && data?.role) || 'user';
+  organizacion = (!error && data?.org_name) || null;
 }
 
-// Suscribe un callback a cambios de sesión (se llama de inmediato con el estado actual).
 export function onAuthChange(cb) { listeners.add(cb); cb(currentUser); }
 function emit() { listeners.forEach((cb) => cb(currentUser)); }
 
@@ -38,29 +39,21 @@ export async function initAuth() {
 
   const { data } = await supabase.auth.getSession();
   currentUser = data.session?.user ?? null;
-  await refreshAdmin();
+  await refreshRol();
   emit();
 
   supabase.auth.onAuthStateChange(async (_event, session) => {
     currentUser = session?.user ?? null;
-    await refreshAdmin();
+    await refreshRol();
     emit();
   });
 
-  // Ojo: acá NO se crea la sesión. Quien solo mira el mapa no necesita una, y
-  // crearla al entrar significaba un usuario nuevo en Supabase por cada visita
-  // —además del límite de registros anónimos por IP, que en una hora de mucho
-  // tráfico móvil puede dejar a alguien sin poder publicar—. La sesión se crea
-  // sola, con ensureSession(), al publicar un reporte o activar las alertas.
+  // La sesión no se crea acá: la crea ensureSession() al publicar o al activar
+  // las alertas. Crearla al entrar es un usuario nuevo por cada visita.
 }
 
-/**
- * Devuelve el usuario actual y, si no hay ninguno, abre una sesión anónima.
- * Es el único punto de entrada a la sesión: no hay pantalla de login.
- */
 export async function ensureSession() {
   if (!isConfigured) {
-    // Demo: usuario falso en memoria
     if (!currentUser) {
       currentUser = { id: 'demo-user', user_metadata: { full_name: 'Usuario Demo' } };
       emit();
@@ -75,53 +68,33 @@ export async function ensureSession() {
     return null;
   }
   currentUser = data.user ?? null;
-  await refreshAdmin();
+  await refreshRol();
   emit();
   return currentUser;
 }
 
 export async function signOut() {
-  if (!isConfigured) { currentUser = null; esAdmin = false; emit(); return; }
+  if (!isConfigured) { currentUser = null; rol = 'user'; organizacion = null; emit(); return; }
   await supabase.auth.signOut();
 }
 
-/**
- * Entra con Google. Es exclusivo del acceso de administrador: el público
- * jamás llega acá.
- */
 export async function signInWithGoogle() {
   if (!isConfigured) return;
-  // Cerramos la sesión anónima ANTES de arrancar el OAuth. Si no, Supabase
-  // vincula la identidad de Google al usuario anónimo actual en vez de entrar
-  // a la cuenta de administrador que ya existe, y el rol nunca aparecería.
+  // Cerrar la sesión anónima antes del OAuth: si no, Google se vincula a ese
+  // usuario en vez de entrar a la cuenta del equipo, y el rol nunca aparece.
   await supabase.auth.signOut();
   await supabase.auth.signInWithOAuth({
     provider: 'google',
-    // Conserva el ?admin=1 al volver, para que el botón siga visible.
     options: { redirectTo: volverA() },
   });
 }
 
-// A dónde vuelve Google después del login: la misma URL, sin el #.
 function volverA() { return window.location.href.split('#')[0]; }
 
-/**
- * Entra con Google para el PÚBLICO. Lo usa la puerta de la app de Android
- * (ver appGate.js); en la web nadie pasa por acá.
- *
- * Al revés que signInWithGoogle(), acá NO cerramos la sesión antes. Si la
- * persona ya publicó como invitada —incluso desde el navegador del mismo
- * teléfono, porque la app comparte el almacenamiento de Chrome— queremos
- * enganchar Google a ESE usuario y que sus reportes sigan siendo suyos.
- */
 export async function signInPublicoConGoogle() {
   if (!isConfigured) return;
 
   if (currentUser?.is_anonymous) {
-    // linkIdentity conserva el user_id. Necesita "Manual linking" activado en
-    // Supabase (Authentication → Sign In / Providers); si está apagado devuelve
-    // error y caemos al login normal, que con sesión anónima viva también
-    // vincula. El fallback existe para no dejar a nadie afuera por un ajuste.
     const { error } = await supabase.auth.linkIdentity({
       provider: 'google',
       options: { redirectTo: volverA() },
@@ -136,8 +109,6 @@ export async function signInPublicoConGoogle() {
   });
 }
 
-// Primer nombre de la persona, con formato prolijo. Las sesiones anónimas no
-// tienen nombre: devuelve null y quien lo use decide qué mostrar.
 export function displayName() {
   const u = currentUser;
   if (!u) return null;
@@ -148,28 +119,18 @@ export function displayName() {
   return primero.charAt(0).toUpperCase() + primero.slice(1).toLowerCase();
 }
 
-// ---- Acceso de administrador (oculto) --------------------------------------
-// El público nunca ve un login. El botón aparece en dos casos:
-//   1. Se abrió la app con ?admin=1 (para poder entrar).
-//   2. La sesión actual YA es de un administrador (para poder salir).
-// El caso 2 es clave: sin él, quien entra como admin queda atrapado en ese
-// modo —viendo el botón "Borrar" en cada reporte— sin ninguna forma de salir.
-// El público nunca cae en ninguno de los dos: siempre es anónimo.
-//
-// Los permisos reales los da la base de datos (profiles.role = 'admin'),
-// no este botón.
 const ADMIN_FLAG = 'bh-admin';
 
 export function initAdminAccess() {
-  if (new URLSearchParams(location.search).get('admin') === '1') {
+  const params = new URLSearchParams(location.search);
+  if (params.get('admin') === '1' || params.get('equipo') === '1') {
     sessionStorage.setItem(ADMIN_FLAG, '1');
   }
 
   let btn = null;
 
   const alClick = async () => {
-    if (isAdminUser()) {
-      // Salir: volvemos a la app normal, con sesión anónima limpia.
+    if (isStaffUser()) {
       sessionStorage.removeItem(ADMIN_FLAG);
       await signOut();
       location.href = location.pathname;
@@ -179,7 +140,7 @@ export function initAdminAccess() {
   };
 
   onAuthChange(() => {
-    const dentro = isAdminUser();
+    const dentro = isStaffUser();
     const pedido = sessionStorage.getItem(ADMIN_FLAG) === '1';
 
     if (!dentro && !pedido) { btn?.remove(); btn = null; return; }
@@ -192,12 +153,15 @@ export function initAdminAccess() {
       document.querySelector('.topbar__actions')?.appendChild(btn);
     }
 
-    // En el celular queda solo el escudo (hide-mobile): la barra ya lleva tres
-    // botones y el nombre no cabe. El ícono relleno ya indica sesión activa.
+    const quien = isAdminUser()
+      ? (displayName() ?? 'Admin')
+      : (getOrgName() ?? displayName() ?? 'Colaborador');
+
     btn.innerHTML = dentro
-      ? `<i class="ph-fill ph-shield-check" aria-hidden="true"></i><span class="hide-mobile">${escapeHtml(displayName() ?? 'Admin')}</span>`
-      : `<i class="ph ph-shield" aria-hidden="true"></i><span class="hide-mobile">Admin</span>`;
-    btn.title = dentro ? 'Sesión de administrador — click para salir' : 'Entrar como administrador';
+      ? `<i class="ph-fill ph-shield-check" aria-hidden="true"></i><span class="hide-mobile">${escapeHtml(quien)}</span>`
+      : `<i class="ph ph-shield" aria-hidden="true"></i><span class="hide-mobile">Entrar</span>`;
+    btn.title = dentro
+      ? `Sesión de ${isAdminUser() ? 'administrador' : 'colaborador'} — click para salir`
+      : 'Entrar con la cuenta del equipo';
   });
 }
-

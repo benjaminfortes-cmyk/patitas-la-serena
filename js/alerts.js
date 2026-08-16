@@ -1,15 +1,5 @@
-// ============================================================================
 // Alertas por cercanía (Web Push).
-//
-// El usuario elige un punto (ej: su casa) y un radio (1/3/5 km). Cuando se
-// publique un reporte nuevo dentro de ese radio, recibe una notificación push.
-//
-// Los reencuentros NO se avisan por push: encienden el globito rojo de
-// novedades dentro de la app (ver js/novedades.js).
-//
-// El envío real lo hace la Edge Function `send-push` en el servidor; aquí solo
-// guardamos la suscripción del navegador y la zona elegida.
-// ============================================================================
+
 import { supabase, isConfigured } from './supabase.js';
 import { getUser, ensureSession } from './auth.js';
 import { VAPID_PUBLIC_KEY, MAP_CENTER, MAP_ZOOM } from './config.js';
@@ -50,7 +40,6 @@ async function abrir() {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar(); });
   overlay.querySelector('[data-close]').addEventListener('click', cerrar);
 
-  // Mini-mapa para elegir el centro
   setTimeout(() => {
     mapa = L.map('alert-map').setView(MAP_CENTER, MAP_ZOOM);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -67,7 +56,6 @@ async function abrir() {
     mapa.on('click', (e) => fijar(e.latlng.lat, e.latlng.lng));
   }, 50);
 
-  // Selector de radio
   overlay.querySelectorAll('[data-radio]').forEach((b) => {
     b.addEventListener('click', () => {
       overlay.querySelectorAll('[data-radio]').forEach((x) => x.classList.remove('seg__btn--active'));
@@ -81,12 +69,10 @@ async function abrir() {
 }
 
 async function activar(cerrar) {
-  // Pide permiso de notificaciones
   if (!('Notification' in window)) return toast('Tu navegador no soporta notificaciones.', 'error');
   const permiso = await Notification.requestPermission();
   if (permiso !== 'granted') return toast('Necesitas permitir las notificaciones.', 'info');
 
-  // ---- MODO DEMO: muestra una notificación de ejemplo ----
   if (!isConfigured) {
     const reg = await navigator.serviceWorker.ready;
     reg.showNotification('Busca Huellitas', {
@@ -98,7 +84,6 @@ async function activar(cerrar) {
   }
 
   try {
-    // Suscribe este navegador a Web Push con la clave pública VAPID
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
@@ -106,7 +91,6 @@ async function activar(cerrar) {
     });
     const j = sub.toJSON();
 
-    // Guarda el endpoint del navegador (una fila por dispositivo)
     await supabase.from('push_subscriptions').upsert({
       user_id: getUser().id,
       endpoint: sub.endpoint,
@@ -115,7 +99,6 @@ async function activar(cerrar) {
       user_agent: navigator.userAgent,
     }, { onConflict: 'endpoint' });
 
-    // Guarda la zona de alerta (el centro lo arma el servidor con el offset 0)
     const { error } = await supabase.rpc('add_alert', {
       p_lat: seleccion.lat, p_lng: seleccion.lng, p_radius_m: seleccion.radius,
     });
@@ -128,7 +111,6 @@ async function activar(cerrar) {
   }
 }
 
-// Convierte la clave VAPID (base64url) al formato que pide el navegador.
 function urlBase64ToUint8Array(base64) {
   const padding = '='.repeat((4 - (base64.length % 4)) % 4);
   const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');

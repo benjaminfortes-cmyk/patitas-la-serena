@@ -1,15 +1,5 @@
-// ============================================================================
 // Soporte por correo.
-//
-// Envía el mensaje del usuario al correo del administrador usando FormSubmit
-// (https://formsubmit.co): servicio gratuito, sin claves ni cuenta.
-//
-// IMPORTANTE (solo la primera vez): al enviar el PRIMER mensaje, FormSubmit
-// manda un correo de activación a la casilla de destino. Hay que abrir ese
-// correo y tocar "Activate" una vez; desde ahí todo llega normal.
-// Tras activar, FormSubmit entrega un alias aleatorio (ej: formsubmit.co/el7x...)
-// que conviene pegar aquí en lugar del correo, para no exponerlo a bots.
-// ============================================================================
+
 import { getUser, displayName } from './auth.js';
 import { toast, escapeHtml } from './ui.js';
 import { tieneCuenta, abrirBorrarCuenta } from './cuenta.js';
@@ -63,9 +53,6 @@ function abrir() {
 
   overlay.querySelector('#support-send').addEventListener('click', () => enviar(overlay, cerrar));
 
-  // Google Play exige que el borrado de cuenta se pueda encontrar dentro de la
-  // app. Vive acá, en Soporte, porque es donde la gente busca "cómo doy de baja
-  // esto" — y no en la barra principal, para no invitar a apretarlo sin querer.
   overlay.querySelector('#support-borrar')?.addEventListener('click', () => {
     cerrar();
     abrirBorrarCuenta();

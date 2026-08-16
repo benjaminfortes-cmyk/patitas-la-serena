@@ -1,6 +1,5 @@
-// ============================================================================
 // Orquestador principal: arranca el mapa, los filtros y la carga de reportes.
-// ============================================================================
+
 import { initMap, renderReports, getMap, flyTo } from './map.js';
 import { initFilters, onFiltersChange, filterState, filtrarPorTipo } from './filters.js';
 import { fetchReports, fetchReportById } from './data.js';
@@ -20,12 +19,10 @@ import { initEstadisticas } from './stats.js';
 import { initRevisiones } from './revisiones.js';
 import { initNovedades } from './novedades.js';
 
-// Recarga reportes según los filtros actuales y los pinta en el mapa.
 async function recargar() {
   const reports = await fetchReports(filterState);
   renderReports(reports, openReportCard);
 }
-// Disponible para que las acciones de la ficha (resolver, denunciar) refresquen.
 window.recargarMapa = recargar;
 
 function init() {
@@ -33,7 +30,6 @@ function init() {
   initFilters();
   onFiltersChange(recargar);
 
-  // Sesión anónima (invisible: nadie tiene que registrarse) y formulario
   initAuth();
   initAppGate();       // en la app de Google Play (y solo ahí): registro obligatorio
   initAdminAccess();   // botón de admin, solo si se entró con ?admin=1
@@ -48,41 +44,31 @@ function init() {
   initPWA();
   initNovedades();   // globito rojo con los reportes nuevos del día
 
-  // Si se abrió con ?reporte=ID (enlace compartido), abre esa ficha.
   abrirDesdeEnlace();
 
-  // Cerrar la ficha al tocar el fondo oscuro o presionar Escape.
   document.getElementById('backdrop').addEventListener('click', closeReportCard);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeReportCard(); });
 
-  // Botón flotante "Reportar"
   document.getElementById('btn-report').addEventListener('click', () => {
     window.openReportForm?.();
   });
 
-  // Cambio de vistas Inicio <-> Mapa (misma app, sin recargar).
   const mostrarVista = (v) => {
     document.body.dataset.vista = v;
     document.querySelectorAll('.tabbar__item').forEach((t) =>
       t.classList.toggle('tabbar__item--active', t.dataset.tab === 'inicio' && v === 'home'));
-    // Menú lateral (escritorio): Inicio y Mapa son las dos vistas; se marca la actual.
     document.querySelectorAll('.sidenav__item').forEach((t) =>
       t.classList.toggle('sidenav__item--active',
         (t.dataset.nav === 'inicio' && v === 'home') || (t.dataset.nav === 'mapa' && v === 'mapa')));
-    // Síncrono a propósito: medir el contenedor ya fuerza el recálculo, y un
-    // requestAnimationFrame no se ejecuta si la pestaña está en segundo plano.
     if (v === 'mapa') getMap()?.invalidateSize();
   };
   window.mostrarVista = mostrarVista;
   document.getElementById('btn-ir-mapa')?.addEventListener('click', () => mostrarVista('mapa'));
 
-  // Accesos directos de la portada
   document.querySelectorAll('.accion').forEach((btn) => {
     btn.addEventListener('click', () => {
       const accion = btn.dataset.accion;
       if (accion === 'publicar') return window.openReportForm?.();
-      // "Quiero adoptar" entra al mapa mostrando solo los rescatados que
-      // buscan familia; el resto entra al mapa tal como está.
       if (accion === 'adoptar') filtrarPorTipo('encontrado');
       else if (filterState.kinds.length) filtrarPorTipo('');
       mostrarVista('mapa');
@@ -91,15 +77,12 @@ function init() {
   document.getElementById('btn-alertas')?.addEventListener('click', () => window.openAlertas?.());
   document.querySelector('.brand')?.addEventListener('click', () => mostrarVista('home'));
 
-  // Barra de navegación inferior (móvil): reutiliza los controles ya existentes.
   document.querySelector('[data-tab="inicio"]')?.addEventListener('click', () => mostrarVista('home'));
   document.querySelector('[data-tab="reportar"]')?.addEventListener('click', () => window.openReportForm?.());
   document.querySelector('[data-tab="historias"]')?.addEventListener('click', () => document.getElementById('btn-historias')?.click());
   document.querySelector('[data-tab="soporte"]')?.addEventListener('click', () => document.getElementById('btn-soporte')?.click());
   document.querySelector('[data-tab="guia"]')?.addEventListener('click', () => window.openGuia?.());
 
-  // Menú lateral (escritorio): las mismas acciones que la barra inferior, para
-  // que sea la misma app y no dos navegaciones que se van separando con el tiempo.
   document.querySelectorAll('[data-nav]').forEach((btn) => {
     btn.addEventListener('click', () => {
       switch (btn.dataset.nav) {
@@ -114,37 +97,25 @@ function init() {
       }
     });
   });
-  // Arranca con Inicio marcado en el menú.
   mostrarVista(document.body.dataset.vista === 'mapa' ? 'mapa' : 'home');
 
-  // Aviso de modo demo
   if (!isConfigured) {
     toast('Modo demo: configura Supabase para usar datos reales.', 'info');
   }
 
-  // Va al final: necesita que ya existan mostrarVista y openReportForm.
   entradaDesdeAliado();
 
   recargar();
 
-  // Ajusta el mapa cuando la pantalla cambia de tamaño (orientación móvil).
   window.addEventListener('resize', () => getMap()?.invalidateSize());
 }
 
-// ---- Entradas desde sitios aliados ---------------------------------------
-// Un aliado (por ejemplo el botón SOS de marigen.cl) manda a su gente para acá.
-// Para que el salto no se sienta un desvío raro, el enlace puede pedir dónde
-// caer y de parte de quién viene:
-//   ?ir=reportar   abre el formulario al tiro (el caso del botón SOS)
-//   ?ir=mapa       entra directo al mapa
-//   ?ref=marigen   saluda nombrando a quien lo mandó
 const ALIADOS = {
   marigen: 'Fundación Marigen',
 };
 
 function entradaDesdeAliado() {
   const params = new URLSearchParams(location.search);
-  // El ref viene de fuera: lo dejamos en letras y números, sin sorpresas.
   const ref = (params.get('ref') || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 24);
 
   if (ref) {
@@ -158,7 +129,6 @@ function entradaDesdeAliado() {
   else if (ir === 'mapa') window.mostrarVista?.('mapa');
 }
 
-// Abre una ficha directamente si la URL trae ?reporte=ID (enlace compartido).
 async function abrirDesdeEnlace() {
   const id = new URLSearchParams(location.search).get('reporte');
   if (!id) return;

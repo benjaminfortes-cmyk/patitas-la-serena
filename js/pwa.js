@@ -1,19 +1,7 @@
-// ============================================================================
 // PWA: registro del Service Worker (instalable + offline) y botón "Instalar".
-//
-// Mucha gente no sabe que un sitio se puede dejar como app en el teléfono, así
-// que no dejamos la instalación escondida en el menú del navegador: mostramos
-// un botón arriba y una tarjeta en la portada.
-//
-// Chrome/Edge (Android y escritorio) avisan con 'beforeinstallprompt' y ahí
-// podemos abrir el diálogo nativo. Safari (iPhone/Mac) y Firefox no lo tienen:
-// para esos casos abrimos un modal explicando el paso a paso.
-// ============================================================================
+
 import { toast } from './ui.js';
 
-// El evento llega solo una vez y hay que guardarlo para usarlo al hacer clic.
-// Se escucha a nivel de módulo (no dentro de initPWA) porque el navegador puede
-// dispararlo antes de que termine de armarse la página.
 let promptDiferido = null;
 
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -40,19 +28,14 @@ export function initPWA() {
   document.getElementById('btn-instalar')?.addEventListener('click', instalar);
   document.getElementById('card-instalar')?.addEventListener('click', instalar);
 
-  // Si ya está instalada (se abrió desde el ícono), no hay nada que ofrecer.
   if (!yaInstalada()) mostrarBotones();
 }
-
-// ---- Estado de los botones -------------------------------------------------
 
 function yaInstalada() {
   return window.matchMedia('(display-mode: standalone)').matches
       || window.navigator.standalone === true;   // Safari iOS
 }
 
-// El de la barra de arriba (celular), el del menú lateral (computador) y la
-// tarjeta de la portada: los tres ofrecen lo mismo y aparecen juntos.
 const BOTONES = ['btn-instalar', 'nav-instalar', 'card-instalar'];
 
 function mostrarBotones() {
@@ -64,10 +47,7 @@ function ocultarBotones() {
   BOTONES.forEach((id) => document.getElementById(id)?.setAttribute('hidden', ''));
 }
 
-// ---- Instalación -----------------------------------------------------------
-
 async function instalar() {
-  // Camino bueno: Chrome/Edge nos dejó el diálogo nativo guardado.
   if (promptDiferido) {
     const evento = promptDiferido;
     promptDiferido = null;              // el evento sirve una sola vez
@@ -77,15 +57,11 @@ async function instalar() {
     else toast('No pasa nada: puedes instalarla cuando quieras desde este botón.', 'info');
     return;
   }
-  // Resto de navegadores: explicamos el paso a paso.
   abrirInstrucciones();
 }
 
-// ---- Instrucciones manuales ------------------------------------------------
-
 function esIOS() {
   const ua = navigator.userAgent;
-  // iPadOS se hace pasar por Mac: se delata porque la pantalla es táctil.
   return /iphone|ipad|ipod/i.test(ua)
       || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
 }
@@ -93,7 +69,6 @@ function esIOS() {
 const esAndroid = () => /android/i.test(navigator.userAgent);
 const esFirefox = () => /firefox|fxios/i.test(navigator.userAgent);
 
-// Devuelve { titulo, pasos[], nota } según el navegador de quien está mirando.
 function instrucciones() {
   if (esIOS()) {
     return {
@@ -134,7 +109,6 @@ function abrirInstrucciones() {
 
   const overlay = document.createElement('div');
   overlay.className = 'matches-overlay';
-  // Todo el texto es nuestro (no viene del usuario): no hay nada que escapar.
   overlay.innerHTML = `
     <div class="matches" role="dialog" aria-modal="true" aria-label="${titulo}">
       <div class="matches__head">

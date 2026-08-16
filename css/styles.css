@@ -1,7 +1,3 @@
-/* ============================================================================
-   Busca Huellitas — Estilos
-   Mobile-first. Paleta celeste, mucho aire, esquinas redondeadas.
-   ============================================================================ */
 
 :root {
   --brand:        #1f95b8;
@@ -62,16 +58,11 @@ body {
   border-radius: 999px; padding: 12px 20px; transition: transform .12s, box-shadow .2s, background .2s;
 }
 .btn:active { transform: scale(.97); }
-/* display:inline-flex le gana al hidden del navegador: hay que repetirlo. */
 .btn[hidden] { display: none; }
 .btn--sm { padding: 8px 14px; font-size: .9rem; }
 .btn--primary { background: var(--brand); color: #fff; box-shadow: var(--shadow-sm); }
 .btn--primary:hover { background: var(--brand-dark); }
 .btn--ghost { background: var(--brand-soft); color: var(--brand-dark); }
-/* Píldora verde suave: el color de WhatsApp se reconoce igual sin gritar, y
-   convive mejor con la franja de color del estado que hay arriba.
-   text-decoration: es un <a>, si no hereda el subrayado del navegador y
-   parece un enlace roto en vez de un botón. */
 .btn--whatsapp {
   width: 100%; font-size: 1.02rem; padding: 14px; border-radius: 999px;
   background: #eafaf0; color: #16A34A; box-shadow: inset 0 0 0 1.5px #b6e6c8;
@@ -82,11 +73,6 @@ body {
 .btn--whatsapp.is-cargando { opacity: .55; pointer-events: none; }
 .btn i { font-size: 1.2em; }
 
-/* ---------- Filtros ----------
-   Flotan sobre el mapa en vez de ocupar una barra propia: el mapa se queda con
-   toda la pantalla. En el celular van pegados arriba (buscador + los cuatro
-   estados); en el computador se apilan en el borde izquierdo, al lado del menú.
-   Animal y tiempo viven en "Más filtros". */
 .filters {
   position: absolute; z-index: 600; top: 10px; left: 10px; right: 10px;
   display: grid; grid-template-columns: 1fr auto; gap: 8px;
@@ -104,7 +90,6 @@ body {
 .search input { flex: 1; min-width: 0; border: none; background: none; font: inherit; outline: none; color: var(--ink); }
 .search:focus-within { border-color: var(--brand); }
 
-/* Los cuatro estados, con el color de su pin: es el filtro que más se usa */
 .estados {
   grid-area: estados;
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
@@ -123,7 +108,6 @@ body {
 .estado[data-estado="encontrado"].estado--activo { background: #E8EFFE; color: #1B47B0; }
 .estado[data-estado="avistado"].estado--activo   { background: #FBF2DC; color: #8A5D02; }
 
-/* Botón de "Más filtros": redondo en el celular, con su nombre en el computador */
 .mas-filtros {
   grid-area: mas; position: relative;
   display: grid; place-items: center; width: 42px; height: 42px;
@@ -197,8 +181,6 @@ body[data-vista="home"] .view--map  { display: none; }
   font-size: 1.55rem; font-weight: 800; line-height: 1.15; margin: 0;
   text-shadow: 0 1px 3px rgba(0,0,0,.16);
 }
-/* El lema quedó bajo el nombre: sigue siendo lo que emociona, pero el título
-   lo ocupa la marca porque Google verifica que coincida con la app. */
 .infobar__lema {
   font-size: 1.12rem; font-weight: 700; line-height: 1.2; margin: 6px 0 0;
   color: rgba(255,255,255,.96); text-shadow: 0 1px 3px rgba(0,0,0,.16);
@@ -319,14 +301,22 @@ body[data-vista="home"] .view--map  { display: none; }
   transform: rotate(45deg); font-size: 1.1rem; color: #fff;
 }
 .pin--resuelto { background: var(--reunidos); }
-/* Pin chico para explicar los colores en la portada (no salta al aparecer) */
+
+.pin__sello {
+  position: absolute; top: -7px; right: -9px; z-index: 1;
+  display: grid; place-items: center; overflow: hidden;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--brand); box-shadow: var(--shadow-sm);
+  animation: pin-pop-sello .35s cubic-bezier(.18,.89,.32,1.28);
+}
+.pin__sello img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Organización sin logo todavía: sello celeste genérico. */
+.pin__sello--icono { color: var(--brand); font-size: .8rem; }
+@keyframes pin-pop-sello { from { transform: scale(0); } to { transform: scale(1); } }
 .pin--mini { width: 26px; height: 26px; border-width: 2px; animation: none; box-shadow: var(--shadow-sm); }
 .pin--mini .pin__icon { font-size: .78rem; }
 @keyframes pin-pop { from { transform: rotate(-45deg) scale(0); } to { transform: rotate(-45deg) scale(1); } }
 
-/* ---------- Botón flotante ----------
-   Un círculo con un "+", el mismo gesto que el botón del centro de la barra
-   inferior del celular. Sin texto: el menú lateral ya dice "Reportar". */
 .fab {
   position: fixed; right: 18px; bottom: 24px; z-index: 1100;
   display: grid; place-items: center;
@@ -375,7 +365,6 @@ body[data-vista="home"] .view--map  { display: none; }
   display: grid; place-items: center;
   background: #E5352B; color: #fff; border-radius: 999px;
   font-size: .63rem; font-weight: 800; line-height: 1;
-  /* El aro del color de la barra lo despega del ícono, como en las apps. */
   box-shadow: 0 0 0 2px var(--surface);
   animation: badge-pop .28s cubic-bezier(.22,.61,.36,1);
 }
@@ -407,12 +396,6 @@ body[data-vista="home"] .view--map  { display: none; }
 /* El botón flotante Reportar (escritorio) solo en la vista Mapa */
 body[data-vista="home"] .fab { display: none; }
 
-/* ---------- Menú lateral (escritorio) ----------
-   En el celular la navegación va abajo; de 641px para arriba se pasa a la
-   izquierda, como en Instagram, y las vistas se corren para dejarle su franja.
-   Es una columna angosta de puros íconos: el nombre aparece al pasar el mouse,
-   para no robarle ancho al mapa. La excepción es Reportar, que lleva su nombre
-   siempre: es a lo que la gente viene. */
 .sidenav { display: none; }
 
 @media (min-width: 641px) {
@@ -424,15 +407,11 @@ body[data-vista="home"] .fab { display: none; }
     display: flex; flex-direction: column;
     padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
     background: var(--surface); border-right: 1px solid var(--line);
-    /* Sin recorte: los nombres al pasar el mouse se salen de la columna. */
     overflow: visible;
   }
   /* Las vistas empiezan donde termina el menú */
   .views { left: var(--nav-w); }
 
-  /* La barra de arriba ya no hace falta: el menú toma su lugar. Queda solo de
-     percha para los botones que aparecen solos (Admin, Estadística), flotando
-     arriba a la derecha. Si no hay ninguno, no se ve nada. */
   .topbar {
     inset: 14px 18px auto auto; height: auto; width: auto;
     padding: 0; background: none; box-shadow: none; z-index: 1300;
@@ -473,8 +452,6 @@ body[data-vista="home"] .fab { display: none; }
   .sidenav__item:active { transform: scale(.94); }
   .sidenav__item--active { background: var(--brand-soft); color: var(--brand-dark); }
 
-  /* El nombre, escondido hasta que el mouse (o el tabulador) pasa por encima.
-     Sale al costado, como los globitos del menú de Instagram. */
   .sidenav__txt {
     position: absolute; left: calc(100% + 2px); top: 50%; z-index: 5;
     transform: translate(-8px, -50%);
@@ -489,8 +466,6 @@ body[data-vista="home"] .fab { display: none; }
     opacity: 1; visibility: visible; transform: translate(0, -50%);
   }
 
-  /* Reportar: el "+" en su círculo celeste, igual que el botón del centro de la
-     barra del celular, y con su nombre debajo — este no se esconde. */
   .sidenav__item--crear { padding: 8px 0 9px; gap: 4px; }
   .sidenav__item--crear > i {
     background: var(--brand); color: #fff; border-radius: 50%;
@@ -519,15 +494,9 @@ body[data-vista="home"] .fab { display: none; }
   .sidenav__pie { margin-top: auto; color: var(--muted); }
   .sidenav__pie:hover { color: var(--brand-dark); }
 
-  /* El "+" flotante se queda con esa esquina, así que el zoom del mapa se corre
-     para arriba y deja de quedar debajo del botón. */
   .leaflet-bottom.leaflet-right { margin-bottom: 92px; }
 }
 
-/* ---------- Filtros en el computador ----------
-   Sin columna ni panel: las mismas pastillas del celular, pero apiladas contra
-   el borde izquierdo del mapa, al lado del menú de íconos (que no se toca). El
-   mapa queda de pared a pared. */
 @media (min-width: 641px) {
   .filters {
     top: 16px; left: 16px; right: auto; width: 218px;
@@ -558,8 +527,6 @@ body[data-vista="home"] .fab { display: none; }
   .mas-filtros i { font-size: 1.15rem; }
   .mas-filtros__cuenta { top: -5px; right: -5px; }
 
-  /* "Más filtros" deja de ser una hoja: es una tarjetita colgada del botón.
-     El punto exacto lo pone js/filters.js, que sabe dónde quedó el botón. */
   .mas-velo { display: none; }
   .mas-panel {
     right: auto; bottom: auto; top: 0;
@@ -599,7 +566,6 @@ body[data-vista="home"] .fab { display: none; }
   box-shadow: var(--shadow-sm);
 }
 
-/* Franja de estado: lo primero que se lee, en el color del tipo de reporte. */
 .detail__strip {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   background: var(--strip, var(--brand)); color: #fff; padding: 11px 18px;
@@ -611,12 +577,9 @@ body[data-vista="home"] .fab { display: none; }
 .detail__strip-r { font-size: .8rem; font-weight: 700; color: rgba(255,255,255,.92); }
 
 .detail__head { position: relative; padding: 16px 18px 0; }
-/* El botón de cerrar ya no va sobre la foto, sino sobre fondo blanco. */
 .detail__head .sheet__close { top: 10px; right: 12px; background: var(--brand-soft); }
 
 .detail__photo { position: relative; margin: 14px 18px 0; border-radius: 16px; overflow: hidden; }
-/* En el celular la foto es lo que hace reconocer al animal, así que se le da
-   más alto; en escritorio la ficha es angosta y 220 px ya se ve bien. */
 .detail__photo img { width: 100%; height: 290px; object-fit: cover; display: block; }
 .detail__zoom {
   position: absolute; right: 10px; bottom: 10px; pointer-events: none;
@@ -648,7 +611,6 @@ body[data-vista="home"] .fab { display: none; }
 }
 .viewer__close:hover { background: rgba(255,255,255,.28); }
 
-/* Ventana del cartel "Se busca": se ve, y de ahí se guarda o se comparte */
 .cartel {
   position: fixed; inset: 0; z-index: 2300;
   display: grid; place-items: center; padding: 16px;
@@ -733,12 +695,8 @@ body[data-vista="home"] .fab { display: none; }
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
   color: var(--muted); font-weight: 700; font-size: .9rem; margin-top: 3px;
 }
-/* El punto separa animal de sector; si el nombre de la mascota no existe el
-   título ya dice "Perro", no se repite arriba y el sector queda solo. */
 .detail__sector:not(:first-child)::before { content: '·'; margin-right: 8px; }
 
-/* Cuándo se subió el aviso: aclara que aunque la mascota se haya perdido hace
-   meses, el reporte puede ser reciente (que no parezca una página abandonada). */
 .detail__posted {
   display: inline-flex; align-items: center; gap: 5px;
   margin-top: 8px; padding: 3px 10px;
@@ -746,7 +704,18 @@ body[data-vista="home"] .fab { display: none; }
   color: var(--brand-dark, #12667f); font-weight: 700; font-size: .82rem;
 }
 
-/* Datos exactos y cortos, en cuadrícula de dos. Si queda uno solo, se estira. */
+.detail__org {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 8px; padding: 3px 12px 3px 4px;
+  border-radius: 999px; background: var(--brand); color: #fff;
+  font-weight: 800; font-size: .82rem;
+}
+.detail__org i { font-size: 1rem; margin-left: 6px; }
+.detail__orglogo {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; object-fit: cover; display: block;
+}
+
 .detail__facts {
   display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
   background: var(--line); border: 1px solid var(--line);
@@ -824,17 +793,12 @@ body[data-vista="home"] .fab { display: none; }
 /* ---------- Formulario ---------- */
 .form { padding: 16px 18px calc(28px + env(safe-area-inset-bottom)); display: grid; gap: 18px; }
 .form__group { display: grid; gap: 8px; border: none; min-width: 0; }
-/* Sin esto el display:grid de arriba le gana al atributo hidden y los campos
-   que se ocultan por caso (nombre, ubicación al editar) quedan a la vista. */
 .form__group[hidden], .parada[hidden] { display: none; }
 .form__group legend, .form__group > label { font-weight: 800; font-size: .95rem; }
 .form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-/* ---------- El rastro ----------
-   Los largos de las dos líneas los pone js/reportForm.js. */
 .ruta__intro { color: var(--muted); font-weight: 600; font-size: .88rem; line-height: 1.5; }
 .ruta { position: relative; display: grid; gap: 20px; }
-/* 14px = centro del círculo, que sube 3px para quedar a la altura del texto. */
 .ruta::before,
 .ruta__avance { content: ''; position: absolute; left: 16px; top: 14px; width: 3px; }
 .ruta::before {
@@ -861,7 +825,6 @@ body[data-vista="home"] .fab { display: none; }
 .parada--meta .parada__marca { border-style: dashed; }
 .parada--meta.parada--lista .parada__marca { border-style: solid; }
 
-/* En pantallas angostas el sendero se come el ancho: raza y tamaño se apilan. */
 @media (max-width: 480px) {
   .form__row.parada { grid-template-columns: 1fr; }
 }
@@ -968,8 +931,6 @@ textarea.input { resize: vertical; }
 /* Cartel: acción destacada pero por debajo del WhatsApp. */
 .detail__cartel { width: 100%; margin-top: 10px; border-radius: 999px; }
 
-/* Compartir y Reportar son secundarias: texto discreto, sin fondo compitiendo
-   con el botón de WhatsApp. */
 .detail__actions { display: flex; justify-content: center; gap: 22px; }
 .detail__minor {
   display: inline-flex; align-items: center; gap: 6px;
@@ -1166,7 +1127,6 @@ textarea.input { resize: vertical; }
 }
 .social:hover { background: rgba(255,255,255,.22); }
 .social:active { transform: scale(.98); }
-/* Degradado de Instagram: se reconoce de inmediato sin usar el logo de marca. */
 .social__ico {
   flex: 0 0 auto; display: grid; place-items: center;
   width: 42px; height: 42px; border-radius: 12px; font-size: 1.5rem; color: #fff;
@@ -1179,18 +1139,12 @@ textarea.input { resize: vertical; }
 .social__flecha { font-size: 1rem; opacity: .7; flex: 0 0 auto; }
 
 /* ---------- Instalar la app ---------- */
-/* Misma tarjeta que la de Instagram, pero es un <button>: hay que devolverle la
-   tipografía y quitarle el fondo propio que le pone el navegador. */
 .social--instalar { font: inherit; cursor: pointer; -webkit-appearance: none; }
 .social--instalar[hidden] { display: none; }
 .social__ico--instalar { background: linear-gradient(45deg, #0e5f7a, #1f95b8 60%, #57c4e0); }
 
-/* Es el cuarto botón del encabezado: en pantallas chicas se queda solo con el
-   ícono para no apretar al resto. La versión con texto está en la portada. */
 @media (max-width: 620px) { #btn-instalar span { display: none; } }
 
-/* Modal con el paso a paso, para los navegadores que no permiten instalar
-   con un botón (Safari, Firefox). */
 .instalar-pasos {
   display: grid; gap: 10px; margin: 0 0 14px; padding-left: 24px;
   font-size: .92rem; font-weight: 600; line-height: 1.4;
@@ -1206,9 +1160,6 @@ textarea.input { resize: vertical; }
 .instalar-nota i { color: var(--brand); font-size: 1.1rem; flex: 0 0 auto; }
 
 /* ---------- Estadísticas (solo administradores) ---------- */
-/* Con la sesión de admin la barra pasa de tres botones a cinco. Antes de que
-   se aprieten, Admin y Estadística se quedan solo con el ícono: son los dos
-   que únicamente ve el dueño, que ya sabe cuál es cuál. */
 @media (max-width: 900px) {
   #btn-admin span, #btn-stats span { display: none; }
 }
@@ -1249,8 +1200,6 @@ textarea.input { resize: vertical; }
 .est-leyenda__txt { flex: 1; min-width: 0; color: var(--ink); }
 .est-leyenda__pct { color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }
 
-/* La grilla vive en la lista (no en cada fila) para que las tres columnas
-   queden alineadas aunque las etiquetas midan distinto. */
 .est-barras {
   list-style: none; display: grid;
   grid-template-columns: minmax(88px, auto) 1fr auto;
@@ -1265,11 +1214,6 @@ textarea.input { resize: vertical; }
 .est-barra__fill { display: block; height: 100%; border-radius: 0 4px 4px 0; min-width: 3px; }
 .est-barra__valor { font-size: .82rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
 
-/* La tarjeta tiene proporción fija 4:5 (la del feed). Para que la composición
-   se vea idéntica en un celular angosto y en el escritorio, TODO lo de adentro
-   se mide en `cqw` (1cqw = 1% del ancho de la tarjeta): así el contenido escala
-   junto con la caja y nunca se desborda ni queda recortado.
-   La referencia es un ancho de 400px, o sea 4px = 1cqw. */
 .ig-card {
   container-type: inline-size;
   width: 100%; max-width: 400px; margin: 0 auto; aspect-ratio: 4 / 5;
@@ -1300,7 +1244,6 @@ textarea.input { resize: vertical; }
 }
 
 .ig-hero { text-align: center; }
-/* Cifras proporcionales: a este tamaño tabular-nums deja el número desarmado. */
 .ig-hero__valor { display: block; font-size: 13.6cqw; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
 .ig-hero__label {
   display: block; margin: 1.5cqw auto 0; max-width: 72cqw;
@@ -1320,7 +1263,6 @@ textarea.input { resize: vertical; }
   color: var(--brand); font-size: 6.4cqw; line-height: 1;
 }
 
-/* Los gráficos escalan con la tarjeta; fuera de ella conservan su tamaño en rem. */
 .ig-card .est-punto { width: 2.2cqw; height: 2.2cqw; }
 .ig-card .est-leyenda { gap: 1.8cqw; }
 .ig-card .est-leyenda li { gap: 2cqw; font-size: 3.3cqw; }
@@ -1370,10 +1312,6 @@ textarea.input { resize: vertical; }
 .est-tabla tbody th { font-weight: 700; color: var(--ink); }
 .est-tabla td { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
 
-/* ---------- Puerta de la app de Google Play ----------
-   Solo aparece dentro del TWA (ver appMode.js): en la web nadie la ve.
-   Tapa la app entera y no se puede cerrar: entrar con Google es el requisito.
-   z-index sobre todo lo demás, incluido el overlay de fichas (1700). */
 .gate {
   position: fixed; inset: 0; z-index: 3000;
   background: var(--warm-bg);
@@ -1396,9 +1334,6 @@ textarea.input { resize: vertical; }
 }
 .gate__legal a { color: var(--brand-dark); font-weight: 700; }
 
-/* ---------- Borrar cuenta ----------
-   Rojo de verdad, no el celeste de la marca: es la única acción de la app que
-   no se puede deshacer y tiene que verse distinta a todo lo demás. */
 .btn--peligro { background: var(--perdido); color: #fff; }
 .btn--peligro:hover { background: #d93030; }
 .btn--peligro:disabled { background: #e9b4b4; cursor: not-allowed; }
@@ -1417,8 +1352,6 @@ textarea.input { resize: vertical; }
   padding: 10px 12px; font-size: .85rem; font-weight: 600; margin-bottom: 16px;
 }
 
-/* Entrada al borrado, al final de la hoja de Soporte: tiene que poder
-   encontrarse (Google lo exige) sin competir con el botón de enviar. */
 .soporte__cuenta { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
 .soporte__borrar {
   background: none; border: none; padding: 0; font: inherit; cursor: pointer;

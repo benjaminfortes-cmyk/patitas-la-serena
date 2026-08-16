@@ -1,12 +1,5 @@
-// ============================================================================
 // Matching inteligente.
-//
-// Al publicar un reporte, busca candidatos del tipo OPUESTO, mismo animal,
-// dentro de 3 km y publicados en los últimos 30 días, y los muestra en un
-// panel con miniaturas clickeables.
-//   - perdido            -> busca encontrado / avistado
-//   - encontrado/avistado -> busca perdido
-// ============================================================================
+
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 import { fetchReportById } from './data.js';
@@ -22,7 +15,6 @@ export function initMatching() {
   window.buscarCoincidencias = buscarCoincidencias;
 }
 
-// Distancia Haversine en metros (para el modo demo).
 function distancia(aLat, aLng, bLat, bLng) {
   const R = 6371000, rad = (x) => (x * Math.PI) / 180;
   const dLat = rad(bLat - aLat), dLng = rad(bLng - aLng);
@@ -35,7 +27,6 @@ async function buscarCoincidencias(report) {
   let matches = [];
 
   if (!isConfigured) {
-    // Demo: cruce local contra los datos de prueba.
     const corte = Date.now() - DIAS * 86400000;
     matches = DEMO_REPORTS
       .filter((r) =>
@@ -48,7 +39,6 @@ async function buscarCoincidencias(report) {
       .filter((r) => r.distance_m <= RADIO_M)
       .sort((a, b) => a.distance_m - b.distance_m);
   } else {
-    // Real: usa la función find_matches() (PostGIS) del backend.
     const { data, error } = await supabase.rpc('find_matches', { p_report_id: report.id });
     if (error) { console.error(error.message); return; }
     matches = data ?? [];
@@ -57,7 +47,6 @@ async function buscarCoincidencias(report) {
   if (matches.length) renderPanel(matches, report.kind);
 }
 
-// Texto de distancia amigable.
 function distanciaTxt(m) {
   return m < 1000 ? `a ~${Math.round(m / 10) * 10} m` : `a ~${(m / 1000).toFixed(1)} km`;
 }

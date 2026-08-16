@@ -1,40 +1,49 @@
-// ============================================================================
-// Constantes compartidas: metadatos de cada tipo de reporte y de animal,
-// y pequeños helpers de formato. Lo usan el mapa, los filtros y las fichas.
-// ============================================================================
+// Constantes compartidas: tipos de reporte, animales y helpers de formato.
 
-// Los colores acompañan el significado: rojo urgencia, azul rescatado,
-// ámbar dato incierto. El verde queda para los reencuentros (--reunidos).
-// `titular` es la frase de la franja superior de la ficha: dice de una lo que
-// pasa con ese animal, sin que haya que interpretar una etiqueta.
 export const KIND_META = {
   perdido:    { label: 'Perdido',                   color: '#EF4444', verbo: 'busca a',
                 titular: 'Se busca',     verboCorto: 'lo busca',     icon: 'ph-magnifying-glass' },
-  // "Está a salvo" no bastaba: nadie entendía que el animal está bien PERO su
-  // familia sigue sin aparecer, que es justo lo que hace falta difundir.
-  // El titular va en versalitas dentro de una franja angosta: medido en un
-  // celular de 360px, "busca a su familia" la parte en dos líneas y "busca
-  // familia" entra justo en una.
   encontrado: { label: 'Rescatado, busca a su familia', color: '#2563EB', verbo: 'rescató a',
                 titular: 'Rescatado, busca familia', verboCorto: 'lo rescató', icon: 'ph-house-line' },
   avistado:   { label: 'Avistado',                  color: '#CA8A04', verbo: 'vio a',
                 titular: 'Lo vieron',    verboCorto: 'lo vio',       icon: 'ph-eye' },
 };
 
-// `icon` es el nombre del ícono Phosphor que representa al animal.
 export const ANIMAL_META = {
   perro: { label: 'Perro', icon: 'ph-dog' },
   gato:  { label: 'Gato',  icon: 'ph-cat' },
   otro:  { label: 'Otro',  icon: 'ph-paw-print' },
 };
 
-// Nombre legible del animal (considera el campo libre "otro").
+// Logo de cada organización colaboradora. Para agregar una: deja su logo
+// cuadrado en assets/img/ y pon acá su org_name en minúsculas y sin tildes.
+// Sin logo, su pin usa el sello celeste genérico.
+const ORG_LOGOS = {
+  'cachupines ucn':          'assets/img/cachupines.png',
+  'cachupines':              'assets/img/cachupines.png',
+  'fundacion proyecto arca': 'assets/img/proyectoarca.png',
+  'proyecto arca':           'assets/img/proyectoarca.png',
+  'holos pet':               'assets/img/holospet.png',
+  'mascotiendas':            'assets/img/mascotiendas.png',
+  'guau que barato':         'assets/img/guauquebarato.png',
+  'universidad de la serena':'assets/img/uls.png',
+};
+
+export function logoOrganizacion(nombre) {
+  if (!nombre) return null;
+  const clave = String(nombre)
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return ORG_LOGOS[clave] ?? null;
+}
+
 export function nombreAnimal(r) {
   if (r.animal_type === 'otro' && r.animal_type_other) return r.animal_type_other;
   return ANIMAL_META[r.animal_type]?.label ?? 'Animal';
 }
 
-// Fecha relativa amigable: "hace 3 h", "hace 2 días".
 export function tiempoRelativo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
   const min = Math.round(diff / 60000);
@@ -48,10 +57,6 @@ export function tiempoRelativo(iso) {
   return `hace ${meses} ${meses === 1 ? 'mes' : 'meses'}`;
 }
 
-// Cuándo se PUBLICÓ el aviso (distinto de cuándo se perdió la mascota). Una
-// mascota perdida hace 15 meses puede tener un reporte recién subido: sin esto
-// la ficha parecería vieja y daría la impresión de que la página está muerta.
-// Redactado en días naturales ("ayer" aunque hayan pasado <24 h reales).
 export function fechaPublicacion(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
@@ -71,19 +76,15 @@ export function fechaPublicacion(iso) {
   return `Publicado hace ${meses} ${meses === 1 ? 'mes' : 'meses'}`;
 }
 
-// Fecha exacta y corta: "10 de julio". Acompaña a la relativa, que sirve para
-// medir urgencia pero no para recordar "¿fue el día que salí de viaje?".
 export function fechaCorta(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   const texto = d.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
-  // Si cruzó de año, el mes solo no basta.
   return d.getFullYear() === new Date().getFullYear()
     ? texto
     : `${texto} ${d.getFullYear()}`;
 }
 
-// Título corto para una mascota/reporte (para mensajes y compartir).
 export function tituloReporte(r) {
   if (r.pet_name) return r.pet_name;
   const animal = nombreAnimal(r).toLowerCase();

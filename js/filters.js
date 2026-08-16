@@ -1,10 +1,4 @@
-// ============================================================================
-// Filtros y buscador. Mantiene el estado y avisa con un callback cada vez
-// que cambia, para que app.js recargue los reportes.
-//
-// Los controles flotan sobre el mapa: los cuatro estados siempre a la vista
-// (con el color de su pin) y, en "Más filtros", el animal y el tiempo.
-// ============================================================================
+// Filtros y buscador del mapa.
 
 export const filterState = {
   kinds: [],     // ['perdido','encontrado','avistado'] — vacío = todos
@@ -16,7 +10,6 @@ export const filterState = {
 let onChange = () => {};
 export function onFiltersChange(cb) { onChange = cb; }
 
-// Marca una sola opción del grupo (los filtros son de una opción a la vez).
 function marcar(botones, elegido, claseActiva) {
   botones.forEach((b) => {
     const activo = b === elegido;
@@ -25,9 +18,6 @@ function marcar(botones, elegido, claseActiva) {
   });
 }
 
-// Deja el mapa mostrando un solo tipo de reporte (lo usa "Quiero adoptar", que
-// entra directo a los rescatados que buscan familia). Mueve también la pastilla
-// para que se vea qué filtro quedó puesto.
 export function filtrarPorTipo(kind) {
   filterState.kinds = kind ? [kind] : [];
   const estados = [...document.querySelectorAll('.estado')];
@@ -36,14 +26,12 @@ export function filtrarPorTipo(kind) {
   onChange();
 }
 
-// Pequeño debounce para el buscador (no consultar en cada tecla).
 function debounce(fn, ms = 300) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
 export function initFilters() {
-  // Estado: las cuatro pastillas de color, siempre a la vista
   const estados = [...document.querySelectorAll('.estado')];
   estados.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -54,7 +42,6 @@ export function initFilters() {
     });
   });
 
-  // Animal y tiempo: viven dentro de "Más filtros"
   const animales = [...document.querySelectorAll('[data-animal]')];
   animales.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -76,7 +63,6 @@ export function initFilters() {
     });
   });
 
-  // Buscador
   const input = document.getElementById('search');
   input?.addEventListener('input', debounce(() => {
     filterState.query = input.value.trim();
@@ -86,7 +72,6 @@ export function initFilters() {
   initMasFiltros();
 }
 
-// ---- "Más filtros": hoja abajo en el celular, tarjetita al lado en el PC ----
 const ANCHA = window.matchMedia('(min-width: 641px)');
 
 function initMasFiltros() {
@@ -97,11 +82,7 @@ function initMasFiltros() {
 
   const abrir = (v) => {
     if (v) {
-      // Al abrirse se muda al <body>: dentro de los filtros quedaba encerrado
-      // en la capa del mapa y la barra de abajo del celular le tapaba el botón.
       if (panel.parentElement !== document.body) document.body.append(velo, panel);
-      // En el computador es una tarjetita colgada del botón, así que hay que
-      // decirle dónde: en el celular ocupa todo el ancho y lo pone el CSS.
       if (ANCHA.matches) {
         const r = boton.getBoundingClientRect();
         panel.style.left = `${r.left}px`;
@@ -116,7 +97,6 @@ function initMasFiltros() {
     boton.setAttribute('aria-expanded', String(v));
   };
 
-  // Si cambia el tamaño de la ventana, la tarjetita quedaría colgada en el aire.
   window.addEventListener('resize', () => abrir(false));
 
   boton.addEventListener('click', (e) => {
@@ -127,13 +107,10 @@ function initMasFiltros() {
   document.getElementById('btn-mas-filtros-listo')?.addEventListener('click', () => abrir(false));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') abrir(false); });
 
-  // En el computador es una tarjetita flotante: se cierra al tocar el mapa.
   panel.addEventListener('click', (e) => e.stopPropagation());
   document.addEventListener('click', () => abrir(false));
 }
 
-// El globito rojo del botón dice cuántos filtros escondidos quedaron puestos:
-// si no, se olvidan y el mapa parece vacío sin motivo.
 function contarPuestos() {
   const n = (filterState.animals.length ? 1 : 0) + (filterState.age !== 'all' ? 1 : 0);
   const globo = document.getElementById('mas-filtros-cuenta');

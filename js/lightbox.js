@@ -1,13 +1,9 @@
-// ============================================================================
 // Visor de fotos: abre una imagen a pantalla completa al tocarla.
-// Lo usa la ficha del reporte.
-// ============================================================================
+
 import { escapeHtml } from './ui.js';
 
 let visor;
 
-// Cierra con Escape antes que nadie: si no, el mismo Escape cerraría también
-// la ficha que está detrás y el usuario perdería el reporte que estaba viendo.
 function alPresionarTecla(e) {
   if (e.key !== 'Escape') return;
   e.stopPropagation();
@@ -27,7 +23,6 @@ export function abrirVisor(src, alt = '') {
     <img class="viewer__img" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" />`;
 
   visor.addEventListener('click', (e) => {
-    // Tocar la foto no cierra; tocar el fondo o la X, sí.
     if (!e.target.classList.contains('viewer__img')) cerrarVisor();
   });
 
@@ -42,7 +37,6 @@ export function cerrarVisor() {
   visor = null;
 }
 
-// Deja una foto lista para abrirse en grande (click o Enter).
 export function hacerAmpliable(img, alt) {
   if (!img) return;
   img.classList.add('is-zoomable');

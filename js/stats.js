@@ -1,27 +1,11 @@
-// ============================================================================
 // Panel de estadísticas — SOLO ADMINISTRADORES
-//
-// Vive junto al acceso de admin: el botón aparece únicamente cuando la sesión
-// tiene rol 'admin' (mismo criterio que usa auth.js), y los datos los trae la
-// vista `reports_public`, que con RLS le muestra al admin TODOS los reportes,
-// incluidos los archivados.
-//
-// Tiene dos vistas de la misma información, a propósito:
-//   · "Para compartir"  -> todo en PORCENTAJES, dentro de una tarjeta 4:5 lista
-//                          para sacarle un pantallazo y subirla a Instagram.
-//   · "Interno"         -> números absolutos, medianas y una tabla completa.
-//     Esa tabla es además la versión accesible de los gráficos de arriba:
-//     ningún valor queda encerrado en un color.
-// ============================================================================
+
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 import { isAdminUser, onAuthChange } from './auth.js';
 import { KIND_META, ANIMAL_META } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
 
-// Los colores son los MISMOS que usan los pines del mapa y los chips: quien ve
-// el pantallazo ya aprendió que rojo = perdido. (Paleta validada para daltonismo;
-// además cada categoría lleva su etiqueta al lado, nunca solo el color.)
 const COLOR_KIND = {
   perdido: KIND_META.perdido.color,
   encontrado: KIND_META.encontrado.color,
@@ -36,12 +20,9 @@ const PERIODOS = [
   { valor: '7d',  label: '7 días',  dias: 7  },
 ];
 
-// Estado del panel mientras está abierto.
 let reportes = [];
 let periodo = 'all';
 let modo = 'compartir';
-
-// ---- Arranque --------------------------------------------------------------
 
 export function initEstadisticas() {
   let btn = null;
@@ -61,8 +42,6 @@ export function initEstadisticas() {
   });
 }
 
-// ---- Datos -----------------------------------------------------------------
-
 async function cargarReportes() {
   if (!isConfigured) return DEMO_REPORTS;
 
@@ -79,8 +58,6 @@ async function cargarReportes() {
   return data ?? [];
 }
 
-// Reparte 100 puntos entre los valores con el método del resto mayor, para que
-// los porcentajes que se ven en el pantallazo sumen exactamente 100.
 function porcentajes(valores) {
   const total = valores.reduce((a, b) => a + b, 0);
   if (!total) return valores.map(() => 0);
@@ -116,8 +93,6 @@ function calcular(todos, per) {
   const ciclo    = cuenta('lifecycle',   ['activo', 'resuelto', 'archivado']);
   const tamanos  = cuenta('size',        ['chico', 'mediano', 'grande']);
 
-  // Días entre lo que pasó y el reencuentro. Se descartan los negativos:
-  // vienen de fechas mal escritas al publicar, no de reencuentros instantáneos.
   const demoras = rs
     .filter((r) => r.lifecycle === 'resuelto' && r.resolved_at)
     .map((r) => (new Date(r.resolved_at) - new Date(r.event_at)) / 86400000)
@@ -136,7 +111,6 @@ function calcular(todos, per) {
   };
 }
 
-// Conteo por mes calendario, del más antiguo al más reciente.
 function ultimosMeses(rs, cuantos) {
   const hoy = new Date();
   const meses = [];
@@ -154,10 +128,6 @@ function ultimosMeses(rs, cuantos) {
   return meses;
 }
 
-// ---- Gráficos (SVG/HTML a mano, sin librerías) -----------------------------
-
-// Anillo de proporciones. La separación entre tramos es un hueco del color del
-// fondo (no un borde): así los tramos vecinos se distinguen sin sumar tinta.
 function anillo(segmentos, total) {
   const size = 150, r = 55, grosor = 20, c = size / 2;
   const C = 2 * Math.PI * r;
@@ -187,11 +157,6 @@ function anillo(segmentos, total) {
   </svg>`;
 }
 
-// Barras horizontales finas. Dos cuidados:
-//   · La escala llega hasta 100, no hasta el valor más alto: si un 66% ocupara
-//     la pista entera, la barra estaría diciendo "todos" y el número diría otra cosa.
-//   · La cifra va SIEMPRE fuera de la barra, así nunca queda un número recortado
-//     dentro de un tramo corto.
 function barras(filas, sufijo = '%') {
   const tope = sufijo === '%' ? 100 : Math.max(...filas.map((f) => f.valor), 1);
   return `<ul class="est-barras">
@@ -206,7 +171,6 @@ function barras(filas, sufijo = '%') {
   </ul>`;
 }
 
-// Columnas por mes (una sola serie: un solo color, sin leyenda).
 function columnas(meses) {
   const tope = Math.max(...meses.map((m) => m.valor), 1);
   return `<div class="est-cols">
@@ -229,8 +193,6 @@ function leyenda(filas) {
       </li>`).join('')}
   </ul>`;
 }
-
-// ---- Vista "Para compartir": tarjeta 4:5 lista para Instagram ---------------
 
 function vistaCompartir(s) {
   if (!s.total) return vacio();
@@ -255,9 +217,6 @@ function vistaCompartir(s) {
     ? 'Desde que partimos'
     : `Últimos ${rango.dias} días`;
 
-  // El titular es el dato con el que uno querría abrir la publicación. Mientras
-  // no haya ningún reencuentro, un "0%" gigante diría lo contrario de lo que
-  // pasa, así que la portada la toma el tipo de reporte más frecuente.
   const mayor = pctKind.indexOf(Math.max(...pctKind));
   const titular = s.resueltos > 0
     ? { valor: Math.round(s.tasa), color: VERDE,
@@ -309,8 +268,6 @@ function vistaCompartir(s) {
       </footer>
     </article>`;
 }
-
-// ---- Vista "Interno": números absolutos + tabla -----------------------------
 
 function vistaInterna(s) {
   if (!s.total) return vacio();
@@ -371,8 +328,6 @@ function vacio() {
   </div>`;
 }
 
-// ---- Panel -----------------------------------------------------------------
-
 async function abrir() {
   reportes = await cargarReportes();
   periodo = 'all';
@@ -414,7 +369,6 @@ async function abrir() {
   };
   pintar();
 
-  // Un solo juego de filtros arriba: manda sobre las dos vistas por igual.
   overlay.querySelectorAll('[data-modo]').forEach((b) => {
     b.addEventListener('click', () => {
       modo = b.dataset.modo;

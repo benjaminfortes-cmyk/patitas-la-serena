@@ -1,14 +1,8 @@
-// ============================================================================
 // Datos de prueba (MODO DEMO)
-//
-// Se usan solo cuando Supabase no está configurado, para poder ver el mapa
-// funcionando sin backend. Coordenadas reales repartidas por La Serena.
-// ============================================================================
 
 const ahora = Date.now();
 const hace = (h) => new Date(ahora - h * 3600 * 1000).toISOString();
 
-// Fotos de ejemplo (Unsplash, libres). En producción vienen de Storage.
 const foto = (id) => `https://images.unsplash.com/photo-${id}?w=600&q=70&auto=format`;
 
 export const DEMO_REPORTS = [
@@ -34,7 +28,7 @@ export const DEMO_REPORTS = [
     size: 'grande', event_at: hace(2), lat: -29.9120, lng: -71.2430,
     photo_url: foto('1589941013453-ec89f33b5e95'), contact_whatsapp: '+56911112222',
     description: 'Lo vi suelto por Av. Francisco de Aguirre, no me dejó acercarme.',
-    flags_count: 0, created_at: hace(2),
+    flags_count: 0, created_at: hace(2), author_org: 'Cachupines UCN',
   },
   {
     id: 'demo-4', kind: 'perdido', lifecycle: 'activo', animal_type: 'gato',
@@ -54,7 +48,6 @@ export const DEMO_REPORTS = [
     resolution_review: false,
   },
   {
-    // Aviso todavía sin verificar: se ve verde y la ficha dice "(en revisión)".
     id: 'demo-7', kind: 'perdido', lifecycle: 'resuelto', animal_type: 'gato',
     pet_name: 'Pelusa', breed: 'Mestiza', color: 'Gris atigrada',
     size: 'chico', event_at: hace(72), lat: -29.9105, lng: -71.2490,
@@ -69,6 +62,6 @@ export const DEMO_REPORTS = [
     size: 'chico', event_at: hace(8), lat: -29.9015, lng: -71.2455,
     photo_url: foto('1585110396000-c9ffd4e4b308'), contact_whatsapp: '+56977778888',
     description: 'Conejo blanco saltando en un antejardín en el centro.',
-    flags_count: 0, created_at: hace(8),
+    flags_count: 0, created_at: hace(8), author_org: 'Animalba',
   },
 ];

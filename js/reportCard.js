@@ -1,16 +1,8 @@
-// ============================================================================
 // Ficha del reporte (bottom-sheet que se abre al tocar un marcador).
-//
-// Incluye: foto + datos, contacto por WhatsApp, Compartir (Web Share API con
-// fallback a copiar), denuncia de info incorrecta/duplicada, y —si es del
-// usuario logueado— botones "Marcar como resuelto ❤️" y "Editar".
-//
-// El aviso de reencuentro lo puede dejar cualquiera; si no es el dueño queda
-// "en revisión" hasta que el admin lo confirme. Ver la migración 0010.
-// ============================================================================
-import { KIND_META, nombreAnimal, tiempoRelativo, fechaCorta, fechaPublicacion, tituloReporte } from './constants.js';
+
+import { KIND_META, nombreAnimal, tiempoRelativo, fechaCorta, fechaPublicacion, tituloReporte, logoOrganizacion } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
-import { getUser, ensureSession, isAdminUser } from './auth.js';
+import { getUser, ensureSession, isStaffUser } from './auth.js';
 import { hacerAmpliable, cerrarVisor } from './lightbox.js';
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
@@ -19,21 +11,17 @@ import { fetchContacto } from './data.js';
 
 const SIZE_LABEL = { chico: 'Chico', mediano: 'Mediano', grande: 'Grande' };
 
-// Link de WhatsApp con mensaje pre-redactado.
 function whatsappLink(report) {
   const num = String(report.contact_whatsapp ?? '').replace(/[^0-9]/g, ''); // 569XXXXXXXX
   const msg = `Hola, vi tu publicación en Busca Huellitas sobre ${tituloReporte(report)}. ¿Sigue activa la búsqueda?`;
   return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
 }
 
-// El teléfono no viene con la lista de reportes (si viniera, se podrían bajar
-// todos de una vez). Se pide al abrir esta ficha y ahí se activa el botón.
 async function activarWhatsapp(sheet, report) {
   const boton = sheet.querySelector('.btn--whatsapp');
   if (!boton) return;
 
   const numero = await fetchContacto(report);
-  // Si la ficha ya se cerró o se abrió otra mientras llegaba, no tocamos nada.
   if (!sheet.contains(boton)) return;
 
   if (!numero) {
@@ -50,17 +38,14 @@ export function openReportCard(report) {
   const k = KIND_META[report.kind];
   const resuelto = report.lifecycle === 'resuelto';
   const activo = report.lifecycle === 'activo';
-  // Aviso de la comunidad todavía sin confirmar.
   const enRevision = resuelto && report.resolution_review === true;
   const user = getUser();
   const esDueno = user && report.user_id && report.user_id === user.id;
-  // El administrador puede gestionar cualquier reporte (la base de datos
-  // también lo permite vía RLS; aquí solo mostramos los botones).
-  const puedeGestionar = esDueno || (user && isAdminUser());
+  const esEquipo = Boolean(user && isStaffUser());
+  const puedeGestionar = esDueno || esEquipo;
 
-  // Botones de gestión (resolver / editar / sigue activo): dueño o admin, si no está resuelto.
   const accionesDueno = (puedeGestionar && !resuelto) ? `
-    ${!esDueno ? '<p class="detail__adminnote"><i class="ph ph-shield-check"></i> Estás editando como administrador</p>' : ''}
+    ${!esDueno ? '<p class="detail__adminnote"><i class="ph ph-shield-check"></i> Estás editando como moderador</p>' : ''}
     <div class="detail__owner">
       <button class="btn btn--soft" data-action="resolver"><i class="ph ph-heart"></i> Marcar como resuelto</button>
       <button class="btn btn--outline" data-action="editar"><i class="ph ph-pencil-simple"></i> Editar</button>
@@ -69,7 +54,6 @@ export function openReportCard(report) {
       <i class="ph ph-arrow-clockwise"></i> Sigue activo (reiniciar caducidad)
     </button>` : '';
 
-  // Para el resto de la gente: mismo aviso, pero queda en revisión.
   const accionComunidad = (!puedeGestionar && activo) ? `
     <div class="detail__reunion">
       <button class="btn btn--soft" data-action="avisar-reunion">
@@ -80,13 +64,10 @@ export function openReportCard(report) {
       </p>
     </div>` : '';
 
-  // Zona de administrador: archivar (ocultar) o borrar CUALQUIER reporte.
-  // La base de datos ya lo permite vía RLS (is_admin); aquí solo van los botones.
-  const esAdmin = user && isAdminUser();
   const archivado = report.lifecycle === 'archivado';
-  const accionesAdmin = esAdmin ? `
+  const accionesAdmin = esEquipo ? `
     <div class="detail__admin">
-      <p class="detail__adminnote"><i class="ph ph-shield-star"></i> Zona de administrador</p>
+      <p class="detail__adminnote"><i class="ph ph-shield-star"></i> Zona de moderación</p>
       ${enRevision ? `
         <p class="detail__adminnote"><i class="ph ph-clock-user"></i> Alguien de la comunidad avisó que volvió a casa. Confirma después de hablar con la familia.</p>
         <div class="detail__adminbtns">
@@ -101,8 +82,6 @@ export function openReportCard(report) {
       </div>
     </div>` : '';
 
-  // Datos cortos y exactos, en cuadrícula. Solo los que existen: si el reporte
-  // no trae raza, no queda una celda vacía ocupando media fila.
   const dato = (label, val) =>
     val ? `<div class="detail__fact"><span class="detail__fact-k">${label}</span>
              <span class="detail__fact-v">${escapeHtml(val)}</span></div>` : '';
@@ -133,6 +112,13 @@ export function openReportCard(report) {
         <span class="detail__sector" hidden></span>
       </p>
       ${report.created_at ? `<p class="detail__posted"><i class="ph ph-clock" aria-hidden="true"></i> ${fechaPublicacion(report.created_at)}</p>` : ''}
+      ${report.author_org ? `
+        <p class="detail__org">
+          ${logoOrganizacion(report.author_org)
+            ? `<img class="detail__orglogo" src="${logoOrganizacion(report.author_org)}" alt="" />`
+            : '<i class="ph-fill ph-seal-check" aria-hidden="true"></i>'}
+          Publicado por ${escapeHtml(report.author_org)}
+        </p>` : ''}
     </div>
 
     <div class="detail__photo">
@@ -171,15 +157,11 @@ export function openReportCard(report) {
       ${accionesAdmin}
     </div>`;
 
-  // El sector y el teléfono se resuelven después: la ficha no espera a la red
-  // para abrirse.
   mostrarSector(sheet, report);
   activarWhatsapp(sheet, report);
 
-  // La foto se puede tocar para verla en grande
   hacerAmpliable(sheet.querySelector('.detail__photo img'), `Foto de ${tituloReporte(report)}`);
 
-  // Cableado de botones
   sheet.querySelector('[data-close]').addEventListener('click', closeReportCard);
   sheet.querySelector('[data-action="compartir"]').addEventListener('click', () => compartir(report));
   sheet.querySelector('[data-action="cartel"]').addEventListener('click', () => generarCartel(report));
@@ -206,10 +188,6 @@ export function closeReportCard() {
   document.getElementById('backdrop')?.classList.remove('backdrop--show');
 }
 
-// ---- Sector (geocodificación inversa) -------------------------------------
-// Para reconocer a un animal el barrio importa tanto como el color, pero en la
-// base solo hay un punto. Se lo preguntamos a Photon —el mismo servicio que ya
-// usa el buscador de direcciones— después de abrir la ficha, para no demorarla.
 const PHOTON_REVERSE = 'https://photon.komoot.io/reverse';
 const sectorCache = new Map();   // id del reporte → texto ya resuelto
 
@@ -217,7 +195,6 @@ async function mostrarSector(sheet, report) {
   if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
 
   const pintar = (texto) => {
-    // La ficha pudo cerrarse o cambiar de reporte mientras respondía la red.
     const el = sheet.querySelector('.detail__sector');
     if (!el || !texto) return;
     el.textContent = texto;
@@ -231,7 +208,6 @@ async function mostrarSector(sheet, report) {
     const r = await fetch(`${PHOTON_REVERSE}?lat=${report.lat}&lon=${report.lng}&limit=1`);
     if (!r.ok) throw new Error();
     const p = (await r.json()).features?.[0]?.properties ?? {};
-    // district = barrio/población; city = comuna. Sin repetir si coinciden.
     texto = [...new Set([p.district, p.city ?? p.county].filter(Boolean))].join(', ');
   } catch {
     return;   // sin sector la ficha se ve igual, solo con una línea menos
@@ -240,7 +216,6 @@ async function mostrarSector(sheet, report) {
   pintar(texto);
 }
 
-// ---- Compartir ------------------------------------------------------------
 async function compartir(report) {
   const url = `${location.origin}${location.pathname}?reporte=${report.id}`;
   const datos = {
@@ -256,7 +231,6 @@ async function compartir(report) {
   }
 }
 
-// ---- Marcar como resuelto -------------------------------------------------
 async function resolver(report) {
   if (!confirm('¿Marcar como resuelto? Quedará visible 7 días como "Reunidos con familia" y luego se archiva.')) return;
 
@@ -272,7 +246,6 @@ async function resolver(report) {
   window.recargarMapa?.();
 }
 
-// ---- Aviso de la comunidad: "ya volvió con su familia" --------------------
 async function avisarReunion(report) {
   if (!confirm(
     `¿Estás seguro de que ${tituloReporte(report)} ya volvió con su familia?\n\n` +
@@ -296,7 +269,6 @@ async function avisarReunion(report) {
   window.recargarMapa?.();
 }
 
-// ---- Admin: confirmar o rechazar un aviso de la comunidad -----------------
 async function moderarReunion(report, confirmado) {
   if (!confirmado && !confirm('¿La mascota sigue perdida? El reporte volverá al mapa como activo.')) return;
 
@@ -316,7 +288,6 @@ async function moderarReunion(report, confirmado) {
   window.recargarMapa?.();
 }
 
-// ---- Sigue activo (reinicia el contador de caducidad de 45 días) ----------
 async function reactivar(report) {
   if (isConfigured) {
     const { error } = await supabase.rpc('reactivate_report', { p_report_id: report.id });
@@ -328,7 +299,6 @@ async function reactivar(report) {
   toast('Listo, el reporte sigue activo.', 'exito');
 }
 
-// ---- Admin: archivar (ocultar del mapa, reversible con "Sigue activo") ----
 async function archivar(report) {
   if (!confirm('¿Archivar este reporte? Se ocultará del mapa. Podrás volver a mostrarlo con "Sigue activo".')) return;
 
@@ -346,7 +316,6 @@ async function archivar(report) {
   window.recargarMapa?.();
 }
 
-// ---- Admin: borrar definitivamente (no se puede deshacer) -----------------
 async function borrar(report) {
   if (!confirm('¿Borrar este reporte para SIEMPRE? Esta acción no se puede deshacer.')) return;
 
@@ -362,7 +331,6 @@ async function borrar(report) {
   window.recargarMapa?.();
 }
 
-// ---- Denuncia (info incorrecta / duplicada) -------------------------------
 async function abrirDenuncia(report) {
   await ensureSession();
 

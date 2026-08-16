@@ -1,14 +1,8 @@
-// ============================================================================
-// Avisos por verificar — SOLO ADMINISTRADORES
-//
-// Lista de los reportes con resolution_review = true (ver migración 0010), con
-// el WhatsApp de la familia a mano para confirmar.
-//   Confirmar -> deja de estar en revisión.
-//   Rechazar  -> vuelve al mapa como activo, con la caducidad reiniciada.
-// ============================================================================
+// Avisos por verificar — SOLO EL EQUIPO (admin y organizaciones colaboradoras)
+
 import { supabase, isConfigured } from './supabase.js';
 import { fetchAvisosPendientes, fetchContacto } from './data.js';
-import { isAdminUser, onAuthChange } from './auth.js';
+import { isStaffUser, onAuthChange } from './auth.js';
 import { DEMO_REPORTS } from './demo.js';
 import { tituloReporte, nombreAnimal, tiempoRelativo } from './constants.js';
 import { openReportCard } from './reportCard.js';
@@ -18,7 +12,7 @@ let btn = null;
 
 export function initRevisiones() {
   onAuthChange(() => {
-    if (!isAdminUser()) { btn?.remove(); btn = null; return; }
+    if (!isStaffUser()) { btn?.remove(); btn = null; return; }
     if (btn) return;
 
     btn = document.createElement('button');
@@ -40,7 +34,6 @@ function pintarBoton(n) {
     (n > 0 ? `<span class="btn__badge">${n}</span>` : '');
 }
 
-// Se recalcula al entrar como admin y al cerrar el panel.
 async function actualizarContador() {
   if (!btn) return;
   const pendientes = await fetchAvisosPendientes();
@@ -99,7 +92,6 @@ async function abrir() {
       </div>
     </div>`).join('');
 
-  // Los teléfonos se piden de a uno, igual que en la ficha.
   pendientes.forEach(async (r) => {
     const fila = lista.querySelector(`.revision[data-id="${CSS.escape(r.id)}"]`);
     const wa = fila?.querySelector('[data-wa]');

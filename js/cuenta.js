@@ -1,23 +1,11 @@
-// ============================================================================
-// Borrar mi cuenta
-//
-// Google Play exige que quien se registra pueda borrar su cuenta desde dentro
-// de la app, y que se le explique claramente qué se elimina. Se borra todo:
-// la cuenta y los reportes que publicó, con sus fotos.
-//
-// El borrado real lo hace la Edge Function `borrar-cuenta`, que es la única
-// con permisos para eliminar de auth.users. Desde acá solo se la llama.
-//
-// Solo aplica a cuentas registradas. Quien anda con sesión anónima no tiene
-// nada que borrar: le basta con borrar los datos del navegador.
-// ============================================================================
+// Borrar mi cuenta (lo exige Google Play).
+
 import { supabase, isConfigured } from './supabase.js';
 import { getUser, signOut } from './auth.js';
 import { toast } from './ui.js';
 
 const PALABRA = 'BORRAR';
 
-/** ¿Esta persona tiene una cuenta que borrar? (las anónimas no) */
 export function tieneCuenta() {
   const u = getUser();
   return isConfigured && !!u && !u.is_anonymous;
@@ -26,7 +14,6 @@ export function tieneCuenta() {
 export function abrirBorrarCuenta() {
   const overlay = document.createElement('div');
   overlay.className = 'matches-overlay';
-  // Texto propio, nada viene del usuario.
   overlay.innerHTML = `
     <div class="matches" role="dialog" aria-modal="true" aria-label="Borrar mi cuenta">
       <div class="matches__head">
@@ -66,8 +53,6 @@ export function abrirBorrarCuenta() {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar(); });
   overlay.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', cerrar));
 
-  // El botón se activa solo al escribir la palabra: un borrado permanente no
-  // puede quedar a un toque de distancia.
   const campo = overlay.querySelector('#borrar-confirmar');
   const boton = overlay.querySelector('#borrar-ok');
   campo.addEventListener('input', () => {
@@ -82,15 +67,12 @@ async function borrar(boton, cerrar) {
   boton.innerHTML = '<i class="ph ph-circle-notch" aria-hidden="true"></i> Borrando…';
 
   try {
-    // invoke() manda solo el token de la sesión actual: la función del servidor
-    // borra a quien llama y a nadie más.
     const { error } = await supabase.functions.invoke('borrar-cuenta', { method: 'POST' });
     if (error) throw error;
 
     await signOut();
     cerrar();
     toast('Tu cuenta y tus reportes fueron eliminados.', 'exito');
-    // Recarga limpia: sin sesión y sin nada suyo en pantalla.
     setTimeout(() => { location.href = location.pathname; }, 1500);
   } catch (e) {
     console.error('No se pudo borrar la cuenta:', e);

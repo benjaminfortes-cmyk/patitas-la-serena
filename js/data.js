@@ -1,33 +1,24 @@
-// ============================================================================
 // Capa de datos: consulta de reportes
-//
-// Construye la consulta a Supabase (vista `reports_public`) según los filtros.
-// Si no hay backend configurado, devuelve los datos de prueba ya filtrados.
-// ============================================================================
+
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 
-// Convierte el filtro de antigüedad en una fecha de corte ISO.
 function corteAntiguedad(age) {
   const h = { '24h': 24, week: 24 * 7, month: 24 * 30 }[age];
   if (!h) return null; // 'all'
   return new Date(Date.now() - h * 3600 * 1000).toISOString();
 }
 
-// Los resueltos se muestran en el mapa solo 7 días desde que se resolvieron.
 const VENTANA_RESUELTO_MS = 7 * 24 * 3600 * 1000;
 function visibleEnMapa(r) {
   if (r.lifecycle !== 'resuelto') return r.lifecycle !== 'archivado';
   return r.resolved_at && (Date.now() - new Date(r.resolved_at).getTime()) <= VENTANA_RESUELTO_MS;
 }
 
-// Minúsculas y sin tildes, para que "cafe" encuentre "café" y viceversa.
 function normalizar(s) {
   return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-// Sinónimos de lo que la gente escribe → palabras que sí están en el reporte.
-// (el valor guardado es 'chico'/'mediano'/'grande', pero se busca "pequeño")
 const SINONIMOS = {
   pequeno: 'chico', pequena: 'chico', peque: 'chico', mini: 'chico',
   pequenito: 'chico', chiquito: 'chico', chica: 'chico',
@@ -40,8 +31,6 @@ const SINONIMOS = {
   avistada: 'avistado', avistamiento: 'avistado', visto: 'avistado',
 };
 
-// Búsqueda de texto local sobre todos los campos visibles del reporte:
-// nombre, raza, color, descripción, tamaño, tipo de animal y estado.
 function coincideTexto(r, q) {
   if (!q) return true;
   const txt = normalizar(
@@ -55,14 +44,9 @@ function coincideTexto(r, q) {
   });
 }
 
-/**
- * Obtiene los reportes a mostrar en el mapa.
- * @param {{kinds:string[], animals:string[], age:string, query:string}} filtros
- */
 export async function fetchReports(filtros = {}) {
   const { kinds = [], animals = [], age = 'all', query = '' } = filtros;
 
-  // ---- MODO DEMO (sin backend) -------------------------------------------
   if (!isConfigured) {
     const corte = corteAntiguedad(age);
     return DEMO_REPORTS.filter((r) =>
@@ -74,7 +58,6 @@ export async function fetchReports(filtros = {}) {
     );
   }
 
-  // ---- CONSULTA REAL A SUPABASE ------------------------------------------
   let q = supabase
     .from('reports_public')
     .select('*')
@@ -93,21 +76,13 @@ export async function fetchReports(filtros = {}) {
     console.error('Error cargando reportes:', error.message);
     return [];
   }
-  // La búsqueda de texto y la ventana de 7 días para resueltos se aplican en el cliente.
   return data.filter((r) => visibleEnMapa(r) && coincideTexto(r, query));
 }
 
-// Cuántos reportes se publicaron desde tal momento. Es solo un número (head:
-// true no trae ninguna fila), así que el globito de novedades puede preguntar
-// cada tanto sin pesar en la conexión de nadie.
 export async function contarReportesDesde(desde) {
   const corte = new Date(desde).getTime();
   const iso = new Date(corte).toISOString();
 
-  // Es novedad tanto un reporte recién publicado como uno que acaba de volver
-  // a casa: las dos cosas son noticia para quien mira el mapa. Se cuenta con
-  // un OR y no con dos consultas para que el que se publicó y se resolvió el
-  // mismo día no cuente dos veces.
   if (!isConfigured) {
     return DEMO_REPORTS.filter((r) =>
       visibleEnMapa(r) && (
@@ -127,7 +102,6 @@ export async function contarReportesDesde(desde) {
   return count ?? 0;
 }
 
-// Trae los últimos reencuentros para la sección "Historias felices".
 export async function fetchHappyStories(limite = 20) {
   if (!isConfigured) {
     return DEMO_REPORTS
@@ -144,7 +118,6 @@ export async function fetchHappyStories(limite = 20) {
   return data;
 }
 
-// Avisos pendientes de verificar (panel de administrador).
 export async function fetchAvisosPendientes() {
   if (!isConfigured) {
     return DEMO_REPORTS
@@ -160,15 +133,9 @@ export async function fetchAvisosPendientes() {
   return data;
 }
 
-// Trae un único reporte por id (para abrir una coincidencia o un enlace compartido).
-// ---- Teléfono de contacto -------------------------------------------------
-// El WhatsApp ya no viene en la lista de reportes: si viniera, cualquiera con
-// la clave anónima (que va en el JavaScript) podría bajarse todos los números
-// de una vez. Se pide de a uno, al abrir la ficha.
 const contactosVistos = new Map();
 
 export async function fetchContacto(report) {
-  // Ya lo teníamos (o el backend viejo todavía lo manda en la lista).
   if (report.contact_whatsapp) return report.contact_whatsapp;
   if (contactosVistos.has(report.id)) return contactosVistos.get(report.id);
 
@@ -177,9 +144,8 @@ export async function fetchContacto(report) {
     return demo?.contact_whatsapp ?? null;
   }
 
-  // No hace falta sesión: get_report_contact() atiende a cualquiera (ver
-  // migración 0009). El número sigue pidiéndose de a uno para que no se pueda
-  // descargar la lista completa en una sola consulta.
+  // De a uno y nunca en la lista: si el teléfono viniera con los reportes,
+  // cualquiera podría bajarse todos los números de una sola consulta.
   const { data, error } = await supabase.rpc('get_report_contact', { p_report_id: report.id });
   if (error) { console.error('No se pudo obtener el contacto:', error.message); return null; }
 

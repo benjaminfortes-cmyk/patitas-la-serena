@@ -1,8 +1,5 @@
-// ============================================================================
 // Subida de fotos al bucket `report-photos` de Supabase Storage.
-// Ruta: {user_id}/{uuid}.webp (o .jpg)  — las políticas RLS exigen la carpeta
-// propia; la extensión sale del formato que logró comprimir el navegador.
-// ============================================================================
+
 import { supabase } from './supabase.js';
 
 export async function subirFoto(blob, userId) {

@@ -1,10 +1,5 @@
-// ============================================================================
-// Formulario "Publicar reporte": selección visual, mini-mapa, geolocalización,
-// compresión de foto, validación y envío vía la función create_report().
-//
-// El límite de 3/día y las validaciones viven en la base de datos;
-// aquí solo enviamos lat/lng crudos y la base se encarga del resto.
-// ============================================================================
+// Formulario para publicar o editar un reporte.
+
 import { supabase, isConfigured } from './supabase.js';
 import { getUser, ensureSession } from './auth.js';
 import { comprimirImagen } from './imageCompress.js';
@@ -16,9 +11,6 @@ import { MAP_CENTER, MAP_ZOOM } from './config.js';
 import { DEMO_REPORTS } from './demo.js';
 import { fetchContacto } from './data.js';
 
-// Estado del formulario en curso
-// `puntoTocado` separa el pin de partida (cae en el centro de la región) del
-// punto que alguien eligió. Solo el segundo completa la parada "¿Dónde?".
 const estado = { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null };
 
 let formMap, formMarker;
@@ -31,13 +23,8 @@ export function initReportForm(cbRecargar) {
   wire();
 }
 
-// ---------------------------------------------------------------------------
-// Cableado de eventos del formulario
-// ---------------------------------------------------------------------------
 function wire() {
-  // Selectores segmentados (kind / animal / size)
   segmented('kind', (v) => {
-    // El nombre solo lo sabe el dueño; a los demás no se les pregunta.
     document.getElementById('field-name').hidden = v !== 'perdido';
     aplicarTextos(v);
   });
@@ -46,22 +33,16 @@ function wire() {
   });
   segmented('size');
 
-  // Foto
   document.getElementById('photo').addEventListener('change', onFoto);
 
-  // Geolocalización
   document.getElementById('btn-geoloc').addEventListener('click', usarMiUbicacion);
 
-  // Buscador de direcciones: sugiere mientras se escribe, con una pausa breve
-  // para no disparar una consulta por cada tecla.
   const addr = document.getElementById('addr-input');
   addr.addEventListener('input', () => {
     clearTimeout(addrTimer);
     addrTimer = setTimeout(sugerirDirecciones, 300);
   });
   addr.addEventListener('keydown', (e) => {
-    // Enter dentro del formulario enviaría el reporte: aquí elige la primera
-    // sugerencia, que es lo que espera quien viene de Maps.
     if (e.key === 'Enter') {
       e.preventDefault();
       document.querySelector('#addr-results .addr__opt')?.click();
@@ -72,29 +53,19 @@ function wire() {
     if (!e.target.closest('.addr') && !e.target.closest('.addr__results')) cerrarSugerencias();
   });
 
-  // Contador de caracteres
   const desc = document.getElementById('description');
   desc.addEventListener('input', () => {
     document.getElementById('desc-count').textContent = desc.value.length;
   });
 
-  // Un solo listener en el formulario en vez de uno por campo.
   document.getElementById('report-form').addEventListener('input', actualizarRuta);
 
-  // Cerrar
   document.querySelector('[data-close-form]').addEventListener('click', cerrar);
   document.getElementById('form-backdrop').addEventListener('click', cerrar);
 
-  // Enviar
   document.getElementById('report-form').addEventListener('submit', onSubmit);
 }
 
-// ---------------------------------------------------------------------------
-// Textos que cambian según lo que pasó.
-//
-// Quien vio un animal suelto no sabe su nombre, su raza ni su edad: preguntarle
-// lo mismo que al dueño lo hace dudar y abandonar. Cada caso pregunta lo suyo.
-// ---------------------------------------------------------------------------
 const TEXTOS = {
   perdido: {
     foto:      'Sube una foto de tu mascota',
@@ -128,7 +99,6 @@ const TEXTOS = {
   },
 };
 
-// Textos neutros: se usan mientras nadie ha elegido todavía qué pasó.
 const TEXTOS_NEUTROS = {
   foto:      'Toca para tomar una foto o elegirla de tu galería',
   breed:     'Raza aproximada',
@@ -142,8 +112,6 @@ const TEXTOS_NEUTROS = {
 
 function aplicarTextos(kind) {
   const t = TEXTOS[kind] ?? TEXTOS_NEUTROS;
-  // `photo-hint` desaparece mientras se comprime una foto, así que ningún
-  // cambio de tipo en ese momento debe reventar el resto de los textos.
   const poner = (id, prop, valor) => {
     const el = document.getElementById(id);
     if (el) el[prop] = valor;
@@ -155,21 +123,12 @@ function aplicarTextos(kind) {
   poner('label-fecha', 'textContent', t.fecha);
   poner('description', 'placeholder', t.desc);
   poner('hint-donde',  'textContent', t.dondeHint);
-  // El asterisco de obligatorio vive dentro de la leyenda: hay que rehacerlo.
   poner('legend-donde', 'innerHTML', `${t.donde} <span class="req">*</span>`);
 }
 
-// ---------------------------------------------------------------------------
-// El rastro: cada campo es una parada de un sendero y la línea se pinta hasta
-// donde se llegó. Los largos se calculan acá y no en el CSS porque dependen de
-// qué paradas están a la vista: el nombre solo sale en "perdí a mi mascota" y
-// la ubicación desaparece al editar.
-// ---------------------------------------------------------------------------
 function paradaCompleta(parada) {
   switch (parada.dataset.parada) {
-    // El punto se marca tocando el mapa, sin escribir nada.
     case 'donde': return estado.puntoTocado;
-    // Al editar, la foto ya existe aunque no se elija una nueva.
     case 'foto':  return !!estado.fotoBlob || !document.getElementById('photo-preview').hidden;
     default:
       if (parada.querySelector('.seg__btn--active')) return true;
@@ -186,8 +145,6 @@ function actualizarRuta() {
 
   const visibles = [...ruta.querySelectorAll('[data-parada]')].filter((p) => !p.hidden);
 
-  // La línea se corta en la primera parada vacía, aunque más abajo haya otras
-  // completas: muestra hasta dónde se llegó, no cuántas van.
   let finPintado = null;
   let cortado = false;
   visibles.forEach((parada) => {
@@ -197,21 +154,18 @@ function actualizarRuta() {
     else if (!lista) cortado = true;
   });
 
-  // El destino se enciende con lo mínimo para publicar, no con todo lleno.
   const listoParaPublicar = !!estado.kind && !!estado.animal
     && paradaCompleta(ruta.querySelector('[data-parada="foto"]'))
     && (document.getElementById('field-location').hidden || estado.puntoTocado)
     && !!document.getElementById('whatsapp').value.trim();
   meta.classList.toggle('parada--lista', listoParaPublicar);
 
-  // .ruta es position:relative, así que offsetTop ya viene medido desde ella.
   const origen = visibles[0]?.offsetTop ?? 0;
   const hasta = (el) => Math.max(0, el.offsetTop - origen);
   ruta.style.setProperty('--ruta-largo', hasta(meta) + 'px');
   avance.style.height = (listoParaPublicar ? hasta(meta) : finPintado ? hasta(finPintado) : 0) + 'px';
 }
 
-// Helper genérico para botones segmentados (radio visual).
 function segmented(group, onSet) {
   document.querySelectorAll(`[data-seg="${group}"]`).forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -228,16 +182,10 @@ function segmented(group, onSet) {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Abrir / cerrar el modal
-// ---------------------------------------------------------------------------
 async function abrir(report) {
-  // Publicar es libre: si todavía no hay sesión, se abre una anónima sin que
-  // la persona note nada. La foto obligatoria es el control anti-spam.
   await ensureSession();
 
   reset();
-  // `report` solo llega cuando se abre desde "Editar"; el botón flotante no lo pasa.
   editId = report?.id ?? null;
   configurarModo(report);
   if (report) prefill(report);
@@ -245,25 +193,20 @@ async function abrir(report) {
   document.getElementById('report-modal').classList.add('modal--open');
   document.getElementById('form-backdrop').classList.add('backdrop--show');
 
-  // El rastro se mide con el modal ya visible: antes las alturas son cero.
   actualizarRuta();
 
-  // El mini-mapa se inicializa la primera vez; si ya existe, solo se refresca.
   if (!editId) setTimeout(initFormMap, 50);
 }
 
-// Ajusta títulos y campos según sea creación o edición.
 function configurarModo(report) {
   const editando = !!report;
   document.getElementById('modal-title').textContent = editando ? 'Editar reporte' : 'Publicar un reporte';
   document.getElementById('form-submit').innerHTML = editando
     ? '<i class="ph ph-check"></i> Guardar cambios'
     : '<i class="ph ph-paper-plane-tilt"></i> Publicar reporte';
-  // En edición la ubicación no se cambia (conserva la ubicación original).
   document.getElementById('field-location').hidden = editando;
 }
 
-// Marca un botón segmentado como activo por valor.
 function setSeg(group, value) {
   document.querySelectorAll(`[data-seg="${group}"]`).forEach((b) => {
     const activo = b.dataset.value === value;
@@ -273,7 +216,6 @@ function setSeg(group, value) {
   estado[group] = value;
 }
 
-// Rellena el formulario con un reporte existente (modo edición).
 function prefill(r) {
   setSeg('kind', r.kind);
   aplicarTextos(r.kind);   // setSeg no dispara el callback del selector
@@ -290,7 +232,6 @@ function prefill(r) {
     document.getElementById('description').value = r.description;
     document.getElementById('desc-count').textContent = r.description.length;
   }
-  // El teléfono ya no viene con el reporte: se pide aparte para editarlo.
   fetchContacto(r).then((num) => {
     if (num) document.getElementById('whatsapp').value = formatearWhatsapp(num);
   });
@@ -299,12 +240,10 @@ function prefill(r) {
   dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
   document.getElementById('event-at').value = dt.toISOString().slice(0, 16);
 
-  // Foto existente como vista previa (no es obligatorio reemplazarla)
   const img = document.getElementById('photo-preview');
   img.src = r.photo_url; img.hidden = false;
   document.getElementById('photo-placeholder').hidden = true;
 
-  // La ubicación no se edita, pero seteamos valores para que la validación pase.
   estado.lat = r.lat ?? 0;
   estado.lng = r.lng ?? 0;
   estado.puntoTocado = true;   // el reporte ya tiene su punto de antes
@@ -320,7 +259,6 @@ function reset() {
   form.reset();
   Object.assign(estado, { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null });
 
-  // Limpia selecciones visuales
   document.querySelectorAll('.seg__btn--active').forEach((b) => {
     b.classList.remove('seg__btn--active'); b.setAttribute('aria-pressed', 'false');
   });
@@ -333,15 +271,11 @@ function reset() {
   document.getElementById('addr-input').value = '';
   document.getElementById('addr-results').hidden = true;
 
-  // Fecha por defecto: ahora (en hora local, formato datetime-local)
   const ahora = new Date();
   ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
   document.getElementById('event-at').value = ahora.toISOString().slice(0, 16);
 }
 
-// ---------------------------------------------------------------------------
-// Mini-mapa de ubicación
-// ---------------------------------------------------------------------------
 function initFormMap() {
   if (formMap) { formMap.invalidateSize(); return; }
 
@@ -350,7 +284,6 @@ function initFormMap() {
     maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO',
   }).addTo(formMap);
 
-  // Marcador arrastrable que define el punto del reporte
   formMarker = L.marker(MAP_CENTER, { draggable: true }).addTo(formMap);
   fijarPunto(MAP_CENTER[0], MAP_CENTER[1], false);   // pin de partida, no elección
 
@@ -371,20 +304,12 @@ function fijarPunto(lat, lng, porElUsuario = true) {
   actualizarRuta();   // elegir el punto completa la parada "¿Dónde?"
 }
 
-// ---------------------------------------------------------------------------
-// Buscador de direcciones con sugerencias mientras se escribe.
-//
-// Usa Photon (OpenStreetMap), que a diferencia de Nominatim sí está pensado
-// para autocompletar. La caja `bbox` deja fuera el resto del país: si no,
-// "Balmaceda" caería en Santiago.
-// ---------------------------------------------------------------------------
 const PHOTON = 'https://photon.komoot.io/api/';
 const CAJA_REGION = '-71.85,-32.35,-69.75,-28.95';  // izq,abajo,der,arriba
 
 let addrPeticion;      // aborta la búsqueda anterior si llega otra tecla
 let addrTimer;
 
-// Arma el texto de cada sugerencia: título en negrita + dónde queda.
 function etiquetaLugar(p) {
   const titulo = p.name || [p.street, p.housenumber].filter(Boolean).join(' ') || 'Sin nombre';
   const partes = [p.district, p.city, p.county].filter(Boolean);
@@ -427,8 +352,6 @@ async function sugerirDirecciones() {
     return pintarMensaje('No se pudo buscar. Marca el punto en el mapa.');
   }
 
-  // Photon repite el mismo lugar (paraderos, tramos de calle). Nos quedamos
-  // con el primero de cada nombre+comuna, que es el más relevante.
   const vistos = new Set();
   const unicos = lugares.filter((f) => {
     const { titulo, detalle } = etiquetaLugar(f.properties);
@@ -488,17 +411,10 @@ function usarMiUbicacion() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Foto: validar tamaño, comprimir y previsualizar
-// ---------------------------------------------------------------------------
 async function onFoto(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  // El tope se mide sobre el archivo ORIGINAL solo para descartar barbaridades
-  // (un video, un RAW enorme) que podrían colgar el navegador al procesarlos.
-  // Las fotos normales de celular pesan 4–8 MB y pasan sin problema: la
-  // compresión las deja bajo 300 KB antes de subirlas.
   if (file.size > 30 * 1024 * 1024) {
     toast('Ese archivo es demasiado pesado (más de 30 MB).', 'error');
     e.target.value = '';
@@ -521,24 +437,17 @@ async function onFoto(e) {
     e.target.value = '';
     toast(err.message, 'error');
   } finally {
-    // Siempre devolvemos el texto original: si no, al reabrir el formulario
-    // el recuadro se quedaría mostrando "Preparando la foto…".
     placeholder.innerHTML = textoOriginal;
   }
 }
 
-// ---------------------------------------------------------------------------
-// Validación + envío
-// ---------------------------------------------------------------------------
 async function onSubmit(e) {
   e.preventDefault();
 
-  // Validaciones con mensajes claros
   if (!estado.kind)   return toast('Elige qué pasó (perdido / encontrado / avistado).', 'error');
   if (!estado.animal) return toast('Elige el tipo de animal.', 'error');
   if (estado.animal === 'otro' && !document.getElementById('animal-other').value.trim())
     return toast('Cuéntanos qué animal es.', 'error');
-  // En edición la foto y la ubicación ya existen y son opcionales de cambiar.
   if (!editId && !estado.fotoBlob) return toast('La foto es obligatoria.', 'error');
   if (!editId && estado.lat == null) return toast('Marca la ubicación en el mapa.', 'error');
 
@@ -566,23 +475,18 @@ async function onSubmit(e) {
 
   try {
     if (editId) {
-      // ---- Edición ----
       await guardarEdicion(datos);
       cerrar();
       toast('Cambios guardados.', 'exito');
       onPublished?.();
     } else {
-      // ---- Nuevo reporte ----
       const nuevo = !isConfigured ? await publicarDemo(datos) : await publicarReal(datos);
       cerrar();
       toast('¡Reporte publicado! Gracias por ayudar.', 'exito');
-      // Al mapa, para que vea su reporte recién publicado.
       window.mostrarVista?.('mapa');
       flyTo(datos.lat, datos.lng, 16);
       onPublished?.();
-      // Su propio reporte no le tiene que aparecer como novedad sin ver.
       window.marcarNovedadesVistas?.();
-      // Matching inteligente: busca coincidencias cercanas del tipo opuesto.
       window.buscarCoincidencias?.(nuevo);
     }
   } catch (err) {
@@ -593,7 +497,6 @@ async function onSubmit(e) {
   }
 }
 
-// Envío real a Supabase: sube foto y llama a create_report(). Devuelve el reporte.
 async function publicarReal(d) {
   const user = await ensureSession();
   if (!user) throw new Error('No se pudo preparar la sesión. Recarga la página.');
@@ -620,7 +523,6 @@ async function publicarReal(d) {
   return { id: data?.id, ...d };
 }
 
-// Envío en modo demo: agrega el reporte a la lista en memoria y lo devuelve.
 async function publicarDemo(d) {
   const nuevo = {
     id: 'demo-' + crypto.randomUUID(),
@@ -635,7 +537,6 @@ async function publicarDemo(d) {
   return nuevo;
 }
 
-// Guarda los cambios de un reporte existente (modo edición).
 async function guardarEdicion(d) {
   const payload = {
     kind: d.kind, animal_type: d.animal_type, animal_type_other: d.animal_type_other,
@@ -650,13 +551,11 @@ async function guardarEdicion(d) {
     return;
   }
 
-  // Si eligió una nueva foto, se sube y se actualiza la URL.
   if (estado.fotoBlob) {
     const { url, path } = await subirFoto(estado.fotoBlob, getUser().id);
     payload.photo_url = url;
     payload.photo_path = path;
   }
-  // RLS permite el UPDATE solo al dueño del reporte.
   const { error } = await supabase.from('reports').update(payload).eq('id', editId);
   if (error) throw new Error(error.message);
 }

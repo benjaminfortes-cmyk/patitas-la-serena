@@ -1,16 +1,11 @@
-// ============================================================================
-// Botón "Información" (barra inferior): muestra los reportes recientes en una
-// lista para desplazar, y debajo la guía de qué significa el color de cada pin.
-// Tocar un reporte lo abre en el mapa.
-// ============================================================================
+// Botón "Información": reportes recientes y leyenda de los pines.
+
 import { KIND_META, nombreAnimal, tiempoRelativo, fechaPublicacion } from './constants.js';
 import { escapeHtml } from './ui.js';
 import { fetchReports } from './data.js';
 import { openReportCard } from './reportCard.js';
 import { flyTo } from './map.js';
 
-// Cada fila arma su pin con el MISMO color que usa el mapa. Así la guía no
-// puede quedar desfasada si algún día se cambian los colores.
 const LEYENDA = [
   {
     clase: '', color: KIND_META.perdido.color, icono: 'ph-dog',
@@ -28,7 +23,6 @@ const LEYENDA = [
     texto: 'Lo vieron suelto en la calle, pero no alcanzaron a acercarse a él.',
   },
   {
-    // El color lo pone la clase pin--resuelto (var --reunidos), igual que en el mapa.
     clase: 'pin--resuelto', color: '', icono: 'ph-heart',
     titulo: 'Reunidos con familia',
     texto: 'Volvió a casa. Queda 7 días en el mapa como final feliz y luego se archiva.',
@@ -73,6 +67,11 @@ async function abrir() {
           <i class="ph ph-paw-print" aria-hidden="true"></i>
           El dibujo dentro del pin indica si es un perro, un gato u otro animal.
         </p>
+        <p class="leyenda__pie">
+          <i class="ph-fill ph-seal-check" aria-hidden="true"></i>
+          El logo pegado al pin indica que ese aviso lo publicó una organización
+          aliada que rescata en terreno.
+        </p>
       </div>
     </div>`;
 
@@ -82,7 +81,6 @@ async function abrir() {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar(); });
   overlay.querySelector('[data-close]').addEventListener('click', cerrar);
 
-  // Carga los reportes después de abrir, para que el panel no espere a la red.
   cargarListado(overlay, cerrar);
 }
 
@@ -96,7 +94,6 @@ async function cargarListado(overlay, cerrar) {
     return;
   }
 
-  // Los más nuevos primero (por cuándo se publicaron).
   reportes.sort((a, b) => new Date(b.created_at ?? b.event_at) - new Date(a.created_at ?? a.event_at));
 
   if (!reportes.length) {

@@ -1,7 +1,5 @@
-// ============================================================================
-// "Historias felices": muestra los últimos reencuentros como prueba social
-// de que la plataforma funciona. Se abre desde el botón del encabezado.
-// ============================================================================
+// "Historias felices": los últimos reencuentros.
+
 import { fetchHappyStories } from './data.js';
 import { openReportCard } from './reportCard.js';
 import { tituloReporte, nombreAnimal, tiempoRelativo } from './constants.js';
