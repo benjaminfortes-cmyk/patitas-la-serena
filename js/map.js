@@ -38,6 +38,11 @@ export function initMap() {
 
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+  // Los créditos se van a la esquina contraria: en la de abajo a la derecha
+  // quedaban encima de los botones de zoom. Hay que mostrarlos igual, es la
+  // licencia de OpenStreetMap.
+  map.attributionControl.setPosition('bottomleft');
+
   // CARTO y no openstreetmap.org: su servidor público no permite apps con
   // tráfico y puede bloquearlas.
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
