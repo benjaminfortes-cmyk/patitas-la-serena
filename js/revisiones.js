@@ -1,8 +1,8 @@
-// Avisos por verificar — SOLO EL EQUIPO (admin y organizaciones colaboradoras)
+// Avisos de reencuentro por verificar — solo el admin.
 
 import { supabase, isConfigured } from './supabase.js';
 import { fetchAvisosPendientes, fetchContacto } from './data.js';
-import { isStaffUser, onAuthChange } from './auth.js';
+import { isAdminUser, onAuthChange } from './auth.js';
 import { DEMO_REPORTS } from './demo.js';
 import { tituloReporte, nombreAnimal, tiempoRelativo } from './constants.js';
 import { openReportCard } from './reportCard.js';
@@ -12,7 +12,7 @@ let btn = null;
 
 export function initRevisiones() {
   onAuthChange(() => {
-    if (!isStaffUser()) { btn?.remove(); btn = null; return; }
+    if (!isAdminUser()) { btn?.remove(); btn = null; return; }
     if (btn) return;
 
     btn = document.createElement('button');

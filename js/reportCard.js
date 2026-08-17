@@ -2,7 +2,7 @@
 
 import { KIND_META, nombreAnimal, tiempoRelativo, fechaCorta, fechaPublicacion, tituloReporte, logoOrganizacion } from './constants.js';
 import { escapeHtml, toast } from './ui.js';
-import { getUser, ensureSession, isStaffUser } from './auth.js';
+import { getUser, ensureSession, isAdminUser, isStaffUser } from './auth.js';
 import { hacerAmpliable, cerrarVisor } from './lightbox.js';
 import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
@@ -41,11 +41,13 @@ export function openReportCard(report) {
   const enRevision = resuelto && report.resolution_review === true;
   const user = getUser();
   const esDueno = user && report.user_id && report.user_id === user.id;
+  const esAdmin = Boolean(user && isAdminUser());
+  // El colaborador solo puede ocultar lo ajeno; editarlo o resolverlo, no.
   const esEquipo = Boolean(user && isStaffUser());
-  const puedeGestionar = esDueno || esEquipo;
+  const puedeGestionar = esDueno || esAdmin;
 
   const accionesDueno = (puedeGestionar && !resuelto) ? `
-    ${!esDueno ? '<p class="detail__adminnote"><i class="ph ph-shield-check"></i> Estás editando como moderador</p>' : ''}
+    ${!esDueno ? '<p class="detail__adminnote"><i class="ph ph-shield-check"></i> Estás editando como administrador</p>' : ''}
     <div class="detail__owner">
       <button class="btn btn--soft" data-action="resolver"><i class="ph ph-heart"></i> Marcar como resuelto</button>
       <button class="btn btn--outline" data-action="editar"><i class="ph ph-pencil-simple"></i> Editar</button>
@@ -65,10 +67,13 @@ export function openReportCard(report) {
     </div>` : '';
 
   const archivado = report.lifecycle === 'archivado';
+  // Borrar es para siempre: el admin puede con cualquiera, el colaborador solo
+  // con lo suyo. La base de datos aplica lo mismo (política reports_delete_admin).
+  const puedeBorrar = esAdmin || (esEquipo && esDueno);
   const accionesAdmin = esEquipo ? `
     <div class="detail__admin">
       <p class="detail__adminnote"><i class="ph ph-shield-star"></i> Zona de moderación</p>
-      ${enRevision ? `
+      ${esAdmin && enRevision ? `
         <p class="detail__adminnote"><i class="ph ph-clock-user"></i> Alguien de la comunidad avisó que volvió a casa. Confirma después de hablar con la familia.</p>
         <div class="detail__adminbtns">
           <button class="btn btn--soft" data-action="confirmar-reunion"><i class="ph ph-check"></i> Confirmar</button>
@@ -76,10 +81,12 @@ export function openReportCard(report) {
         </div>` : ''}
       <div class="detail__adminbtns">
         ${archivado
-          ? '<span class="detail__archivedtag"><i class="ph ph-eye-slash"></i> Archivado (oculto del mapa)</span>'
-          : '<button class="btn btn--outline" data-action="archivar"><i class="ph ph-archive-box"></i> Archivar (ocultar)</button>'}
-        <button class="btn btn--danger" data-action="borrar"><i class="ph ph-trash"></i> Borrar</button>
+          ? `<span class="detail__archivedtag"><i class="ph ph-eye-slash"></i> Oculto del mapa</span>
+             <button class="btn btn--outline" data-action="mostrar"><i class="ph ph-eye"></i> Volver a mostrar</button>`
+          : '<button class="btn btn--outline" data-action="archivar"><i class="ph ph-eye-slash"></i> Ocultar del mapa</button>'}
+        ${puedeBorrar ? '<button class="btn btn--danger" data-action="borrar"><i class="ph ph-trash"></i> Borrar</button>' : ''}
       </div>
+      ${esAdmin ? '' : '<p class="detail__hint">Ocultar no borra nada: el reporte sale del mapa y un administrador puede revisarlo.</p>'}
     </div>` : '';
 
   const dato = (label, val) =>
@@ -171,6 +178,7 @@ export function openReportCard(report) {
   sheet.querySelector('[data-action="confirmar-reunion"]')?.addEventListener('click', () => moderarReunion(report, true));
   sheet.querySelector('[data-action="rechazar-reunion"]')?.addEventListener('click', () => moderarReunion(report, false));
   sheet.querySelector('[data-action="reactivar"]')?.addEventListener('click', () => reactivar(report));
+  sheet.querySelector('[data-action="mostrar"]')?.addEventListener('click', () => reactivar(report, true));
   sheet.querySelector('[data-action="editar"]')?.addEventListener('click', () => {
     closeReportCard();
     window.openReportForm?.(report);
@@ -288,30 +296,37 @@ async function moderarReunion(report, confirmado) {
   window.recargarMapa?.();
 }
 
-async function reactivar(report) {
+// La misma función sirve para "Sigue activo" y para deshacer un ocultado:
+// reactivate_report() reinicia la caducidad y, si estaba archivado, lo devuelve
+// al mapa.
+async function reactivar(report, desocultar = false) {
   if (isConfigured) {
     const { error } = await supabase.rpc('reactivate_report', { p_report_id: report.id });
     if (error) return toast(error.message, 'error');
   } else {
     const r = DEMO_REPORTS.find((x) => x.id === report.id);
-    if (r) r.last_active_at = new Date().toISOString();
+    if (r) {
+      r.last_active_at = new Date().toISOString();
+      if (r.lifecycle === 'archivado') r.lifecycle = 'activo';
+    }
   }
-  toast('Listo, el reporte sigue activo.', 'exito');
+  toast(desocultar ? 'El reporte vuelve al mapa.' : 'Listo, el reporte sigue activo.', 'exito');
+  if (desocultar) { closeReportCard(); window.recargarMapa?.(); }
 }
 
 async function archivar(report) {
-  if (!confirm('¿Archivar este reporte? Se ocultará del mapa. Podrás volver a mostrarlo con "Sigue activo".')) return;
+  if (!confirm('¿Ocultar este reporte del mapa? No se borra: puedes volver a mostrarlo cuando quieras.')) return;
 
+  // Vía RPC y no con un update directo: el colaborador no tiene permiso de
+  // update sobre reportes ajenos, pero sí puede ocultarlos (migración 0012).
   if (isConfigured) {
-    const { error } = await supabase.from('reports')
-      .update({ lifecycle: 'archivado', updated_at: new Date().toISOString() })
-      .eq('id', report.id);
+    const { error } = await supabase.rpc('archive_report', { p_report_id: report.id });
     if (error) return toast(error.message, 'error');
   } else {
     const r = DEMO_REPORTS.find((x) => x.id === report.id);
     if (r) r.lifecycle = 'archivado';
   }
-  toast('Reporte archivado (oculto del mapa).', 'exito');
+  toast('Reporte oculto del mapa.', 'exito');
   closeReportCard();
   window.recargarMapa?.();
 }
