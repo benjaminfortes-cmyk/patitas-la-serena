@@ -448,7 +448,11 @@ async function onSubmit(e) {
   if (estado.animal === 'otro' && !document.getElementById('animal-other').value.trim())
     return toast('Cuéntanos qué animal es.', 'error');
   if (!editId && !estado.fotoBlob) return toast('La foto es obligatoria.', 'error');
-  if (!editId && estado.lat == null) return toast('Marca la ubicación en el mapa.', 'error');
+  // puntoTocado y no lat: el mapa abre con el pin en el centro de La Serena, así
+  // que lat nunca viene vacía. Sin esto, quien no toca el mapa publica su
+  // reporte en la Plaza de Armas sin darse cuenta.
+  if (!editId && !estado.puntoTocado)
+    return toast('Marca en el mapa dónde fue: mueve el pin, busca la dirección o usa tu ubicación.', 'error');
 
   const whatsapp = normalizarWhatsapp(document.getElementById('whatsapp').value);
   if (!whatsapp) return toast('Revisa el WhatsApp: debe ser +56 9 XXXX XXXX.', 'error');

@@ -233,6 +233,9 @@ async function mostrarDireccion(sheet, report) {
     const p = cercanos.find((x) => x.street || x.housenumber) ?? cercanos[0] ?? {};
     const calle = [p.street ?? p.name, p.housenumber].filter(Boolean).join(' ');
     texto = [...new Set([calle, p.district, p.city ?? p.county].filter(Boolean))].join(', ');
+    // Sin calle solo tenemos el lugar con nombre más cercano (una plaza, un
+    // parque). Puede estar a cuadras, así que se avisa en vez de afirmarlo.
+    if (texto && !p.street) texto = `Cerca de ${texto}`;
   } catch {
     return pintar('');
   }
