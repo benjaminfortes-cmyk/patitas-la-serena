@@ -3,6 +3,7 @@
 import { MAP_CENTER, MAP_ZOOM } from './config.js';
 import { escapeHtml } from './ui.js';
 import { KIND_META, ANIMAL_META, logoOrganizacion } from './constants.js';
+import { agregarMapaBase } from './basemap.js';
 
 let map;
 let markersLayer;
@@ -43,12 +44,7 @@ export function initMap() {
   // licencia de OpenStreetMap.
   map.attributionControl.setPosition('bottomleft');
 
-  // CARTO y no openstreetmap.org: su servidor público no permite apps con
-  // tráfico y puede bloquearlas.
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-  }).addTo(map);
+  agregarMapaBase(map);
 
   markersLayer = L.layerGroup();
   map.addLayer(markersLayer);

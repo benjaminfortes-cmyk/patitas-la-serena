@@ -3,6 +3,7 @@
 import { supabase, isConfigured } from './supabase.js';
 import { getUser, ensureSession } from './auth.js';
 import { VAPID_PUBLIC_KEY, MAP_CENTER, MAP_ZOOM } from './config.js';
+import { agregarMapaBase } from './basemap.js';
 import { toast } from './ui.js';
 
 export function initAlertas() {
@@ -42,9 +43,7 @@ async function abrir() {
 
   setTimeout(() => {
     mapa = L.map('alert-map').setView(MAP_CENTER, MAP_ZOOM);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO',
-    }).addTo(mapa);
+    agregarMapaBase(mapa);
     marcador = L.marker(MAP_CENTER, { draggable: true }).addTo(mapa);
     circulo = L.circle(MAP_CENTER, { radius: seleccion.radius, color: '#1f95b8', fillOpacity: 0.12 }).addTo(mapa);
 

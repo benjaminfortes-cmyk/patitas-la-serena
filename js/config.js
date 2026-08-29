@@ -7,3 +7,6 @@ export const VAPID_PUBLIC_KEY = 'BBR5KPyHoCu_s_9NjDUGZmQgLnxWLl3rHE10S5ihEqOelrv
 
 export const MAP_CENTER = [-29.9027, -71.2519];
 export const MAP_ZOOM = 13;
+
+// Llave del mapa base de CARTO. Vacía = se usa OpenStreetMap (ver js/basemap.js).
+export const CARTO_KEY = 'cb1_2jej_1_8e612098e0ade50f122581c4';

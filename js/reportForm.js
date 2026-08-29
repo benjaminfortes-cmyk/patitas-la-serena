@@ -6,6 +6,7 @@ import { comprimirImagen } from './imageCompress.js';
 import { subirFoto } from './storage.js';
 import { normalizarWhatsapp, formatearWhatsapp } from './validation.js';
 import { toast, escapeHtml } from './ui.js';
+import { agregarMapaBase } from './basemap.js';
 import { flyTo } from './map.js';
 import { MAP_CENTER, MAP_ZOOM } from './config.js';
 import { DEMO_REPORTS } from './demo.js';
@@ -280,9 +281,7 @@ function initFormMap() {
   if (formMap) { formMap.invalidateSize(); return; }
 
   formMap = L.map('form-map', { zoomControl: true }).setView(MAP_CENTER, MAP_ZOOM);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO',
-  }).addTo(formMap);
+  agregarMapaBase(formMap);
 
   formMarker = L.marker(MAP_CENTER, { draggable: true }).addTo(formMap);
   fijarPunto(MAP_CENTER[0], MAP_CENTER[1], false);   // pin de partida, no elección
