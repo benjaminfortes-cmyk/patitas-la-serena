@@ -1,6 +1,6 @@
 // Service Worker — PWA (offline) + notificaciones push
 
-const VERSION = 'patitas-v29';
+const VERSION = 'patitas-v30';
 
 const SHELL = [
   './', './index.html', './manifest.webmanifest',

@@ -1,6 +1,6 @@
 // Orquestador principal: arranca el mapa, los filtros y la carga de reportes.
 
-import { initMap, renderReports, getMap, flyTo } from './map.js';
+import { initMap, renderReports, getMap, irAlPin } from './map.js';
 import { initFilters, onFiltersChange, filterState, filtrarPorTipo } from './filters.js';
 import { fetchReports, fetchReportById } from './data.js';
 import { openReportCard, closeReportCard } from './reportCard.js';
@@ -133,7 +133,7 @@ async function abrirDesdeEnlace() {
   const id = new URLSearchParams(location.search).get('reporte');
   if (!id) return;
   const r = await fetchReportById(id);
-  if (r) { window.mostrarVista?.('mapa'); openReportCard(r); if (r.lat != null) flyTo(r.lat, r.lng, 16); }
+  if (r) { window.mostrarVista?.('mapa'); openReportCard(r); irAlPin(r); }
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -4,7 +4,7 @@ import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 import { fetchReportById } from './data.js';
 import { openReportCard } from './reportCard.js';
-import { flyTo } from './map.js';
+import { irAlPin } from './map.js';
 import { tituloReporte, nombreAnimal } from './constants.js';
 import { escapeHtml } from './ui.js';
 
@@ -88,7 +88,7 @@ function renderPanel(matches, kindOrigen) {
     btn.addEventListener('click', async () => {
       const r = await fetchReportById(btn.dataset.id);
       cerrar();
-      if (r) { openReportCard(r); if (r.lat != null) flyTo(r.lat, r.lng, 16); }
+      if (r) { openReportCard(r); irAlPin(r); }
     });
   });
 }

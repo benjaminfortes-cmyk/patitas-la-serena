@@ -7,6 +7,7 @@ import { agregarMapaBase } from './basemap.js';
 
 let map;
 let markersLayer;
+let marcadoresPorId = new Map();   // id del reporte → su marcador en el mapa
 
 function crearIcono(report) {
   const color = KIND_META[report.kind]?.color ?? '#888';
@@ -54,6 +55,7 @@ export function initMap() {
 
 export function renderReports(reports, onSelect) {
   markersLayer.clearLayers();
+  marcadoresPorId = new Map();
 
   reports.forEach((r) => {
     if (!Number.isFinite(r.lat) || !Number.isFinite(r.lng)) return;
@@ -68,6 +70,65 @@ export function renderReports(reports, onSelect) {
       if (e.originalEvent.key === 'Enter') onSelect?.(r);
     });
     markersLayer.addLayer(marker);
+    marcadoresPorId.set(r.id, marker);
+  });
+
+  pintarDestacado();   // si veníamos de la lista, el pin sigue marcado
+}
+
+// Ir al pin de un reporte: lo deja a la vista y lo hace latir un rato, para
+// que se distinga entre los demás cuando hay varios pines juntos.
+export function irAlPin(report) {
+  if (!map || !Number.isFinite(report?.lat) || !Number.isFinite(report?.lng)) return;
+
+  destacar(report.id);
+
+  map.invalidateSize();
+  const destino = L.latLng(report.lat, report.lng);
+  const zoom = Math.max(map.getZoom(), 16);
+  const { x, y } = map.getSize();
+
+  if (x === 0 || y === 0) {           // el mapa todavía no se ha mostrado
+    map.setView(destino, zoom, { animate: false });
+    return;
+  }
+  map.flyTo(centroVisible(destino, zoom), zoom, { duration: 0.8 });
+}
+
+// La ficha tapa parte del mapa: en escritorio una franja a la derecha y en el
+// teléfono casi toda la pantalla. Corremos el centro para que el pin caiga en
+// el pedazo que sí se ve; si no, el mapa "va" al reporte pero queda escondido.
+function centroVisible(destino, zoom) {
+  const ficha = document.getElementById('detail');
+  if (!ficha?.classList.contains('sheet--open')) return destino;
+
+  // offsetWidth/Height y no getBoundingClientRect: la ficha entra deslizándose
+  // y el rect devolvería su posición a media animación.
+  const anchoFicha = ficha.offsetWidth;
+  const altoFicha = ficha.offsetHeight;
+  const { x: ancho, y: alto } = map.getSize();
+  const punto = map.project(destino, zoom);
+
+  if (anchoFicha < ancho - 60) punto.x += (anchoFicha + 40) / 2;   // está al costado
+  else                         punto.y += altoFicha / 2;           // tapa desde abajo
+
+  return map.unproject(punto, zoom);
+}
+
+const DESTACADO_MS = 6000;
+let idDestacado = null;
+let quitarDestacado;
+
+function destacar(id) {
+  clearTimeout(quitarDestacado);
+  idDestacado = id;
+  pintarDestacado();
+  quitarDestacado = setTimeout(() => { idDestacado = null; pintarDestacado(); }, DESTACADO_MS);
+}
+
+function pintarDestacado() {
+  marcadoresPorId.forEach((marcador, id) => {
+    marcador.getElement()?.classList.toggle('pin-wrapper--destacado', id === idDestacado);
   });
 }
 

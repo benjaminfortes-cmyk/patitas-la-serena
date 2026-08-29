@@ -8,6 +8,7 @@ import { supabase, isConfigured } from './supabase.js';
 import { DEMO_REPORTS } from './demo.js';
 import { generarCartel } from './poster.js';
 import { fetchContacto } from './data.js';
+import { irAlPin } from './map.js';
 
 const SIZE_LABEL = { chico: 'Chico', mediano: 'Mediano', grande: 'Grande' };
 
@@ -116,9 +117,14 @@ export function openReportCard(report) {
       <h2 class="detail__title">${escapeHtml(report.pet_name || nombreAnimal(report))}</h2>
       <p class="detail__meta">
         ${report.pet_name ? `<span>${escapeHtml(nombreAnimal(report))}</span>` : ''}
-        <span class="detail__sector" hidden></span>
       </p>
       ${report.created_at ? `<p class="detail__posted"><i class="ph ph-clock" aria-hidden="true"></i> ${fechaPublicacion(report.created_at)}</p>` : ''}
+      ${Number.isFinite(report.lat) ? `
+        <button class="detail__place" type="button" data-action="ir-al-pin">
+          <i class="ph-fill ph-map-pin" aria-hidden="true"></i>
+          <span class="detail__place-txt">Buscando la dirección…</span>
+          <span class="detail__place-go">Ver en el mapa <i class="ph ph-arrow-right" aria-hidden="true"></i></span>
+        </button>` : ''}
       ${report.author_org ? `
         <p class="detail__org">
           ${logoOrganizacion(report.author_org)
@@ -164,12 +170,17 @@ export function openReportCard(report) {
       ${accionesAdmin}
     </div>`;
 
-  mostrarSector(sheet, report);
+  mostrarDireccion(sheet, report);
   activarWhatsapp(sheet, report);
 
   hacerAmpliable(sheet.querySelector('.detail__photo img'), `Foto de ${tituloReporte(report)}`);
 
   sheet.querySelector('[data-close]').addEventListener('click', closeReportCard);
+  sheet.querySelector('[data-action="ir-al-pin"]')?.addEventListener('click', () => {
+    closeReportCard();              // con la ficha encima el pin no se ve
+    window.mostrarVista?.('mapa');
+    irAlPin(report);
+  });
   sheet.querySelector('[data-action="compartir"]').addEventListener('click', () => compartir(report));
   sheet.querySelector('[data-action="cartel"]').addEventListener('click', () => generarCartel(report));
   sheet.querySelector('[data-action="denunciar"]').addEventListener('click', () => abrirDenuncia(report));
@@ -197,30 +208,35 @@ export function closeReportCard() {
 }
 
 const PHOTON_REVERSE = 'https://photon.komoot.io/reverse';
-const sectorCache = new Map();   // id del reporte → texto ya resuelto
+const direccionCache = new Map();   // id del reporte → texto ya resuelto
 
-async function mostrarSector(sheet, report) {
+// La calle donde lo vieron, sacada de las coordenadas del pin. Si el servicio
+// no responde el botón queda igual: sirve para ir al pin aunque no diga dónde.
+async function mostrarDireccion(sheet, report) {
   if (!Number.isFinite(report.lat) || !Number.isFinite(report.lng)) return;
 
   const pintar = (texto) => {
-    const el = sheet.querySelector('.detail__sector');
-    if (!el || !texto) return;
-    el.textContent = texto;
-    el.hidden = false;
+    const el = sheet.querySelector('.detail__place-txt');
+    if (!el) return;
+    el.textContent = texto || 'Ubicación en el mapa';
   };
 
-  if (sectorCache.has(report.id)) return pintar(sectorCache.get(report.id));
+  if (direccionCache.has(report.id)) return pintar(direccionCache.get(report.id));
 
   let texto = '';
   try {
-    const r = await fetch(`${PHOTON_REVERSE}?lat=${report.lat}&lon=${report.lng}&limit=1`);
+    const r = await fetch(`${PHOTON_REVERSE}?lat=${report.lat}&lon=${report.lng}&limit=5`);
     if (!r.ok) throw new Error();
-    const p = (await r.json()).features?.[0]?.properties ?? {};
-    texto = [...new Set([p.district, p.city ?? p.county].filter(Boolean))].join(', ');
+    const cercanos = (await r.json()).features?.map((f) => f.properties) ?? [];
+    // El más cercano suele ser un lugar (una plaza, un colegio) y decirlo
+    // confunde: para ir a buscar sirve más el nombre de la calle.
+    const p = cercanos.find((x) => x.street || x.housenumber) ?? cercanos[0] ?? {};
+    const calle = [p.street ?? p.name, p.housenumber].filter(Boolean).join(' ');
+    texto = [...new Set([calle, p.district, p.city ?? p.county].filter(Boolean))].join(', ');
   } catch {
-    return;   // sin sector la ficha se ve igual, solo con una línea menos
+    return pintar('');
   }
-  sectorCache.set(report.id, texto);
+  direccionCache.set(report.id, texto);
   pintar(texto);
 }
 

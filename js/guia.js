@@ -4,7 +4,7 @@ import { KIND_META, nombreAnimal, tiempoRelativo, fechaPublicacion } from './con
 import { escapeHtml } from './ui.js';
 import { fetchReports } from './data.js';
 import { openReportCard } from './reportCard.js';
-import { flyTo } from './map.js';
+import { irAlPin } from './map.js';
 
 const LEYENDA = [
   {
@@ -129,7 +129,7 @@ async function cargarListado(overlay, cerrar) {
       cerrar();
       window.mostrarVista?.('mapa');
       openReportCard(r);
-      if (r.lat != null) flyTo(r.lat, r.lng, 16);
+      irAlPin(r);
     });
   });
 }
