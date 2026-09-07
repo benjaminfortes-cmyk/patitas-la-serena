@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /sw.js
+Disallow: /js/
+
+Sitemap: https://buscahuellitas.cl/sitemap.xml
