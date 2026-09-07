@@ -3,6 +3,7 @@
 import { supabase, isConfigured } from './supabase.js';
 import { getUser, ensureSession } from './auth.js';
 import { comprimirImagen } from './imageCompress.js';
+import { enmarcarCartel, generarCartel } from './poster.js';
 import { subirFoto } from './storage.js';
 import { normalizarWhatsapp, formatearWhatsapp } from './validation.js';
 import { toast, escapeHtml } from './ui.js';
@@ -12,7 +13,9 @@ import { MAP_CENTER, MAP_ZOOM } from './config.js';
 import { DEMO_REPORTS } from './demo.js';
 import { fetchContacto } from './data.js';
 
-const estado = { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null };
+const estado = { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null, modoCartel: false };
+
+const PASOS_DEL_CARTEL = ['nombre', 'rasgos', 'senas', 'desc'];
 
 let formMap, formMarker;
 let onPublished = () => {};
@@ -26,7 +29,7 @@ export function initReportForm(cbRecargar) {
 
 function wire() {
   segmented('kind', (v) => {
-    document.getElementById('field-name').hidden = v !== 'perdido';
+    document.getElementById('field-name').hidden = estado.modoCartel || v !== 'perdido';
     aplicarTextos(v);
   });
   segmented('animal', (v) => {
@@ -34,6 +37,9 @@ function wire() {
   });
   segmented('size');
 
+  document.getElementById('modo-cartel').addEventListener('change', (e) => {
+    aplicarModoCartel(e.target.checked);
+  });
   document.getElementById('photo').addEventListener('change', onFoto);
 
   document.getElementById('btn-geoloc').addEventListener('click', usarMiUbicacion);
@@ -125,6 +131,83 @@ function aplicarTextos(kind) {
   poner('description', 'placeholder', t.desc);
   poner('hint-donde',  'textContent', t.dondeHint);
   poner('legend-donde', 'innerHTML', `${t.donde} <span class="req">*</span>`);
+}
+
+function aplicarModoCartel(activo) {
+  estado.modoCartel = activo;
+  document.getElementById('modo-cartel-aviso').hidden = !activo;
+
+  PASOS_DEL_CARTEL.forEach((nombre) => {
+    const parada = document.querySelector(`[data-parada="${nombre}"]`);
+    if (!parada) return;
+    if (nombre === 'nombre') {
+      parada.hidden = activo || estado.kind !== 'perdido';
+      return;
+    }
+    parada.hidden = activo;
+  });
+
+  const hint = document.getElementById('photo-hint');
+  if (hint) {
+    hint.textContent = activo
+      ? 'Toca para subir el cartel que ya tienes'
+      : (TEXTOS[estado.kind] ?? TEXTOS_NEUTROS).foto;
+  }
+  const subhint = document.getElementById('photo-subhint');
+  if (subhint) {
+    subhint.textContent = activo
+      ? 'Le ponemos el marco de Busca Huellitas arriba y abajo'
+      : 'Cualquier foto del celular sirve · se comprime sola';
+  }
+
+  if (estado.fotoBlob) limpiarFoto();
+  actualizarRuta();
+}
+
+function ofrecerCartel(report) {
+  const capa = document.createElement('div');
+  capa.className = 'cartel oferta';
+  capa.setAttribute('role', 'dialog');
+  capa.setAttribute('aria-modal', 'true');
+  capa.setAttribute('aria-label', 'Reporte publicado');
+  capa.innerHTML = `
+    <div class="oferta__caja">
+      <span class="oferta__ico" aria-hidden="true"><i class="ph-fill ph-check-circle"></i></span>
+      <h2 class="oferta__titulo">¡Listo! Ya está en el mapa</h2>
+      <p class="oferta__txt">Te armamos un cartel para que lo compartas por WhatsApp y en tus redes. Mientras más gente lo vea, mejor.</p>
+      <button class="btn btn--primary" type="button" data-oferta="si">
+        <i class="ph ph-megaphone" aria-hidden="true"></i> Crear mi cartel
+      </button>
+      <button class="btn btn--outline" type="button" data-oferta="no">Ahora no</button>
+    </div>
+  `;
+
+  const cerrarOferta = () => {
+    document.removeEventListener('keydown', alTeclear, true);
+    capa.remove();
+  };
+  function alTeclear(e) {
+    if (e.key === 'Escape') { e.preventDefault(); cerrarOferta(); }
+  }
+
+  capa.querySelector('[data-oferta="si"]').addEventListener('click', () => {
+    cerrarOferta();
+    generarCartel(report);
+  });
+  capa.querySelector('[data-oferta="no"]').addEventListener('click', cerrarOferta);
+  capa.addEventListener('click', (e) => { if (e.target === capa) cerrarOferta(); });
+  document.addEventListener('keydown', alTeclear, true);
+
+  document.body.appendChild(capa);
+  capa.querySelector('[data-oferta="si"]').focus();
+}
+
+function limpiarFoto() {
+  estado.fotoBlob = null;
+  estado.fotoPreview = null;
+  document.getElementById('photo').value = '';
+  document.getElementById('photo-preview').hidden = true;
+  document.getElementById('photo-placeholder').hidden = false;
 }
 
 function paradaCompleta(parada) {
@@ -258,7 +341,9 @@ function cerrar() {
 function reset() {
   const form = document.getElementById('report-form');
   form.reset();
-  Object.assign(estado, { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null });
+  Object.assign(estado, { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null, modoCartel: false });
+  document.getElementById('modo-cartel').checked = false;
+  aplicarModoCartel(false);
 
   document.querySelectorAll('.seg__btn--active').forEach((b) => {
     b.classList.remove('seg__btn--active'); b.setAttribute('aria-pressed', 'false');
@@ -422,13 +507,17 @@ async function onFoto(e) {
 
   const placeholder = document.getElementById('photo-placeholder');
   const textoOriginal = placeholder.innerHTML;
-  placeholder.innerHTML = '<i class="ph ph-spinner"></i><span>Preparando la foto…</span>';
+  placeholder.innerHTML = estado.modoCartel
+    ? '<i class="ph ph-spinner"></i><span>Armando tu cartel…</span>'
+    : '<i class="ph ph-spinner"></i><span>Preparando la foto…</span>';
 
   try {
-    estado.fotoBlob = await comprimirImagen(file);
+    const comprimida = await comprimirImagen(file);
+    estado.fotoBlob = estado.modoCartel ? await enmarcarCartel(comprimida) : comprimida;
     estado.fotoPreview = URL.createObjectURL(estado.fotoBlob);
     const img = document.getElementById('photo-preview');
     img.src = estado.fotoPreview;
+    img.classList.toggle('photo-drop__preview--cartel', estado.modoCartel);
     img.hidden = false;
     placeholder.hidden = true;
     actualizarRuta();
@@ -483,14 +572,16 @@ async function onSubmit(e) {
       toast('Cambios guardados.', 'exito');
       onPublished?.();
     } else {
+      const traiaCartel = estado.modoCartel;
       const nuevo = !isConfigured ? await publicarDemo(datos) : await publicarReal(datos);
       cerrar();
-      toast('¡Reporte publicado! Gracias por ayudar.', 'exito');
       window.mostrarVista?.('mapa');
       flyTo(datos.lat, datos.lng, 16);
       onPublished?.();
       window.marcarNovedadesVistas?.();
       window.buscarCoincidencias?.(nuevo);
+      if (traiaCartel) toast('¡Reporte publicado! Gracias por ayudar.', 'exito');
+      else ofrecerCartel(nuevo);
     }
   } catch (err) {
     toast(err.message || 'No se pudo guardar. Intenta de nuevo.', 'error');
@@ -523,7 +614,7 @@ async function publicarReal(d) {
   });
 
   if (error) throw new Error(error.message);
-  return { id: data?.id, ...d };
+  return { id: data?.id, photo_url: url, lifecycle: 'activo', ...d };
 }
 
 async function publicarDemo(d) {

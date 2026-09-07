@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
   <meta name="theme-color" content="#1f95b8" />
   <title>Busca Huellitas · Mascotas perdidas y encontradas en la Región de Coquimbo</title>
-  <meta name="description" content="Mapa colaborativo de mascotas perdidas, encontradas y avistadas en la Región de Coquimbo, Chile." />
+  <meta name="description" content="Mapa gratuito de perros y gatos perdidos, encontrados y avistados en La Serena, Coquimbo, Ovalle y toda la Región de Coquimbo. Publica tu reporte sin registrarte." />
   <meta name="google-site-verification" content="_rXavW0I76Q8R1HAGo8sTn4_H2Te2e1mvIW-1OsyY20" />
   <link rel="canonical" href="https://buscahuellitas.cl/" />
 
@@ -147,11 +147,13 @@
           <span class="infobar__chip"><img src="assets/img/proyectoarca.png" alt="" loading="lazy" /></span>
           <span class="infobar__chip"><img src="assets/img/uls.png" alt="" loading="lazy" /></span>
         </div>
-        <h1 class="infobar__titulo">Busca Huellitas</h1>
+        <h1 class="infobar__titulo">Busca Huellitas
+          <span class="infobar__titulo-sub">Mascotas perdidas en La Serena, Coquimbo y Ovalle</span>
+        </h1>
         <p class="infobar__lema">Ayudémoslos a volver a casa</p>
-        <p class="infobar__desc">Mapa comunitario y gratuito para reportar y encontrar mascotas perdidas, rescatadas y avistadas en la Región de Coquimbo, Chile. <span id="infobar-cierre"><b>Sin registro:</b> entras y publicas.</span></p>
+        <p class="infobar__desc">Mapa comunitario y gratuito para reportar y encontrar perros y gatos perdidos, rescatados y avistados en La Serena, Coquimbo, Ovalle y toda la Región de Coquimbo, Chile. <span id="infobar-cierre"><b>Sin registro:</b> entras y publicas.</span></p>
 
-        <p class="infobar__howtitle">¿Qué significa cada pin del mapa?</p>
+        <h2 class="infobar__howtitle">¿Qué significa cada pin del mapa?</h2>
         <ul class="pines">
           <li class="pines__item">
             <span class="pin pin--mini" style="--pin: var(--perdido)" aria-hidden="true">
@@ -180,7 +182,7 @@
         </ul>
 
         <!-- 3. Lo que la gente viene a hacer -->
-        <p class="infobar__howtitle">¿Qué quieres hacer hoy?</p>
+        <h2 class="infobar__howtitle">¿Qué quieres hacer hoy?</h2>
         <div class="acciones">
           <button class="accion" type="button" data-accion="buscar">
             <i class="ph ph-magnifying-glass accion__ico" aria-hidden="true"></i>
@@ -220,7 +222,7 @@
         <hr class="infobar__sep" />
 
         <!-- 3. Cómo funciona -->
-        <p class="infobar__howtitle">¿Cómo funciona?</p>
+        <h2 class="infobar__howtitle">¿Cómo funciona?</h2>
         <ol class="infobar__pasos">
           <li><b>No necesitas registrarte.</b> Entras y reportas al tiro, sin cuenta ni contraseña.</li>
           <li>¿Perdiste a tu mascota? <b>Búscala en el mapa</b>. ¿La encontraste o quieres avisar? <b>Publica un reporte</b> con foto y ubicación llenando el formulario.</li>
@@ -230,7 +232,7 @@
         <hr class="infobar__sep" />
 
         <!-- 4. Quiénes somos: al final, cuando ya se entendió el sitio -->
-        <p class="infobar__howtitle">Quiénes somos</p>
+        <h2 class="infobar__howtitle">Quiénes somos</h2>
         <p class="infobar__lead">Somos Busca Huellitas, un equipo de estudiantes universitarios de la Universidad de La Serena y la Universidad Católica del Norte. <a class="infobar__link" href="https://www.instagram.com/cachupinesucn/" target="_blank" rel="noopener">@cachupinesucn</a> y <a class="infobar__link" href="https://www.instagram.com/mascotiendascl/" target="_blank" rel="noopener">@mascotiendascl</a> y <a class="infobar__link" href="https://www.instagram.com/holospet.cl/" target="_blank" rel="noopener">@holospet.cl</a> y <a class="infobar__link" href="https://www.instagram.com/guauquebarato/" target="_blank" rel="noopener">@guauquebarato</a> son quienes más han apoyado e impulsado esta iniciativa.</p>
         <div class="infobar__logos">
           <span class="infobar__chip"><img src="assets/img/cachupines.png" alt="Cachupines UCN" loading="lazy" /></span>
@@ -415,11 +417,24 @@
       <span class="parada__marca" aria-hidden="true"><i class="ph ph-camera"></i></span>
       <fieldset class="form__group">
         <legend>Foto <span class="req">*</span></legend>
+
+        <label class="modo-cartel">
+          <input type="checkbox" id="modo-cartel" />
+          <span class="modo-cartel__txt">
+            <b>Ya tengo un cartel hecho</b>
+            <small>Súbelo tal cual y le ponemos nuestro marco. Te saltas las señas y la descripción.</small>
+          </span>
+        </label>
+        <p class="modo-cartel__aviso" id="modo-cartel-aviso" hidden>
+          <i class="ph ph-warning" aria-hidden="true"></i>
+          Todo lo que salga escrito en tu cartel queda público, incluido el teléfono.
+        </p>
+
         <label class="photo-drop" for="photo">
           <div id="photo-placeholder" class="photo-drop__placeholder">
             <i class="ph ph-camera" aria-hidden="true"></i>
             <span id="photo-hint">Toca para tomar una foto o elegirla de tu galería</span>
-            <small>Cualquier foto del celular sirve · se comprime sola</small>
+            <small id="photo-subhint">Cualquier foto del celular sirve · se comprime sola</small>
           </div>
           <img id="photo-preview" class="photo-drop__preview" alt="Vista previa de la foto" hidden />
         </label>

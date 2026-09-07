@@ -358,6 +358,83 @@ export async function construirCartel(report, opciones = {}) {
   return canvas;
 }
 
+export async function enmarcarCartel(fuente) {
+  const url = URL.createObjectURL(fuente);
+  let img;
+  try {
+    img = await cargarImagen(url);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = ANCHO;
+  canvas.height = ALTO;
+  const ctx = canvas.getContext('2d');
+  const FUENTE = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+
+  const CABECERA = 94;
+  const PIE = 58;
+  const medioY = CABECERA;
+  const medioAlto = ALTO - CABECERA - PIE;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, ANCHO, ALTO);
+  ctx.textBaseline = 'middle';
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, medioY, ANCHO, medioAlto);
+  ctx.clip();
+  const escala = Math.min(ANCHO / img.width, medioAlto / img.height);
+  const nw = img.width * escala;
+  const nh = img.height * escala;
+  if (nw < ANCHO - 1 || nh < medioAlto - 1) rellenarBorroso(ctx, img, 0, medioY, ANCHO, medioAlto);
+  ctx.drawImage(img, (ANCHO - nw) / 2, medioY + (medioAlto - nh) / 2, nw, nh);
+  ctx.restore();
+
+  ctx.fillStyle = '#1f95b8';
+  ctx.fillRect(0, 0, ANCHO, CABECERA);
+
+  ctx.fillStyle = 'rgba(255,255,255,.20)';
+  panelRedondeado(ctx, 40, 17, 60, 60, 17);
+  ctx.fill();
+  dibujarPatita(ctx, 48, 23, 44, '#ffffff');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `800 33px ${FUENTE}`;
+  ctx.fillText('Busca Huellitas', 116, 39);
+  ctx.fillStyle = 'rgba(255,255,255,.9)';
+  ctx.font = `700 19px ${FUENTE}`;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '2px';
+  ctx.fillText('REGIÓN DE COQUIMBO', 116, 68);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+
+  ctx.font = `700 22px ${FUENTE}`;
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'right';
+  ctx.fillText('@buscahuellitas', ANCHO - 40, 48);
+  const anchoArroba = ctx.measureText('@buscahuellitas').width;
+  ctx.textAlign = 'left';
+  dibujarInstagram(ctx, ANCHO - 40 - anchoArroba - 36, 36, 24, '#ffffff');
+
+  ctx.fillStyle = '#1f95b8';
+  ctx.fillRect(0, ALTO - PIE, ANCHO, PIE);
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.font = `700 22px ${FUENTE}`;
+  ctx.fillText('No olvides buscar en buscahuellitas.cl', ANCHO / 2, ALTO - PIE / 2);
+  ctx.textAlign = 'left';
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('No se pudo preparar el cartel.'))),
+      'image/jpeg',
+      0.88
+    );
+  });
+}
+
 function guardarCartel(url, nombreArchivo) {
   const a = document.createElement('a');
   a.href = url;
