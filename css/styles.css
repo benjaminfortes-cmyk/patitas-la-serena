@@ -883,6 +883,7 @@ body[data-vista="home"] .fab { display: none; }
 }
 .form__hint { color: var(--muted); font-size: .85rem; font-weight: 600; }
 .req { color: var(--brand); }
+.form__opt { color: var(--muted); font-weight: 600; font-size: .82rem; }
 
 .input {
   width: 100%; font: inherit; color: var(--ink);

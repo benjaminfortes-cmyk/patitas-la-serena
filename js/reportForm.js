@@ -15,7 +15,7 @@ import { fetchContacto } from './data.js';
 
 const estado = { kind: null, animal: null, size: null, lat: null, lng: null, puntoTocado: false, fotoBlob: null, fotoPreview: null, modoCartel: false };
 
-const PASOS_DEL_CARTEL = ['nombre', 'rasgos', 'senas', 'desc'];
+const PASOS_DEL_CARTEL = ['rasgos', 'senas', 'cuando', 'desc'];
 
 let formMap, formMarker;
 let onPublished = () => {};
@@ -29,7 +29,7 @@ export function initReportForm(cbRecargar) {
 
 function wire() {
   segmented('kind', (v) => {
-    document.getElementById('field-name').hidden = estado.modoCartel || v !== 'perdido';
+    document.getElementById('field-name').hidden = v !== 'perdido';
     aplicarTextos(v);
   });
   segmented('animal', (v) => {
@@ -139,12 +139,7 @@ function aplicarModoCartel(activo) {
 
   PASOS_DEL_CARTEL.forEach((nombre) => {
     const parada = document.querySelector(`[data-parada="${nombre}"]`);
-    if (!parada) return;
-    if (nombre === 'nombre') {
-      parada.hidden = activo || estado.kind !== 'perdido';
-      return;
-    }
-    parada.hidden = activo;
+    if (parada) parada.hidden = activo;
   });
 
   const hint = document.getElementById('photo-hint');
