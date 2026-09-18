@@ -9,13 +9,15 @@ import { DEMO_REPORTS } from './demo.js';
 import { generarCartel } from './poster.js';
 import { fetchContacto } from './data.js';
 import { irAlPin } from './map.js';
+import { linkWhatsapp, prepararBotonWhatsapp } from './whatsapp.js';
 
 const SIZE_LABEL = { chico: 'Chico', mediano: 'Mediano', grande: 'Grande' };
 
 function whatsappLink(report) {
-  const num = String(report.contact_whatsapp ?? '').replace(/[^0-9]/g, ''); // 569XXXXXXXX
-  const msg = `Hola, vi tu publicación en Busca Huellitas sobre ${tituloReporte(report)}. ¿Sigue activa la búsqueda?`;
-  return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  return linkWhatsapp(
+    report.contact_whatsapp,
+    `Hola, vi tu publicación en Busca Huellitas sobre ${tituloReporte(report)}. ¿Sigue activa la búsqueda?`,
+  );
 }
 
 async function activarWhatsapp(sheet, report) {
@@ -30,7 +32,7 @@ async function activarWhatsapp(sheet, report) {
     boton.classList.add('is-cargando');
     return;
   }
-  boton.href = whatsappLink(report);
+  prepararBotonWhatsapp(boton, whatsappLink(report));
   boton.classList.remove('is-cargando');
 }
 
@@ -151,7 +153,7 @@ export function openReportCard(report) {
 
       ${report.description ? `<p class="detail__quote">${escapeHtml(report.description)}</p>` : ''}
 
-      <a class="btn btn--whatsapp is-cargando" href="${report.contact_whatsapp ? whatsappLink(report) : '#'}"
+      <a class="btn btn--whatsapp is-cargando" href="#"
          target="_blank" rel="noopener">
         <i class="ph ph-whatsapp-logo"></i> Escribir a quien ${k.verboCorto}
       </a>

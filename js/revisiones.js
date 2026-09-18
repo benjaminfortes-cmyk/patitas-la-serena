@@ -7,6 +7,7 @@ import { DEMO_REPORTS } from './demo.js';
 import { tituloReporte, nombreAnimal, tiempoRelativo } from './constants.js';
 import { openReportCard } from './reportCard.js';
 import { escapeHtml, toast } from './ui.js';
+import { linkWhatsapp, prepararBotonWhatsapp } from './whatsapp.js';
 
 let btn = null;
 
@@ -96,12 +97,13 @@ async function abrir() {
     const fila = lista.querySelector(`.revision[data-id="${CSS.escape(r.id)}"]`);
     const wa = fila?.querySelector('[data-wa]');
     if (!wa) return;
-    const numero = String(await fetchContacto(r) ?? '').replace(/[^0-9]/g, '');
-    if (!lista.contains(wa)) return;
-    if (!numero) { wa.textContent = 'Sin contacto'; return; }
-    wa.href = `https://wa.me/${numero}?text=` + encodeURIComponent(
-      `Hola, soy de Busca Huellitas. Nos avisaron que ${tituloReporte(r)} ya volvió a casa. ¿Nos confirmas?`
+    const url = linkWhatsapp(
+      await fetchContacto(r),
+      `Hola, soy de Busca Huellitas. Nos avisaron que ${tituloReporte(r)} ya volvió a casa. ¿Nos confirmas?`,
     );
+    if (!lista.contains(wa)) return;
+    if (!url) { wa.textContent = 'Sin contacto'; return; }
+    prepararBotonWhatsapp(wa, url);
     wa.classList.remove('is-cargando');
   });
 
