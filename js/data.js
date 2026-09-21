@@ -133,6 +133,22 @@ export async function fetchAvisosPendientes() {
   return data;
 }
 
+// La papelera: lo que se ocultó del mapa. La vista pública solo se lo entrega
+// a quien puede verlo (el dueño y el equipo), eso lo decide la política
+// reports_select_public en la base; acá no hace falta filtrar de nuevo.
+export async function fetchArchivados() {
+  if (!isConfigured) {
+    return DEMO_REPORTS.filter((r) => r.lifecycle === 'archivado');
+  }
+  const { data, error } = await supabase
+    .from('reports_public').select('*')
+    .eq('lifecycle', 'archivado')
+    .order('updated_at', { ascending: false })
+    .limit(200);
+  if (error) { console.error('No se pudo cargar la papelera:', error.message); return []; }
+  return data;
+}
+
 const contactosVistos = new Map();
 
 export async function fetchContacto(report) {

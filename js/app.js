@@ -17,6 +17,7 @@ import { initSoporte } from './support.js';
 import { initGuia } from './guia.js';
 import { initEstadisticas } from './stats.js';
 import { initRevisiones } from './revisiones.js';
+import { initPapelera } from './papelera.js';
 import { initNovedades } from './novedades.js';
 
 async function recargar() {
@@ -35,6 +36,7 @@ function init() {
   initAdminAccess();   // botón de admin, solo si se entró con ?admin=1
   initEstadisticas();  // botón "Estadística", al lado del de admin y solo para admins
   initRevisiones();    // botón "Avisos", los reencuentros por verificar
+  initPapelera();      // botón "Papelera", lo que se sacó del mapa
   initReportForm(recargar);
   initMatching();
   initHistorias();

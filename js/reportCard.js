@@ -49,15 +49,17 @@ export function openReportCard(report) {
   const esEquipo = Boolean(user && isStaffUser());
   const puedeGestionar = esDueno || esAdmin;
 
+  // Acá había un botón "Sigue activo (reiniciar caducidad)". Existía porque una
+  // tarea diaria ocultaba del mapa los reportes con más de 45 días sin novedades
+  // y esa era la forma de frenarla. Esa tarea ya no corre (migración 0014): el
+  // reporte se queda hasta que se marque como resuelto o el equipo lo mande a la
+  // papelera, así que el botón no tenía nada que reiniciar.
   const accionesDueno = (puedeGestionar && !resuelto) ? `
     ${!esDueno ? '<p class="detail__adminnote"><i class="ph ph-shield-check"></i> Estás editando como administrador</p>' : ''}
     <div class="detail__owner">
       <button class="btn btn--soft" data-action="resolver"><i class="ph ph-heart"></i> Marcar como resuelto</button>
       <button class="btn btn--outline" data-action="editar"><i class="ph ph-pencil-simple"></i> Editar</button>
-    </div>
-    <button class="btn btn--ghost detail__keepalive" data-action="reactivar">
-      <i class="ph ph-arrow-clockwise"></i> Sigue activo (reiniciar caducidad)
-    </button>` : '';
+    </div>` : '';
 
   const accionComunidad = (!puedeGestionar && activo) ? `
     <div class="detail__reunion">
@@ -70,9 +72,9 @@ export function openReportCard(report) {
     </div>` : '';
 
   const archivado = report.lifecycle === 'archivado';
-  // Borrar es para siempre: el admin puede con cualquiera, el colaborador solo
-  // con lo suyo. La base de datos aplica lo mismo (política reports_delete_admin).
-  const puedeBorrar = esAdmin || (esEquipo && esDueno);
+  // Acá había un botón "Borrar" que hacía un delete de verdad, sin vuelta atrás.
+  // Ya no existe: lo que se saca del mapa se va a la papelera y queda guardado
+  // entero hasta que alguien decida volver a publicarlo. Ver js/papelera.js.
   const accionesAdmin = esEquipo ? `
     <div class="detail__admin">
       <p class="detail__adminnote"><i class="ph ph-shield-star"></i> Zona de moderación</p>
@@ -84,12 +86,11 @@ export function openReportCard(report) {
         </div>` : ''}
       <div class="detail__adminbtns">
         ${archivado
-          ? `<span class="detail__archivedtag"><i class="ph ph-eye-slash"></i> Oculto del mapa</span>
-             <button class="btn btn--outline" data-action="mostrar"><i class="ph ph-eye"></i> Volver a mostrar</button>`
-          : '<button class="btn btn--outline" data-action="archivar"><i class="ph ph-eye-slash"></i> Ocultar del mapa</button>'}
-        ${puedeBorrar ? '<button class="btn btn--danger" data-action="borrar"><i class="ph ph-trash"></i> Borrar</button>' : ''}
+          ? `<span class="detail__archivedtag"><i class="ph ph-archive-box"></i> En la papelera</span>
+             <button class="btn btn--outline" data-action="mostrar"><i class="ph ph-arrow-counter-clockwise"></i> Volver a publicar</button>`
+          : '<button class="btn btn--outline" data-action="archivar"><i class="ph ph-archive-box"></i> Mandar a la papelera</button>'}
       </div>
-      ${esAdmin ? '' : '<p class="detail__hint">Ocultar no borra nada: el reporte sale del mapa y un administrador puede revisarlo.</p>'}
+      <p class="detail__hint">Nada se borra: el reporte sale del mapa y queda guardado en la papelera por si hay que volver a publicarlo.</p>
     </div>` : '';
 
   const dato = (label, val) =>
@@ -190,14 +191,12 @@ export function openReportCard(report) {
   sheet.querySelector('[data-action="avisar-reunion"]')?.addEventListener('click', () => avisarReunion(report));
   sheet.querySelector('[data-action="confirmar-reunion"]')?.addEventListener('click', () => moderarReunion(report, true));
   sheet.querySelector('[data-action="rechazar-reunion"]')?.addEventListener('click', () => moderarReunion(report, false));
-  sheet.querySelector('[data-action="reactivar"]')?.addEventListener('click', () => reactivar(report));
-  sheet.querySelector('[data-action="mostrar"]')?.addEventListener('click', () => reactivar(report, true));
+  sheet.querySelector('[data-action="mostrar"]')?.addEventListener('click', () => republicar(report));
   sheet.querySelector('[data-action="editar"]')?.addEventListener('click', () => {
     closeReportCard();
     window.openReportForm?.(report);
   });
   sheet.querySelector('[data-action="archivar"]')?.addEventListener('click', () => archivar(report));
-  sheet.querySelector('[data-action="borrar"]')?.addEventListener('click', () => borrar(report));
 
   sheet.classList.add('sheet--open');
   document.getElementById('backdrop').classList.add('backdrop--show');
@@ -317,10 +316,8 @@ async function moderarReunion(report, confirmado) {
   window.recargarMapa?.();
 }
 
-// La misma función sirve para "Sigue activo" y para deshacer un ocultado:
-// reactivate_report() reinicia la caducidad y, si estaba archivado, lo devuelve
-// al mapa.
-async function reactivar(report, desocultar = false) {
+// Saca el reporte de la papelera y lo devuelve al mapa.
+async function republicar(report) {
   if (isConfigured) {
     const { error } = await supabase.rpc('reactivate_report', { p_report_id: report.id });
     if (error) return toast(error.message, 'error');
@@ -328,15 +325,16 @@ async function reactivar(report, desocultar = false) {
     const r = DEMO_REPORTS.find((x) => x.id === report.id);
     if (r) {
       r.last_active_at = new Date().toISOString();
-      if (r.lifecycle === 'archivado') r.lifecycle = 'activo';
+      r.lifecycle = 'activo';
     }
   }
-  toast(desocultar ? 'El reporte vuelve al mapa.' : 'Listo, el reporte sigue activo.', 'exito');
-  if (desocultar) { closeReportCard(); window.recargarMapa?.(); }
+  toast('El reporte vuelve al mapa.', 'exito');
+  closeReportCard();
+  window.recargarMapa?.();
 }
 
 async function archivar(report) {
-  if (!confirm('¿Ocultar este reporte del mapa? No se borra: puedes volver a mostrarlo cuando quieras.')) return;
+  if (!confirm('¿Mandar este reporte a la papelera? Sale del mapa pero no se borra: queda guardado y puedes volver a publicarlo cuando quieras.')) return;
 
   // Vía RPC y no con un update directo: el colaborador no tiene permiso de
   // update sobre reportes ajenos, pero sí puede ocultarlos (migración 0012).
@@ -347,22 +345,7 @@ async function archivar(report) {
     const r = DEMO_REPORTS.find((x) => x.id === report.id);
     if (r) r.lifecycle = 'archivado';
   }
-  toast('Reporte oculto del mapa.', 'exito');
-  closeReportCard();
-  window.recargarMapa?.();
-}
-
-async function borrar(report) {
-  if (!confirm('¿Borrar este reporte para SIEMPRE? Esta acción no se puede deshacer.')) return;
-
-  if (isConfigured) {
-    const { error } = await supabase.from('reports').delete().eq('id', report.id);
-    if (error) return toast(error.message, 'error');
-  } else {
-    const i = DEMO_REPORTS.findIndex((x) => x.id === report.id);
-    if (i >= 0) DEMO_REPORTS.splice(i, 1);
-  }
-  toast('Reporte borrado.', 'exito');
+  toast('Guardado en la papelera.', 'exito');
   closeReportCard();
   window.recargarMapa?.();
 }

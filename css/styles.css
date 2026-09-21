@@ -345,6 +345,39 @@ body[data-vista="home"] .view--map  { display: none; }
 .pin--mini .pin__icon { font-size: .78rem; }
 @keyframes pin-pop { from { transform: rotate(-45deg) scale(0); } to { transform: rotate(-45deg) scale(1); } }
 
+/* Varios reportes en el mismo punto: un solo pin con la cuenta. Antes el de
+   abajo quedaba escondido para siempre debajo del de encima. */
+.pin__contador {
+  position: absolute; top: -10px; right: -13px; z-index: 2;
+  display: grid; place-items: center;
+  min-width: 26px; height: 26px; padding: 0 6px;
+  border-radius: 999px; background: var(--ink); color: #fff;
+  border: 2px solid #fff; box-shadow: var(--shadow-sm);
+  font-size: .82rem; font-weight: 800; line-height: 1;
+  animation: pin-pop-sello .35s cubic-bezier(.18,.89,.32,1.28);
+}
+
+/* Lista para elegir cuando el zoom ya no alcanza a separarlos. */
+.grupo-popup .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: var(--shadow-lg); }
+.grupo-popup .leaflet-popup-content { margin: 12px 12px 10px; }
+.grupo { min-width: 214px; }
+.grupo__tit { margin: 0 0 8px; font-size: .82rem; font-weight: 800; color: var(--muted); }
+.grupo__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 232px; overflow-y: auto; }
+.grupo__item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 6px; border: none; border-radius: 12px;
+  background: none; font: inherit; color: var(--ink); text-align: left; cursor: pointer;
+}
+.grupo__item:hover { background: var(--brand-soft); }
+.grupo__foto {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 10px;
+  object-fit: cover; background: var(--brand-soft);
+}
+.leaflet-container .grupo__foto { width: 40px; height: 40px; }
+.grupo__txt { min-width: 0; flex: 1; }
+.grupo__txt b { display: block; font-size: .92rem; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.grupo__txt small { display: block; font-size: .78rem; font-weight: 700; }
+
 .fab {
   position: fixed; right: 18px; bottom: 24px; z-index: 1100;
   display: grid; place-items: center;
@@ -1144,7 +1177,6 @@ textarea.input { resize: vertical; }
 }
 @media (max-width: 420px) { .hide-mobile { display: none; } }
 
-.detail__keepalive { width: 100%; font-size: .9rem; }
 .detail__adminnote {
   display: flex; align-items: center; gap: 6px;
   color: var(--muted); font-size: .85rem; font-weight: 600;
