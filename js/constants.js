@@ -28,6 +28,7 @@ const ORG_LOGOS = {
   'mascotiendas':            'assets/img/mascotiendas.png',
   'guau que barato':         'assets/img/guauquebarato.png',
   'universidad de la serena':'assets/img/uls.png',
+  'detective tesla':         'assets/img/detectivetesla.png',
 };
 
 export function logoOrganizacion(nombre) {
